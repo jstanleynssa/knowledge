@@ -10,10 +10,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id') ?? '';
 
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
   const checks: Record<string, unknown> = {
     id,
     has_service_key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    has_url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    supabase_url: url,   // show full URL to verify it's correct
   };
 
   try {
