@@ -222,6 +222,7 @@ async function main() {
     og_image_url: null,
     reviewer: reviewer || null,
     status: 'draft',
+    deprecation_note: null,
     source_last_verified: null,
     date_published: null,
     date_modified: null,
