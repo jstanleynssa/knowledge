@@ -21,7 +21,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createServiceClient } from '@/lib/supabase';
 import type { SourceDocumentInsert } from '@/lib/types';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -82,7 +83,8 @@ function sleep(ms: number) {
 function extractLinks(html: string, filter: (href: string) => boolean): string[] {
   const seen = new Set<string>();
   const results: string[] = [];
-  const re = /<a\s[^>]*href="([^"]+)"/gi;
+  // POMS uses both single and double quotes for href — match both
+  const re = /href=["']([^"']+)["']/gi;
   let m: RegExpExecArray | null;
   while ((m = re.exec(html)) !== null) {
     const href = m[1];

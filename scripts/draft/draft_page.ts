@@ -25,7 +25,8 @@
 import Anthropic from '@anthropic-ai/sdk';  // or use openai — swappable
 import { createServiceClient } from '@/lib/supabase';
 import type { ReferencePageInsert, BodySection, FaqItem, PrimarySource, Category } from '@/lib/types';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
 // ─── CLI args ─────────────────────────────────────────────────────────────────
 

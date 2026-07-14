@@ -15,7 +15,8 @@
 
 import OpenAI from 'openai';
 import { createServiceClient } from '@/lib/supabase';
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
