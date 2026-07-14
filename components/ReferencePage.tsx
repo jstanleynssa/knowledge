@@ -170,9 +170,10 @@ function FaqBlock({ items }: { items: FaqItem[] }) {
 
 interface ReferencePageProps {
   page: ReferencePage;
+  previewMode?: boolean;
 }
 
-export function ReferencePageComponent({ page }: ReferencePageProps) {
+export function ReferencePageComponent({ page, previewMode }: ReferencePageProps) {
   const categoryLabel = page.category === 'social-security' ? 'Social Security' : 'IRMAA';
   const categoryPath = `/${page.category}`;
 
@@ -246,6 +247,30 @@ export function ReferencePageComponent({ page }: ReferencePageProps) {
 
   const isSuperseded = page.status === 'superseded';
 
+  const previewBannerCss = previewMode ? `
+.preview-banner{
+  position:sticky;top:0;z-index:999;
+  background:#1e40af;color:#fff;
+  padding:10px 24px;
+  font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:13px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border-bottom:3px solid #1d4ed8;
+}
+.preview-banner strong{font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase}
+.preview-banner .pmeta{color:#bfdbfe;font-size:12px}
+.preview-banner .pstatus{background:#1d4ed8;border:1px solid #3b82f6;padding:2px 10px;border-radius:10px;font-size:12px;font-weight:600}
+` : '';
+
+  const STATUS_LABELS: Record<string, string> = {
+    draft: 'Draft',
+    in_review: 'In Review',
+    approved: 'Approved — not yet published',
+    published: 'Published',
+    superseded: 'Superseded',
+    retired: 'Retired',
+  };
+
   return (
     <html lang="en">
       <head>
@@ -276,9 +301,20 @@ export function ReferencePageComponent({ page }: ReferencePageProps) {
         />
 
         {isSuperseded && <style dangerouslySetInnerHTML={{ __html: supersededCss }} />}
+        {previewMode && <style dangerouslySetInnerHTML={{ __html: previewBannerCss }} />}
+        <meta name="robots" content={previewMode ? 'noindex,nofollow' : 'index,follow'} />
         <style dangerouslySetInnerHTML={{ __html: css }} />
       </head>
       <body>
+        {previewMode && (
+          <div className="preview-banner">
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <strong>⚠ Preview</strong>
+              <span className="pmeta">This page is not live — for review only</span>
+            </div>
+            <span className="pstatus">{STATUS_LABELS[page.status] ?? page.status}</span>
+          </div>
+        )}
         {isSuperseded && (
           <div className="superseded-banner">
             <div className="wrap">
