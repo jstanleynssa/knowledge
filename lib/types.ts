@@ -5,7 +5,7 @@
 
 export type SourceType = 'poms' | 'cfr' | 'handbook' | 'regs';
 export type DocKind = 'rule' | 'toc' | 'empty';
-export type PageStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'retired';
+export type PageStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'retired' | 'superseded';
 export type Category = 'social-security' | 'irmaa';
 
 // ─── Layer 1 ──────────────────────────────────────────────────────────────────
@@ -72,6 +72,7 @@ export interface ReferencePage {
   og_image_url: string | null;
   reviewer: string | null;
   status: PageStatus;
+  deprecation_note: string | null;  // set when status = 'superseded'
   source_last_verified: string | null;   // ISO date
   date_published: string | null;         // ISO date
   date_modified: string | null;          // ISO date

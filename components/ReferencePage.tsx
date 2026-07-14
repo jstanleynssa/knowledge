@@ -10,6 +10,20 @@ import type { ReferencePage, BodySection, FaqItem, PrimarySource } from '@/lib/t
 
 // ─── CSS (matches deemed-filing.html exactly) ────────────────────────────────
 
+const supersededCss = `
+.superseded-banner{
+  background:#7F1D1D;color:#FEE2E2;
+  padding:14px 0;
+  font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:14px;
+  border-bottom:3px solid #991B1B;
+}
+.superseded-banner .wrap{display:flex;align-items:flex-start;gap:12px}
+.superseded-banner .icon{font-size:20px;flex:none;margin-top:1px}
+.superseded-banner strong{color:#fff;display:block;font-size:15px;margin-bottom:2px}
+.superseded-banner p{margin:0;line-height:1.5;color:#FCA5A5}
+`;
+
 const css = `
 :root{
   --paper:#FBFAF7;
@@ -230,6 +244,8 @@ export function ReferencePageComponent({ page }: ReferencePageProps) {
     ],
   };
 
+  const isSuperseded = page.status === 'superseded';
+
   return (
     <html lang="en">
       <head>
@@ -259,9 +275,27 @@ export function ReferencePageComponent({ page }: ReferencePageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd, null, 2) }}
         />
 
+        {isSuperseded && <style dangerouslySetInnerHTML={{ __html: supersededCss }} />}
         <style dangerouslySetInnerHTML={{ __html: css }} />
       </head>
       <body>
+        {isSuperseded && (
+          <div className="superseded-banner">
+            <div className="wrap">
+              <span className="icon">⚠️</span>
+              <div>
+                <strong>This rule has been superseded</strong>
+                <p>
+                  {page.deprecation_note
+                    ? page.deprecation_note
+                    : 'The rule described on this page is no longer in effect. It is maintained here for reference only.'}
+                  {' '}Verify current guidance on{' '}
+                  <a href="https://www.ssa.gov" style={{color:'#FCA5A5'}}>ssa.gov</a> before advising clients.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <header className="masthead">
           <div className="wrap">
             <a className="kb-mark" href="https://knowledge.nssapros.com">
