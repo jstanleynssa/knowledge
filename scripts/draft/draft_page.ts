@@ -58,7 +58,7 @@ RULES (non-negotiable):
 3. NEVER invent or guess a section number. Only cite sections that are in the provided source text.
 4. Write plain-language explanations — clear, precise, no jargon. Advisors and consumers read this.
 5. The quick_answer must be definition-led (≤200 words), answering "what is this?" directly.
-6. faq items must be genuine questions advisors ask, not rephrased headings.
+6. faq items must be genuine questions a consumer or pre-retiree would ask in their own voice — second-person, plain language (e.g. "Will filing for my spouse\'s benefit reduce my own?" / "Can I still work and collect Social Security?"). NOT advisor jargon or rephrased headings. These question phrasings should match what real people type into AI search engines.
 7. Output ONLY valid JSON matching the schema below. No prose before or after.
 
 OUTPUT SCHEMA (TypeScript-style):
