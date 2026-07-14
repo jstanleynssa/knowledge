@@ -6,12 +6,26 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "ingest:poms:phase1": "tsx scripts/ingest/fetch_poms.ts --phase=1",
+    "ingest:poms:phase2": "tsx scripts/ingest/fetch_poms.ts --phase=2",
+    "ingest:poms": "tsx scripts/ingest/fetch_poms.ts --phase=all",
+    "ingest:poms:check": "tsx scripts/ingest/fetch_poms.ts --phase=check",
+    "ingest:octoparse": "tsx scripts/ingest/ingest_octoparse.ts",
+    "embed": "tsx scripts/ingest/chunk_and_embed.ts",
+    "embed:force": "tsx scripts/ingest/chunk_and_embed.ts --force",
+    "draft": "tsx scripts/draft/draft_page.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
+    "@supabase/ssr": "^0.12.2",
+    "@supabase/supabase-js": "^2.110.5",
+    "dotenv": "^17.4.2",
     "next": "16.2.10",
+    "openai": "^6.46.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "tsx": "^4.23.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -22,5 +36,11 @@
     "eslint-config-next": "16.2.10",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "sharp@0.34.5": true,
+    "unrs-resolver@1.12.2": true,
+    "fsevents@2.3.3": true
   }
 }
