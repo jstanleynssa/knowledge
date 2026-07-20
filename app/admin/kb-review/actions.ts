@@ -159,6 +159,15 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     console.error('verified_answers seed error (non-fatal):', e);
   }
 
+  // Trigger Vercel rebuild so the newly-published page goes live immediately.
+  // Non-fatal: approval is committed regardless of whether the hook succeeds.
+  const deployHook = process.env.VERCEL_DEPLOY_HOOK_URL;
+  if (deployHook) {
+    fetch(deployHook, { method: 'POST' }).catch(err =>
+      console.error('Deploy hook failed (non-fatal):', err)
+    );
+  }
+
   revalidatePath('/admin/kb-review');
   // NOTE: do NOT call redirect() here — this action is called from a client component
   // with try/catch. redirect() throws NEXT_REDIRECT which gets caught as an error,
