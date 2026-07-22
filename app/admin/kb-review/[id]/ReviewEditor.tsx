@@ -165,17 +165,26 @@ export function ReviewEditor({
   // ─── Body section helpers ──────────────────────────────────────────────────
   const updateSection = (i: number, key: keyof BodySection, val: string) =>
     set('body_sections', fields.body_sections.map((s, idx) => idx === i ? { ...s, [key]: val } : s));
-  const addSection = () =>
-    set('body_sections', [...fields.body_sections, { type: 'prose' as const, heading: '', prose: '', citation_ref: '' }]);
-  const addTable = () =>
-    set('body_sections', [...fields.body_sections, {
+  const insertSection = (afterIndex: number) => {
+    const next = [...fields.body_sections];
+    next.splice(afterIndex + 1, 0, { type: 'prose' as const, heading: '', prose: '', citation_ref: '' });
+    set('body_sections', next);
+  };
+  const insertTable = (afterIndex: number) => {
+    const next = [...fields.body_sections];
+    next.splice(afterIndex + 1, 0, {
       type: 'table' as const,
       heading: '',
       prose: '',
       citation_ref: '',
       headers: ['Column 1', 'Column 2', 'Column 3'],
       rows: [['', '', ''], ['', '', '']],
-    }]);
+    });
+    set('body_sections', next);
+  };
+  // Keep addSection/addTable for the bottom "first add" buttons
+  const addSection = () => insertSection(fields.body_sections.length - 1);
+  const addTable   = () => insertTable(fields.body_sections.length - 1);
   const removeSection = (i: number) =>
     set('body_sections', fields.body_sections.filter((_, idx) => idx !== i));
 
@@ -383,6 +392,17 @@ export function ReviewEditor({
                       <button onClick={() => removeSection(i)} style={removeBtnStyle}>Remove</button>
                     </div>
 
+                    {/* Per-section insert-below strip */}
+                    <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+                      <button
+                        onClick={() => insertSection(i)}
+                        style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}
+                      >+ prose below</button>
+                      <button
+                        onClick={() => insertTable(i)}
+                        style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}>📊 table below</button>
+                    </div>
+
                     {section.type === 'table' ? (
                       /* ── Table editor ── */
                       <>
@@ -463,9 +483,10 @@ export function ReviewEditor({
                     )}
                   </div>
                 ))}
-              <div style={{ display: 'flex', gap: 8 }}>
+              {/* Bottom insert buttons — always visible even with 0 sections */}
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={addSection} style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
-                <button onClick={addTable} style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
+                <button onClick={addTable}   style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
               </div>
             </FieldGroup>
 

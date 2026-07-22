@@ -31,14 +31,14 @@ body {
 }
 
 .irmaa-table-title {
-  background: #e8e0f0;
-  color: #3b2a5c;
+  background: #1c80bc;          /* NSSA Blue-4 */
+  color: #ffffff;
   font-weight: 700;
   font-size: 0.95rem;
   text-align: center;
   padding: 0.55rem 1rem;
   border-radius: 4px 4px 0 0;
-  border: 1px solid #d0c4e8;
+  border: 1px solid #064c7c;    /* NSSA Blue-5 */
   border-bottom: none;
 }
 
@@ -46,14 +46,15 @@ body {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
-  border: 1px solid #d0c4e8;
+  border: 1px solid #8dc9ed;    /* NSSA Blue-2 */
 }
 
 .irmaa-table th {
-  background: #f7f4fb;
+  background: #d6eaf4;          /* NSSA Blue-1 */
+  color: #0c334c;               /* NSSA Blue-6 */
   font-weight: 700;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #d0c4e8;
+  border: 1px solid #8dc9ed;
   text-align: left;
   vertical-align: top;
   line-height: 1.4;
@@ -61,13 +62,14 @@ body {
 
 .irmaa-table td {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #e2dded;
+  border: 1px solid #cdc4ad;    /* NSSA Beige-2 */
   vertical-align: middle;
   line-height: 1.4;
+  color: #4a3c20;               /* NSSA Beige-6 */
 }
 
 .irmaa-table tr:nth-child(even) td {
-  background: #faf8fd;
+  background: #e1ddd2;          /* NSSA Beige-1 */
 }
 
 .irmaa-table td:last-child,
