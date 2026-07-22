@@ -22,7 +22,7 @@
  *     --sections="GN 00204.020,RS 00615.020"
  */
 
-import Anthropic from '@anthropic-ai/sdk';  // or use openai — swappable
+import OpenAI from 'openai';  // swapped from Anthropic — OPENAI_API_KEY in .env.local
 import { createServiceClient } from '@/lib/supabase';
 import type { ReferencePageInsert, BodySection, FaqItem, PrimarySource, Category } from '@/lib/types';
 import dotenv from 'dotenv';
@@ -58,7 +58,7 @@ RULES (non-negotiable):
 3. NEVER invent or guess a section number. Only cite sections that are in the provided source text.
 4. Write plain-language explanations — clear, precise, no jargon. Advisors and consumers read this.
 5. The quick_answer must be definition-led (≤200 words), answering "what is this?" directly.
-6. faq items must be genuine questions a consumer or pre-retiree would ask in their own voice — second-person, plain language (e.g. "Will filing for my spouse\'s benefit reduce my own?" / "Can I still work and collect Social Security?"). NOT advisor jargon or rephrased headings. These question phrasings should match what real people type into AI search engines.
+6. faq items must match the exact phrasing style of real search queries — first-person, conversational, the way someone actually types into Google or an AI chatbot (e.g. "if I start Social Security at 62 what happens to my benefit?", "can I collect my ex-spouse's Social Security and my own?", "what happens to my benefits if I keep working?"). NOT formal Q&A, NOT advisor jargon, NOT rephrased headings. Think: what would someone paste into a search box at 11pm trying to figure out their retirement.
 7. Output ONLY valid JSON matching the schema below. No prose before or after.
 
 OUTPUT SCHEMA (TypeScript-style):
@@ -144,20 +144,20 @@ async function main() {
 
   console.log(`Found ${validSources.length}/${sectionNumbers.length} source docs with content`);
 
-  // 2. Call Claude to draft the page
-  console.log('Drafting page with Claude...');
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  // 2. Call GPT-4o to draft the page
+  console.log('Drafting page with GPT-4o...');
+  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-  const message = await client.messages.create({
-    model: 'claude-opus-4-5',
+  const message = await client.chat.completions.create({
+    model: 'gpt-4o',
     max_tokens: 4096,
-    system: SYSTEM_PROMPT,
     messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
       { role: 'user', content: buildUserPrompt(title, validSources) },
     ],
   });
 
-  const responseText = message.content[0].type === 'text' ? message.content[0].text : '';
+  const responseText = message.choices[0]?.message?.content ?? '';
 
   // 3. Parse JSON output
   let draftFields: {

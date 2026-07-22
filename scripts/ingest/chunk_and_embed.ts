@@ -87,21 +87,46 @@ async function main() {
     .not('full_text', 'is', null);
 
   if (!forceRefresh) {
-    // Only process docs that have NO chunks yet
-    // (join approach: fetch IDs with existing chunks, exclude them)
-    const { data: chunkDocIds } = await supabase
-      .from('source_chunks')
-      .select('source_document_id');
-    const alreadyChunked = new Set((chunkDocIds ?? []).map((r) => r.source_document_id));
+    // Fetch ALL chunked doc IDs (paginate past Supabase's 1k default limit)
+    const alreadyChunked = new Set<string>();
+    let chunkOffset = 0;
+    while (true) {
+      const { data } = await supabase
+        .from('source_chunks')
+        .select('source_document_id')
+        .range(chunkOffset, chunkOffset + 999);
+      if (!data || data.length === 0) break;
+      data.forEach((r) => alreadyChunked.add(r.source_document_id));
+      if (data.length < 1000) break;
+      chunkOffset += 1000;
+    }
 
-    const { data: docs } = await query;
-    const unprocessed = (docs ?? []).filter((d) => !alreadyChunked.has(d.id));
-    console.log(`Unprocessed rule docs: ${unprocessed.length}`);
+    // Fetch ALL rule docs (paginate)
+    const allDocs: Array<{ id: string; section_number: string | null; full_text: string | null }> = [];
+    let docOffset = 0;
+    while (true) {
+      const { data } = await query.range(docOffset, docOffset + 999);
+      if (!data || data.length === 0) break;
+      allDocs.push(...data);
+      if (data.length < 1000) break;
+      docOffset += 1000;
+    }
+
+    const unprocessed = allDocs.filter((d) => !alreadyChunked.has(d.id));
+    console.log(`Rule docs total: ${allDocs.length} | Already embedded: ${alreadyChunked.size} unique docs | Remaining: ${unprocessed.length}`);
     await processDocs(supabase, openai, unprocessed, forceRefresh);
   } else {
-    const { data: docs } = await query;
-    console.log(`Rule docs total: ${(docs ?? []).length}`);
-    await processDocs(supabase, openai, docs ?? [], forceRefresh);
+    const allDocs: Array<{ id: string; section_number: string | null; full_text: string | null }> = [];
+    let docOffset = 0;
+    while (true) {
+      const { data } = await query.range(docOffset, docOffset + 999);
+      if (!data || data.length === 0) break;
+      allDocs.push(...data);
+      if (data.length < 1000) break;
+      docOffset += 1000;
+    }
+    console.log(`Rule docs total: ${allDocs.length}`);
+    await processDocs(supabase, openai, allDocs, forceRefresh);
   }
 
   console.log('\nDone.');

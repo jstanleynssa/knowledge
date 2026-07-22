@@ -166,9 +166,76 @@ export function ReviewEditor({
   const updateSection = (i: number, key: keyof BodySection, val: string) =>
     set('body_sections', fields.body_sections.map((s, idx) => idx === i ? { ...s, [key]: val } : s));
   const addSection = () =>
-    set('body_sections', [...fields.body_sections, { heading: '', prose: '', citation_ref: '' }]);
+    set('body_sections', [...fields.body_sections, { type: 'prose' as const, heading: '', prose: '', citation_ref: '' }]);
+  const addTable = () =>
+    set('body_sections', [...fields.body_sections, {
+      type: 'table' as const,
+      heading: '',
+      prose: '',
+      citation_ref: '',
+      headers: ['Column 1', 'Column 2', 'Column 3'],
+      rows: [['', '', ''], ['', '', '']],
+    }]);
   const removeSection = (i: number) =>
     set('body_sections', fields.body_sections.filter((_, idx) => idx !== i));
+
+  const updateTableHeader = (si: number, ci: number, val: string) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      const headers = [...(s.headers ?? [])];
+      headers[ci] = val;
+      return { ...s, headers };
+    });
+    set('body_sections', sections);
+  };
+
+  const updateTableCell = (si: number, ri: number, ci: number, val: string) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      const rows = (s.rows ?? []).map((row, ridx) =>
+        ridx === ri ? row.map((cell, cidx) => cidx === ci ? val : cell) : row
+      );
+      return { ...s, rows };
+    });
+    set('body_sections', sections);
+  };
+
+  const addTableRow = (si: number) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      const cols = (s.headers ?? []).length || 3;
+      return { ...s, rows: [...(s.rows ?? []), Array(cols).fill('')] };
+    });
+    set('body_sections', sections);
+  };
+
+  const removeTableRow = (si: number, ri: number) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      return { ...s, rows: (s.rows ?? []).filter((_, ridx) => ridx !== ri) };
+    });
+    set('body_sections', sections);
+  };
+
+  const addTableCol = (si: number) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      const headers = [...(s.headers ?? []), `Column ${(s.headers ?? []).length + 1}`];
+      const rows = (s.rows ?? []).map(row => [...row, '']);
+      return { ...s, headers, rows };
+    });
+    set('body_sections', sections);
+  };
+
+  const removeTableCol = (si: number, ci: number) => {
+    const sections = fields.body_sections.map((s, idx) => {
+      if (idx !== si) return s;
+      const headers = (s.headers ?? []).filter((_, hidx) => hidx !== ci);
+      const rows = (s.rows ?? []).map(row => row.filter((_, cidx) => cidx !== ci));
+      return { ...s, headers, rows };
+    });
+    set('body_sections', sections);
+  };
 
   const updateFaq = (i: number, key: 'q' | 'a', val: string) =>
     set('faq', fields.faq.map((f, idx) => idx === i ? { ...f, [key]: val } : f));
@@ -310,26 +377,96 @@ export function ReviewEditor({
                 .map((section, i) => (
                   <div key={i} style={{ background: G.bg, borderRadius: 8, padding: '14px 16px', marginBottom: 10 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                      <span style={chipLabel}>Section {i + 1}</span>
+                      <span style={chipLabel}>
+                        {section.type === 'table' ? '📊 Table' : `Section ${i + 1}`}
+                      </span>
                       <button onClick={() => removeSection(i)} style={removeBtnStyle}>Remove</button>
                     </div>
-                    <FormRow label="Heading">
-                      <FInput value={section.heading} onChange={v => updateSection(i, 'heading', v)} />
-                    </FormRow>
-                    <FormRow label="Prose (HTML OK)">
-                      <FTextarea value={section.prose} onChange={v => updateSection(i, 'prose', v)} rows={4} />
-                    </FormRow>
-                    <FormRow label="Citation ref (POMS/CFR section number)">
-                      <FInput
-                        value={section.citation_ref ?? ''}
-                        onChange={v => updateSection(i, 'citation_ref', v)}
-                        placeholder="e.g. GN 00204.020"
-                        mono
-                      />
-                    </FormRow>
+
+                    {section.type === 'table' ? (
+                      /* ── Table editor ── */
+                      <>
+                        <FormRow label="Table title (shown in header bar)">
+                          <FInput value={section.heading} onChange={v => updateSection(i, 'heading', v)} placeholder="e.g. Full Part B Coverage" />
+                        </FormRow>
+
+                        {/* Column headers */}
+                        <div style={{ marginBottom: 8 }}>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: G.text, marginBottom: 4 }}>Column headers</label>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                            {(section.headers ?? []).map((h, ci) => (
+                              <div key={ci} style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: '1 1 120px', minWidth: 100 }}>
+                                <input
+                                  value={h}
+                                  onChange={e => updateTableHeader(i, ci, e.target.value)}
+                                  style={{ padding: '6px 8px', borderRadius: 4, border: `1px solid ${G.border}`, fontSize: 12, fontFamily: 'inherit', background: '#fff' }}
+                                />
+                                {(section.headers ?? []).length > 1 && (
+                                  <button onClick={() => removeTableCol(i, ci)} style={{ ...removeBtnStyle, fontSize: 11 }}>✕ col</button>
+                                )}
+                              </div>
+                            ))}
+                            <button onClick={() => addTableCol(i)} style={{ ...addBtnStyle, width: 'auto', padding: '6px 12px', fontSize: 12, marginTop: 0 }}>+ Col</button>
+                          </div>
+                        </div>
+
+                        {/* Rows */}
+                        <div style={{ marginBottom: 8 }}>
+                          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: G.text, marginBottom: 4 }}>Rows</label>
+                          <div style={{ overflowX: 'auto' }}>
+                            <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 12 }}>
+                              <tbody>
+                                {(section.rows ?? []).map((row, ri) => (
+                                  <tr key={ri}>
+                                    {row.map((cell, ci) => (
+                                      <td key={ci} style={{ padding: '3px 4px', verticalAlign: 'top' }}>
+                                        <input
+                                          value={cell}
+                                          onChange={e => updateTableCell(i, ri, ci, e.target.value)}
+                                          style={{ width: '100%', padding: '5px 7px', borderRadius: 4, border: `1px solid ${G.border}`, fontSize: 12, fontFamily: 'inherit', minWidth: 80, boxSizing: 'border-box' as const }}
+                                        />
+                                      </td>
+                                    ))}
+                                    <td style={{ padding: '3px 4px', verticalAlign: 'middle' }}>
+                                      <button onClick={() => removeTableRow(i, ri)} style={{ ...removeBtnStyle, fontSize: 11 }}>✕</button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          <button onClick={() => addTableRow(i)} style={{ ...addBtnStyle, marginTop: 6, fontSize: 12 }}>+ Add Row</button>
+                        </div>
+
+                        <FormRow label="Citation ref (POMS/CFR section number)">
+                          <FInput value={section.citation_ref ?? ''} onChange={v => updateSection(i, 'citation_ref', v)} placeholder="e.g. HI 01101.020" mono />
+                        </FormRow>
+                      </>
+                    ) : (
+                      /* ── Prose section ── */
+                      <>
+                        <FormRow label="Heading">
+                          <FInput value={section.heading} onChange={v => updateSection(i, 'heading', v)} />
+                        </FormRow>
+                        <FormRow label="Prose (HTML OK)">
+                          <FTextarea value={section.prose} onChange={v => updateSection(i, 'prose', v)} rows={4} />
+                        </FormRow>
+                        <FormRow label="Citation ref (POMS/CFR section number)">
+                          <FInput
+                            value={section.citation_ref ?? ''}
+                            onChange={v => updateSection(i, 'citation_ref', v)}
+                            placeholder="e.g. GN 00204.020"
+                            mono
+                          />
+                        </FormRow>
+                      </>
+                    )}
                   </div>
                 ))}
-              <button onClick={addSection} style={addBtnStyle}>+ Add Section</button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={addSection} style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
+                <button onClick={addTable} style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
+              </div>
             </FieldGroup>
 
             <FieldGroup label={`FAQ (${fields.faq.length} items)`}>

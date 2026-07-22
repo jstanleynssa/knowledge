@@ -1,0 +1,1979 @@
+{
+  "generated_at": "2026-07-17T13:06:43.987Z",
+  "totals": {
+    "rule_docs": 18407,
+    "advisor_relevant": 8549,
+    "internal_ops": 7017,
+    "published_pages": 0,
+    "draft_pages": 14,
+    "cited_sections": 36,
+    "coverage_pct": 0.2
+  },
+  "by_source": {
+    "poms": {
+      "total": 15566,
+      "cited": 25
+    },
+    "cfr": {
+      "total": 1981,
+      "cited": 4
+    },
+    "handbook": {
+      "total": 860,
+      "cited": 7
+    }
+  },
+  "tier_1": {
+    "total": 3249,
+    "cited": 19
+  },
+  "tier_2": {
+    "total": 5300,
+    "cited": 0
+  },
+  "tier_3": {
+    "total": 7017,
+    "cited": 6
+  },
+  "clusters": {
+    "GN 003 — Evidence of Age/Relationship": {
+      "total": 588,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "GN 00312.310",
+        "GN 00312.294",
+        "GN 00302.585",
+        "GN 00306.285",
+        "GN 00306.535"
+      ]
+    },
+    "DI 230 — Disability": {
+      "total": 352,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 23022.113",
+        "DI 23022.115",
+        "DI 23022.117",
+        "DI 23022.120",
+        "DI 23022.125"
+      ]
+    },
+    "RS 020 — Retirement/Survivors": {
+      "total": 312,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02001.005",
+        "RS 02001.090",
+        "RS 02001.145",
+        "RS 02001.180",
+        "RS 02001.190"
+      ]
+    },
+    "SI 008 — SSI": {
+      "total": 284,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 00835.640",
+        "SI 00830.417",
+        "SI 00830.420",
+        "SI 00832.317",
+        "SI 00835.160"
+      ]
+    },
+    "HA 012 — Hearings & Appeals": {
+      "total": 255,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 01205.072",
+        "HA 01210.040",
+        "HA 01220.010",
+        "HA 01210.037",
+        "HA 01210.045"
+      ]
+    },
+    "DI 110 — Disability": {
+      "total": 229,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 11080.010",
+        "DI 11005.057",
+        "DI 11005.003",
+        "DI 11005.020",
+        "DI 11005.022"
+      ]
+    },
+    "VB — Other": {
+      "total": 217,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "VB 00205.160",
+        "VB 00205.165",
+        "VB 00205.170",
+        "VB 00101.005",
+        "VB 00102.001"
+      ]
+    },
+    "DI 280 — Disability": {
+      "total": 208,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 28095.100",
+        "DI 28005.007",
+        "DI 28005.009",
+        "DI 28001.003",
+        "DI 28001.005"
+      ]
+    },
+    "RS 014 — Retirement/Survivors": {
+      "total": 187,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01403.130",
+        "RS 01401.210",
+        "RS 01401.090",
+        "RS 01402.020",
+        "RS 01402.030"
+      ]
+    },
+    "DI 395 — Disability": {
+      "total": 187,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 39545.675",
+        "DI 39501.020",
+        "DI 39501.030",
+        "DI 39506.231",
+        "DI 39506.240"
+      ]
+    },
+    "HI 006 — Health Insurance / Medicare": {
+      "total": 180,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 00610.210",
+        "HI 00610.220",
+        "HI 00620.050",
+        "HI 00620.060",
+        "HI 00630.001"
+      ]
+    },
+    "SI 011 — SSI": {
+      "total": 162,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01130.430",
+        "SI 01130.455",
+        "SI 01110.001",
+        "SI 01110.100",
+        "SI 01110.115"
+      ]
+    },
+    "SI 023 — SSI": {
+      "total": 152,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 02305.017",
+        "SI 02305.071",
+        "SI 02301.301",
+        "SI 02301.305",
+        "SI 02301.307"
+      ]
+    },
+    "DI 521 — Disability": {
+      "total": 150,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 52150.035",
+        "DI 52150.040",
+        "DI 52150.045",
+        "DI 52150.050",
+        "DI 52150.055"
+      ]
+    },
+    "SI 005 — SSI": {
+      "total": 148,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 00502.116",
+        "SI 00502.135",
+        "SI 00502.160",
+        "SI 00502.410",
+        "SI 00502.450"
+      ]
+    },
+    "DI 130 — Disability": {
+      "total": 145,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 13095.080",
+        "DI 13004.025",
+        "DI 13005.005",
+        "DI 13005.016",
+        "DI 13005.018"
+      ]
+    },
+    "HA 013 — Hearings & Appeals": {
+      "total": 136,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 01330.006",
+        "HA 01350.072",
+        "HA 01360.020",
+        "HA 01360.040",
+        "HA 01320.020"
+      ]
+    },
+    "HA 011 — Hearings & Appeals": {
+      "total": 128,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 01140.001",
+        "HA 01120.049",
+        "HA 01120.014",
+        "HA 01120.007",
+        "HA 01195.060"
+      ]
+    },
+    "RS 018 — Retirement/Survivors": {
+      "total": 128,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01801.010",
+        "RS 01802.273",
+        "RS 01802.274",
+        "RS 01802.300",
+        "RS 01802.400"
+      ]
+    },
+    "SI 006 — SSI": {
+      "total": 127,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 00601.012",
+        "SI 00603.001",
+        "SI 00603.002",
+        "SI 00603.003",
+        "SI 00604.019"
+      ]
+    },
+    "DI 810 — Disability": {
+      "total": 122,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 81007.055",
+        "DI 81001.005",
+        "DI 81001.030",
+        "DI 81005.005",
+        "DI 81005.025"
+      ]
+    },
+    "SI 013 — SSI": {
+      "total": 120,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01310.001",
+        "SI 01310.115",
+        "SI 01310.205",
+        "SI 01310.206",
+        "SI 01310.695"
+      ]
+    },
+    "HI 010 — Health Insurance / Medicare": {
+      "total": 115,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 01001.041",
+        "HI 01001.260",
+        "HI 01001.155",
+        "HI 01001.315",
+        "HI 01005.025"
+      ]
+    },
+    "GN 005 — Reconsiderations & Appeals": {
+      "total": 107,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "GN 00506.300",
+        "GN 00506.400",
+        "GN 00502.134",
+        "GN 00502.181",
+        "GN 00502.183"
+      ]
+    },
+    "DI 342 — Disability": {
+      "total": 102,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 34205.001",
+        "DI 34220.003",
+        "DI 34224.003",
+        "DI 34226.003",
+        "DI 34232.003"
+      ]
+    },
+    "DI 341 — Disability": {
+      "total": 99,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 34122.005",
+        "DI 34122.007",
+        "DI 34110.001",
+        "DI 34121.003",
+        "DI 34121.005"
+      ]
+    },
+    "Handbook §2100–2199": {
+      "total": 97,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2160",
+        "HBK 2109",
+        "HBK 2100",
+        "HBK 2101",
+        "HBK 2116"
+      ]
+    },
+    "GN 006 — Program Integrity": {
+      "total": 93,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "GN 00605.060",
+        "GN 00605.208",
+        "GN 00605.215",
+        "GN 00605.222",
+        "GN 00605.250"
+      ]
+    },
+    "HI 030 — Health Insurance / Medicare": {
+      "total": 88,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 03050.015",
+        "HI 03050.025",
+        "HI 03050.035",
+        "HI 03050.045",
+        "HI 03010.005"
+      ]
+    },
+    "DI 225 — Disability": {
+      "total": 88,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 22510.014",
+        "DI 22510.015",
+        "DI 22510.016",
+        "DI 22510.017",
+        "DI 22510.019"
+      ]
+    },
+    "DI 245 — Disability": {
+      "total": 85,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 24535.015",
+        "DI 24535.020",
+        "DI 24503.005",
+        "DI 24503.020",
+        "DI 24510.065"
+      ]
+    },
+    "DI 330 — Disability": {
+      "total": 84,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 33010.080",
+        "DI 33010.085",
+        "DI 33010.025",
+        "DI 33015.015",
+        "DI 33015.020"
+      ]
+    },
+    "SI 020 — SSI": {
+      "total": 84,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 02005.020",
+        "SI 02005.025",
+        "SI 02005.030",
+        "SI 02005.031",
+        "SI 02005.050"
+      ]
+    },
+    "RS 021 — Retirement/Survivors": {
+      "total": 82,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02101.005",
+        "RS 02101.046",
+        "RS 02101.058",
+        "RS 02101.500",
+        "RS 02101.510"
+      ]
+    },
+    "RS 026 — Retirement/Survivors": {
+      "total": 80,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02610.013",
+        "RS 02610.015",
+        "RS 02610.023",
+        "RS 02610.024",
+        "RS 02610.030"
+      ]
+    },
+    "DI 550 — Disability": {
+      "total": 78,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 55099.016",
+        "DI 55099.070",
+        "DI 55099.075",
+        "DI 55099.080",
+        "DI 55099.101"
+      ]
+    },
+    "DI 450 — Disability": {
+      "total": 78,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 45001.010",
+        "DI 45001.015",
+        "DI 45001.020",
+        "DI 45001.025",
+        "DI 45001.092"
+      ]
+    },
+    "DI 120 — Disability": {
+      "total": 74,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 12005.015",
+        "DI 12010.035",
+        "DI 12010.040",
+        "DI 12045.030",
+        "DI 12020.001"
+      ]
+    },
+    "Handbook §900–999": {
+      "total": 72,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0901",
+        "HBK 0902",
+        "HBK 0903",
+        "HBK 0904",
+        "HBK 0905"
+      ]
+    },
+    "DI 435 — Disability": {
+      "total": 71,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 43505.075",
+        "DI 43520.001",
+        "DI 43520.040",
+        "DI 43530.010",
+        "DI 43505.080"
+      ]
+    },
+    "HA 014 — Hearings & Appeals": {
+      "total": 67,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 01460.030",
+        "HA 01460.050",
+        "HA 01460.040",
+        "HA 01420.020",
+        "HA 01420.015"
+      ]
+    },
+    "RS 016 — Retirement/Survivors": {
+      "total": 65,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01601.155",
+        "RS 01601.200",
+        "RS 01601.260",
+        "RS 01602.500",
+        "RS 01602.630"
+      ]
+    },
+    "RS 017 — Retirement/Survivors": {
+      "total": 64,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01702.424",
+        "RS 01702.442",
+        "RS 01702.450",
+        "RS 01702.466",
+        "RS 01702.192"
+      ]
+    },
+    "DI 265 — Disability": {
+      "total": 64,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 26525.045",
+        "DI 26530.005",
+        "DI 26530.010",
+        "DI 26510.065",
+        "DI 26535.021"
+      ]
+    },
+    "DI 405 — Disability": {
+      "total": 63,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 40505.315",
+        "DI 40510.140",
+        "DI 40515.005",
+        "DI 40515.020",
+        "DI 40525.001"
+      ]
+    },
+    "DI 252 — Disability": {
+      "total": 59,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 25210.020",
+        "DI 25210.040",
+        "DI 25220.010",
+        "DI 25225.050",
+        "DI 25230.001"
+      ]
+    },
+    "RS 028 — Retirement/Survivors": {
+      "total": 57,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02803.045",
+        "RS 02807.001",
+        "RS 02807.040",
+        "RS 02809.015",
+        "RS 02815.025"
+      ]
+    },
+    "DI 215 — Disability": {
+      "total": 55,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 21501.150",
+        "DI 21501.250",
+        "DI 21501.255",
+        "DI 21501.235",
+        "DI 21501.240"
+      ]
+    },
+    "DI 235 — Disability": {
+      "total": 54,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 23535.001",
+        "DI 23535.010",
+        "DI 23535.012",
+        "DI 23535.013",
+        "DI 23550.001"
+      ]
+    },
+    "Handbook §1800–1899": {
+      "total": 53,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1809",
+        "HBK 1810",
+        "HBK 1800",
+        "HBK 1801",
+        "HBK 1802"
+      ]
+    },
+    "DI 101 — Disability": {
+      "total": 52,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 10105.005",
+        "DI 10105.015",
+        "DI 10105.035",
+        "DI 10105.065",
+        "DI 10110.001"
+      ]
+    },
+    "RS 013 — Retirement/Survivors": {
+      "total": 49,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01301.005",
+        "RS 01301.020",
+        "RS 01301.070",
+        "RS 01301.160",
+        "RS 01301.165"
+      ]
+    },
+    "DI 275 — Disability": {
+      "total": 47,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 27505.015",
+        "DI 27505.020",
+        "DI 27510.001",
+        "DI 27510.005",
+        "DI 27516.001"
+      ]
+    },
+    "Handbook §1200–1299": {
+      "total": 47,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1213",
+        "HBK 1218",
+        "HBK 1219",
+        "HBK 1220",
+        "HBK 1221"
+      ]
+    },
+    "Handbook §100–199": {
+      "total": 45,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0102",
+        "HBK 0138",
+        "HBK 0139",
+        "HBK 0140",
+        "HBK 0141"
+      ]
+    },
+    "Handbook §1300–1399": {
+      "total": 45,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1300",
+        "HBK 1319",
+        "HBK 1320",
+        "HBK 1321",
+        "HBK 1322"
+      ]
+    },
+    "SI 040 — SSI": {
+      "total": 42,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 04030.040",
+        "SI 04030.050",
+        "SI 04030.060",
+        "SI 04050.040",
+        "SI 04040.027"
+      ]
+    },
+    "SI 014 — SSI": {
+      "total": 41,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01403.001",
+        "SI 01403.005",
+        "SI 01410.001",
+        "SI 01401.001",
+        "SI 01415.037"
+      ]
+    },
+    "SI 022 — SSI": {
+      "total": 40,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 02220.009",
+        "SI 02220.010",
+        "SI 02220.011",
+        "SI 02220.012",
+        "SI 02220.013"
+      ]
+    },
+    "RS 019 — Retirement/Survivors": {
+      "total": 40,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01905.005",
+        "RS 01901.700",
+        "RS 01901.740",
+        "RS 01901.580",
+        "RS 01901.600"
+      ]
+    },
+    "DI 320 — Disability": {
+      "total": 38,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 32001.005",
+        "DI 32005.001",
+        "DI 32005.005",
+        "DI 32010.075",
+        "DI 32001.010"
+      ]
+    },
+    "Handbook §500–599": {
+      "total": 38,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0500",
+        "HBK 0501",
+        "HBK 0502",
+        "HBK 0503",
+        "HBK 0504"
+      ]
+    },
+    "DI 600 — Disability": {
+      "total": 38,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 60075.010",
+        "DI 60005.005",
+        "DI 60005.010",
+        "DI 60005.015",
+        "DI 60005.020"
+      ]
+    },
+    "RS 003 — Military Service Coverage": {
+      "total": 37,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 00301.102",
+        "RS 00301.107",
+        "RS 00301.132",
+        "RS 00301.140",
+        "RS 00301.147"
+      ]
+    },
+    "Handbook §1700–1799": {
+      "total": 37,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1705",
+        "HBK 1724",
+        "HBK 1725",
+        "HBK 1700",
+        "HBK 1701"
+      ]
+    },
+    "Handbook §1100–1199": {
+      "total": 37,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1115",
+        "HBK 1116",
+        "HBK 1117",
+        "HBK 1100",
+        "HBK 1101"
+      ]
+    },
+    "DI 250 — Disability": {
+      "total": 35,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 25025.001",
+        "DI 25003.005",
+        "DI 25001.001",
+        "DI 25003.001",
+        "DI 25025.020"
+      ]
+    },
+    "DI 255 — Disability": {
+      "total": 35,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 25501.470",
+        "DI 25501.370",
+        "DI 25505.025",
+        "DI 25505.030",
+        "DI 25505.035"
+      ]
+    },
+    "HI 002 — Health Insurance / Medicare": {
+      "total": 35,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 00208.060",
+        "HI 00208.010",
+        "HI 00208.050",
+        "HI 00208.072",
+        "HI 00208.073"
+      ]
+    },
+    "DI 340 — Disability": {
+      "total": 33,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 34001.018",
+        "DI 34001.022",
+        "DI 34001.024",
+        "DI 34001.020",
+        "DI 34001.032"
+      ]
+    },
+    "Handbook §800–899": {
+      "total": 32,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0803",
+        "HBK 0804",
+        "HBK 0805",
+        "HBK 0812",
+        "HBK 0813"
+      ]
+    },
+    "HI 009 — Health Insurance / Medicare": {
+      "total": 32,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 00930.070",
+        "HI 00930.080",
+        "HI 00930.110",
+        "HI 00901.145",
+        "HI 00901.165"
+      ]
+    },
+    "HI 004 — Health Insurance / Medicare": {
+      "total": 31,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 00401.270",
+        "HI 00401.205",
+        "HI 00401.200",
+        "HI 00401.210",
+        "HI 00401.215"
+      ]
+    },
+    "DI 105 — Disability": {
+      "total": 29,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 10505.025",
+        "DI 10505.035",
+        "DI 10501.020",
+        "DI 10501.025",
+        "DI 10505.001"
+      ]
+    },
+    "Handbook §2700–2799": {
+      "total": 29,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2717",
+        "HBK 2718",
+        "HBK 2719",
+        "HBK 2720",
+        "HBK 2700"
+      ]
+    },
+    "DI 335 — Disability": {
+      "total": 28,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 33526.020",
+        "DI 33530.005",
+        "DI 33520.005",
+        "DI 33526.001",
+        "DI 33526.005"
+      ]
+    },
+    "Handbook §1400–1499": {
+      "total": 28,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1414",
+        "HBK 1402",
+        "HBK 1403",
+        "HBK 1404",
+        "HBK 1405"
+      ]
+    },
+    "RS 022 — Retirement/Survivors": {
+      "total": 25,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02201.017",
+        "RS 02201.018",
+        "RS 02201.020",
+        "RS 02201.001",
+        "RS 02201.002"
+      ]
+    },
+    "Handbook §1600–1699": {
+      "total": 25,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1607",
+        "HBK 1608",
+        "HBK 1609",
+        "HBK 1605",
+        "HBK 1606"
+      ]
+    },
+    "DI 420 — Disability": {
+      "total": 24,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 42001.005",
+        "DI 42001.010",
+        "DI 42001.015",
+        "DI 42001.020",
+        "DI 42005.001"
+      ]
+    },
+    "Handbook §1900–1999": {
+      "total": 24,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1917",
+        "HBK 1900",
+        "HBK 1901",
+        "HBK 1902",
+        "HBK 1903"
+      ]
+    },
+    "DI 260 — Disability": {
+      "total": 24,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 26001.010",
+        "DI 26001.015",
+        "DI 26005.001",
+        "DI 26005.005",
+        "DI 26001.001"
+      ]
+    },
+    "Handbook §600–699": {
+      "total": 23,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0620",
+        "HBK 0621",
+        "HBK 0622",
+        "HBK 0623",
+        "HBK 0600"
+      ]
+    },
+    "DI 401 — Disability": {
+      "total": 22,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 40105.005",
+        "DI 40105.010",
+        "DI 40105.055",
+        "DI 40115.020",
+        "DI 40115.010"
+      ]
+    },
+    "DI 270 — Disability": {
+      "total": 22,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 27001.001",
+        "DI 27001.005",
+        "DI 27001.010",
+        "DI 27010.001",
+        "DI 27010.005"
+      ]
+    },
+    "Handbook §1000–1099": {
+      "total": 21,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1013",
+        "HBK 1014",
+        "HBK 1000",
+        "HBK 1001",
+        "HBK 1002"
+      ]
+    },
+    "Handbook §1500–1599": {
+      "total": 21,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 1511",
+        "HBK 1512",
+        "HBK 1500",
+        "HBK 1501",
+        "HBK 1502"
+      ]
+    },
+    "DI 527 — Disability": {
+      "total": 20,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 52715.010",
+        "DI 52715.015",
+        "DI 52715.020",
+        "DI 52755.030",
+        "DI 52707.001"
+      ]
+    },
+    "Handbook §2000–2099": {
+      "total": 20,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2014",
+        "HBK 2003",
+        "HBK 2000",
+        "HBK 2001",
+        "HBK 2002"
+      ]
+    },
+    "DI 290 — Disability": {
+      "total": 19,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 29025.005",
+        "DI 29025.007",
+        "DI 29025.008",
+        "DI 29001.010",
+        "DI 29005.030"
+      ]
+    },
+    "DI 300 — Disability": {
+      "total": 18,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 30001.010",
+        "DI 30001.600",
+        "DI 30001.001",
+        "DI 30001.200",
+        "DI 30001.005"
+      ]
+    },
+    "SI 017 — SSI": {
+      "total": 18,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01730.040",
+        "SI 01730.045",
+        "SI 01730.046",
+        "SI 01730.060",
+        "SI 01730.010"
+      ]
+    },
+    "Handbook §200–299": {
+      "total": 17,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0204",
+        "HBK 0200",
+        "HBK 0201",
+        "HBK 0202",
+        "HBK 0203"
+      ]
+    },
+    "DI 295 — Disability": {
+      "total": 16,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 29505.005",
+        "DI 29501.040",
+        "DI 29501.045",
+        "DI 29501.050",
+        "DI 29505.001"
+      ]
+    },
+    "DI 145 — Disability": {
+      "total": 16,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 14510.020",
+        "DI 14510.025",
+        "DI 14510.030",
+        "DI 14510.035",
+        "DI 14510.007"
+      ]
+    },
+    "Handbook §2600–2699": {
+      "total": 16,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2600",
+        "HBK 2601",
+        "HBK 2602",
+        "HBK 2603",
+        "HBK 2604"
+      ]
+    },
+    "SI 012 — SSI": {
+      "total": 16,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01220.001",
+        "SI 01210.100",
+        "SI 01210.200",
+        "SI 01210.300",
+        "SI 01210.400"
+      ]
+    },
+    "DI 440 — Disability": {
+      "total": 15,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 44005.020",
+        "DI 44001.135",
+        "DI 44001.140",
+        "DI 44001.165",
+        "DI 44005.015"
+      ]
+    },
+    "DI 806 — Disability": {
+      "total": 15,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 80630.030",
+        "DI 80630.001",
+        "DI 80630.010",
+        "DI 80630.020",
+        "DI 80630.040"
+      ]
+    },
+    "SI 021 — SSI": {
+      "total": 13,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 02101.006",
+        "SI 02101.007",
+        "SI 02101.008",
+        "SI 02101.010",
+        "SI 02101.020"
+      ]
+    },
+    "DI 135 — Disability": {
+      "total": 13,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 13501.001",
+        "DI 13501.005",
+        "DI 13501.010",
+        "DI 13510.025",
+        "DI 13501.015"
+      ]
+    },
+    "DI 808 — Disability": {
+      "total": 13,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 80830.001",
+        "DI 80830.040",
+        "DI 80830.060",
+        "DI 80830.100",
+        "DI 80830.010"
+      ]
+    },
+    "DI 205 — Disability": {
+      "total": 13,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 20503.003",
+        "DI 20502.001",
+        "DI 20502.005",
+        "DI 20502.010",
+        "DI 20502.015"
+      ]
+    },
+    "HA 015 — Hearings & Appeals": {
+      "total": 12,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 01510.019",
+        "HA 01510.022",
+        "HA 01510.023",
+        "HA 01530.020",
+        "HA 01530.021"
+      ]
+    },
+    "DI 410 — Disability": {
+      "total": 11,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 41001.020",
+        "DI 41005.010",
+        "DI 41005.015",
+        "DI 41005.020",
+        "DI 41001.001"
+      ]
+    },
+    "DI 201 — Disability": {
+      "total": 11,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 20101.001",
+        "DI 20101.005",
+        "DI 20101.010",
+        "DI 20101.015",
+        "DI 20101.020"
+      ]
+    },
+    "DI 315 — Disability": {
+      "total": 10,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 31515.265",
+        "DI 31515.001",
+        "DI 31515.200",
+        "DI 31515.201",
+        "DI 31515.203"
+      ]
+    },
+    "GN 004 — Payment & Overpayments": {
+      "total": 9,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "GN 00401.005",
+        "GN 00401.020",
+        "GN 00401.025",
+        "GN 00401.010",
+        "GN 00401.015"
+      ]
+    },
+    "Handbook §2500–2599": {
+      "total": 9,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2501",
+        "HBK 2502",
+        "HBK 2500",
+        "HBK 2503",
+        "HBK 2504"
+      ]
+    },
+    "DI 310 — Disability": {
+      "total": 9,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 31001.010",
+        "DI 31005.010",
+        "DI 31005.020",
+        "DI 31005.035",
+        "DI 31001.001"
+      ]
+    },
+    "SI 018 — SSI": {
+      "total": 8,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 01801.310",
+        "SI 01801.005",
+        "SI 01801.010",
+        "SI 01801.014",
+        "SI 01801.040"
+      ]
+    },
+    "RS 030 — Retirement/Survivors": {
+      "total": 7,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 03001.800",
+        "RS 03001.100",
+        "RS 03001.300",
+        "RS 03001.400",
+        "RS 03001.500"
+      ]
+    },
+    "DI 515 — Disability": {
+      "total": 7,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 51501.015",
+        "DI 51501.020",
+        "DI 51501.025",
+        "DI 51501.030",
+        "DI 51501.001"
+      ]
+    },
+    "DI 710 — Disability": {
+      "total": 6,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 71001.010",
+        "DI 71001.030",
+        "DI 71005.001",
+        "DI 71005.005",
+        "DI 71001.070"
+      ]
+    },
+    "DI 700 — Disability": {
+      "total": 6,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 70015.001",
+        "DI 70025.001",
+        "DI 70005.001",
+        "DI 70005.005",
+        "DI 70010.001"
+      ]
+    },
+    "DI 285 — Disability": {
+      "total": 6,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 28501.025",
+        "DI 28501.001",
+        "DI 28501.010",
+        "DI 28501.015",
+        "DI 28501.020"
+      ]
+    },
+    "DI 525 — Disability": {
+      "total": 6,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 52522.001",
+        "DI 52522.005",
+        "DI 52501.001",
+        "DI 52520.001",
+        "DI 52520.005"
+      ]
+    },
+    "RS 015 — Retirement/Survivors": {
+      "total": 5,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 01505.044",
+        "RS 01505.031",
+        "RS 01505.032",
+        "RS 01505.035",
+        "RS 01505.042"
+      ]
+    },
+    "DI 100 — Disability": {
+      "total": 5,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 10005.015",
+        "DI 10005.001",
+        "DI 10005.005",
+        "DI 10005.010",
+        "DI 10005.020"
+      ]
+    },
+    "DI 240 — Disability": {
+      "total": 5,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 24001.005",
+        "DI 24001.010",
+        "DI 24005.001",
+        "DI 24001.015",
+        "DI 24001.025"
+      ]
+    },
+    "DI 900 — Disability": {
+      "total": 4,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 90070.900",
+        "DI 90070.041",
+        "DI 90070.050",
+        "DI 90070.060"
+      ]
+    },
+    "HI 022 — Health Insurance / Medicare": {
+      "total": 4,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 02201.010",
+        "HI 02201.001",
+        "HI 02201.005",
+        "HI 02201.015"
+      ]
+    },
+    "SI 029 — SSI": {
+      "total": 4,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "SI 02901.500",
+        "SI 02901.510",
+        "SI 02901.520",
+        "SI 02901.600"
+      ]
+    },
+    "HA 025 — Hearings & Appeals": {
+      "total": 4,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "HA 02530.001",
+        "HA 02530.003",
+        "HA 02530.004",
+        "HA 02520.001"
+      ]
+    },
+    "DI 001 — Disability": {
+      "total": 2,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 00115.001",
+        "DI 00115.015"
+      ]
+    },
+    "DI 456 — Disability": {
+      "total": 2,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 45605.001",
+        "DI 45605.002"
+      ]
+    },
+    "DI 805 — Disability": {
+      "total": 2,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 80550.001",
+        "DI 80550.010"
+      ]
+    },
+    "DI 125 — Disability": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 12502.001"
+      ]
+    },
+    "DI 425 — Disability": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 42502.001"
+      ]
+    },
+    "Handbook §2400–2499": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2400"
+      ]
+    },
+    "DI 220 — Disability": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 22001.001"
+      ]
+    },
+    "Handbook §2200–2299": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2200"
+      ]
+    },
+    "Handbook §2300–2399": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 2300"
+      ]
+    },
+    "DI 325 — Disability": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 32502.001"
+      ]
+    },
+    "DI 327 — Disability": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 2,
+      "uncited_sample": [
+        "DI 32701.001"
+      ]
+    },
+    "HI 012 — Health Insurance / Medicare": {
+      "total": 1,
+      "cited": 0,
+      "coverage_pct": 0,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 01205.005"
+      ]
+    },
+    "20 — Other": {
+      "total": 1981,
+      "cited": 4,
+      "coverage_pct": 0.2,
+      "tier": 1,
+      "uncited_sample": [
+        "20 CFR 404.2117",
+        "20 CFR 416.586",
+        "20 CFR 404.1683",
+        "20 CFR 416.1565",
+        "20 CFR 404.923"
+      ]
+    },
+    "HI 008 — Health Insurance / Medicare": {
+      "total": 302,
+      "cited": 2,
+      "coverage_pct": 0.7,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 00820.060",
+        "HI 00801.248",
+        "HI 00801.251",
+        "HI 00801.001",
+        "HI 00801.135"
+      ]
+    },
+    "GN 002 — Filing Requirements & Proofs": {
+      "total": 109,
+      "cited": 1,
+      "coverage_pct": 0.9,
+      "tier": 1,
+      "uncited_sample": [
+        "GN 00204.030",
+        "GN 00206.145",
+        "GN 00210.005",
+        "GN 00210.006",
+        "GN 00210.010"
+      ]
+    },
+    "RS 025 — Retirement/Survivors": {
+      "total": 72,
+      "cited": 1,
+      "coverage_pct": 1.4,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 02501.080",
+        "RS 02501.095",
+        "RS 02501.145",
+        "RS 02501.150",
+        "RS 02501.155"
+      ]
+    },
+    "RS 006 — Spousal & Divorced Spouse Benefits": {
+      "total": 211,
+      "cited": 4,
+      "coverage_pct": 1.9,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 00601.020",
+        "RS 00601.120",
+        "RS 00605.005",
+        "RS 00605.010",
+        "RS 00605.030"
+      ]
+    },
+    "RS 002 — Self-Employment": {
+      "total": 147,
+      "cited": 3,
+      "coverage_pct": 2,
+      "tier": 1,
+      "uncited_sample": [
+        "RS 00203.080",
+        "RS 00203.085",
+        "RS 00204.095",
+        "RS 00208.015",
+        "RS 00208.020"
+      ]
+    },
+    "Handbook §400–499": {
+      "total": 34,
+      "cited": 1,
+      "coverage_pct": 2.9,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0423",
+        "HBK 0424",
+        "HBK 0400",
+        "HBK 0401",
+        "HBK 0402"
+      ]
+    },
+    "Handbook §300–399": {
+      "total": 47,
+      "cited": 2,
+      "coverage_pct": 4.3,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0310",
+        "HBK 0327",
+        "HBK 0328",
+        "HBK 0300",
+        "HBK 0301"
+      ]
+    },
+    "HI 011 — Health Insurance / Medicare": {
+      "total": 80,
+      "cited": 8,
+      "coverage_pct": 10,
+      "tier": 1,
+      "uncited_sample": [
+        "HI 01140.025",
+        "HI 01120.060",
+        "HI 01120.065",
+        "HI 01190.015",
+        "HI 01190.020"
+      ]
+    },
+    "Handbook §700–799": {
+      "total": 40,
+      "cited": 4,
+      "coverage_pct": 10,
+      "tier": 1,
+      "uncited_sample": [
+        "HBK 0700",
+        "HBK 0701",
+        "HBK 0702",
+        "HBK 0703",
+        "HBK 0704"
+      ]
+    }
+  },
+  "suggested_next": [
+    {
+      "cluster": "GN 003 — Evidence of Age/Relationship",
+      "section_count": 588,
+      "sample_sections": [
+        "GN 00312.310",
+        "GN 00312.294",
+        "GN 00302.585",
+        "GN 00306.285",
+        "GN 00306.535"
+      ]
+    },
+    {
+      "cluster": "RS 020 — Retirement/Survivors",
+      "section_count": 312,
+      "sample_sections": [
+        "RS 02001.005",
+        "RS 02001.090",
+        "RS 02001.145",
+        "RS 02001.180",
+        "RS 02001.190"
+      ]
+    },
+    {
+      "cluster": "RS 014 — Retirement/Survivors",
+      "section_count": 187,
+      "sample_sections": [
+        "RS 01403.130",
+        "RS 01401.210",
+        "RS 01401.090",
+        "RS 01402.020",
+        "RS 01402.030"
+      ]
+    },
+    {
+      "cluster": "HI 006 — Health Insurance / Medicare",
+      "section_count": 180,
+      "sample_sections": [
+        "HI 00610.210",
+        "HI 00610.220",
+        "HI 00620.050",
+        "HI 00620.060",
+        "HI 00630.001"
+      ]
+    },
+    {
+      "cluster": "RS 018 — Retirement/Survivors",
+      "section_count": 128,
+      "sample_sections": [
+        "RS 01801.010",
+        "RS 01802.273",
+        "RS 01802.274",
+        "RS 01802.300",
+        "RS 01802.400"
+      ]
+    },
+    {
+      "cluster": "HI 010 — Health Insurance / Medicare",
+      "section_count": 115,
+      "sample_sections": [
+        "HI 01001.041",
+        "HI 01001.260",
+        "HI 01001.155",
+        "HI 01001.315",
+        "HI 01005.025"
+      ]
+    },
+    {
+      "cluster": "GN 005 — Reconsiderations & Appeals",
+      "section_count": 107,
+      "sample_sections": [
+        "GN 00506.300",
+        "GN 00506.400",
+        "GN 00502.134",
+        "GN 00502.181",
+        "GN 00502.183"
+      ]
+    },
+    {
+      "cluster": "Handbook §2100–2199",
+      "section_count": 97,
+      "sample_sections": [
+        "HBK 2160",
+        "HBK 2109",
+        "HBK 2100",
+        "HBK 2101",
+        "HBK 2116"
+      ]
+    }
+  ]
+}

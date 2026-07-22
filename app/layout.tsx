@@ -2,6 +2,7 @@
 // Reference pages are self-contained HTML documents (ReferencePageComponent)
 // and don't use this layout. The layout serves the KB index/category pages.
 import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
   title: 'NSSA Knowledge Base',
@@ -16,5 +17,9 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
 }

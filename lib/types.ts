@@ -35,9 +35,13 @@ export interface SourceChunk {
 // ─── Layer 2 ──────────────────────────────────────────────────────────────────
 
 export interface BodySection {
+  type?: 'prose' | 'table';   // defaults to 'prose' for backward compat
   heading: string;
   prose: string;
   citation_ref?: string;       // section_number that sourced this claim
+  // Table-specific fields (only used when type === 'table')
+  headers?: string[];          // column header labels
+  rows?: string[][];           // row data [row][col]
 }
 
 export interface WorkedExample {
@@ -60,7 +64,11 @@ export interface ReferencePage {
   id: string;
   slug: string;
   category: Category;
+  /** Short canonical label — used in breadcrumbs, admin queue, nav. */
   title: string;
+  /** SEO-optimised headline rendered as the page <h1>. Keyword-rich, 8–12 words.
+   *  Falls back to title if not set (older records). */
+  h1?: string | null;
   seo_title: string;
   meta_description: string;
   eyebrow: string | null;
@@ -76,8 +84,20 @@ export interface ReferencePage {
   source_last_verified: string | null;   // ISO date
   date_published: string | null;         // ISO date
   date_modified: string | null;          // ISO date
+  approved_by: string | null;            // display name of approving reviewer
+  approved_at: string | null;            // ISO timestamp
   created_at: string;
   updated_at: string;
+}
+
+// ─── KB Reviewers ────────────────────────────────────────────────────────────
+
+export interface KbReviewer {
+  id: string;
+  email: string;
+  display_name: string;
+  categories: Category[];
+  created_at: string;
 }
 
 // ─── Phase 2 ─────────────────────────────────────────────────────────────────
@@ -122,4 +142,7 @@ export interface OctoparsePOMSRow {
 // ─── Normalized row ready for Supabase upsert ─────────────────────────────────
 
 export type SourceDocumentInsert = Omit<SourceDocument, 'id' | 'created_at'>;
-export type ReferencePageInsert = Omit<ReferencePage, 'id' | 'created_at' | 'updated_at'>;
+export type ReferencePageInsert = Omit<ReferencePage, 'id' | 'created_at' | 'updated_at' | 'approved_by' | 'approved_at'> & {
+  approved_by?: string | null;
+  approved_at?: string | null;
+};
