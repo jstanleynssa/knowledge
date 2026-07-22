@@ -203,16 +203,19 @@ function CitationBlock({ source, gap }: { source?: PrimarySource; gap?: string |
 
 
 
-function IrmaaTable({ section }: { section: BodySection }) {
-  const headers = section.headers ?? [];
-  const rows    = section.rows    ?? [];
+function IrmaaTable({ section, category }: { section: BodySection; category?: string }) {
+  const headers  = section.headers ?? [];
+  const rows     = section.rows    ?? [];
+  const isIrmaa  = category === 'irmaa';
   return (
     <div className="irmaa-table-wrapper">
       {section.heading && (
-        <div className="irmaa-table-title">{section.heading}</div>
+        <div className={`irmaa-table-title${isIrmaa ? ' irmaa-table-title--irmaa' : ''}`}>
+          {section.heading}
+        </div>
       )}
       <div style={{ overflowX: 'auto' }}>
-        <table className="irmaa-table">
+        <table className={`irmaa-table${isIrmaa ? ' irmaa-table--irmaa' : ''}`}>
           <thead>
             <tr>
               {headers.map((h, i) => <th key={i}>{h}</th>)}
@@ -236,16 +239,17 @@ function IrmaaTable({ section }: { section: BodySection }) {
   );
 }
 
-function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback }: {
+function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback, category }: {
   section: BodySection;
   sourceIndex: Map<string, PrimarySource>;
   sectionIndex?: number;
   onSectionFeedback?: (index: number, type: 'verified' | 'flag', note?: string) => void;
+  category?: string;
 }) {
   if (section.type === 'table') {
     return (
       <>
-        <IrmaaTable section={section} />
+        <IrmaaTable section={section} category={category} />
         {sectionIndex !== undefined && onSectionFeedback && (
           <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} />
         )}
@@ -574,7 +578,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             })()}
           </div>
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} />
           ))}
           {page.worked_example && (() => {
             const we = page.worked_example!;
@@ -752,7 +756,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
 
           {/* Body sections */}
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} />
           ))}
 
           {/* Worked example — standalone HTML document */}

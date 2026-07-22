@@ -76,3 +76,28 @@ body {
 .irmaa-table th:last-child {
   text-align: right;
 }
+
+/* IRMAA pages — red variant */
+.irmaa-table-title--irmaa {
+  background: #c13e4e;          /* NSSA Red-4 */
+  color: #ffffff;
+  border-color: #7f1424;        /* NSSA Red-6 */
+}
+
+.irmaa-table--irmaa {
+  border-color: #ed8c9a;        /* NSSA Red-2 */
+}
+
+.irmaa-table--irmaa th {
+  background: #f0d4d8;          /* NSSA Red-1 */
+  color: #7f1424;               /* NSSA Red-6 */
+  border-color: #ed8c9a;
+}
+
+.irmaa-table--irmaa td {
+  border-color: #f0d4d8;
+}
+
+.irmaa-table--irmaa tr:nth-child(even) td {
+  background: #fce8eb;
+}

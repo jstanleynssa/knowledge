@@ -188,6 +188,14 @@ export function ReviewEditor({
   const removeSection = (i: number) =>
     set('body_sections', fields.body_sections.filter((_, idx) => idx !== i));
 
+  const moveSection = (i: number, dir: -1 | 1) => {
+    const next = [...fields.body_sections];
+    const target = i + dir;
+    if (target < 0 || target >= next.length) return;
+    [next[i], next[target]] = [next[target], next[i]];
+    set('body_sections', next);
+  };
+
   const updateTableHeader = (si: number, ci: number, val: string) => {
     const sections = fields.body_sections.map((s, idx) => {
       if (idx !== si) return s;
@@ -389,7 +397,11 @@ export function ReviewEditor({
                       <span style={chipLabel}>
                         {section.type === 'table' ? '📊 Table' : `Section ${i + 1}`}
                       </span>
-                      <button onClick={() => removeSection(i)} style={removeBtnStyle}>Remove</button>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <button onClick={() => moveSection(i, -1)} disabled={i === 0} style={{ ...removeBtnStyle, color: '#6b7280', fontSize: 15, opacity: i === 0 ? 0.3 : 1 }} title="Move up">↑</button>
+                        <button onClick={() => moveSection(i, 1)} disabled={i === fields.body_sections.filter(s => !(s as any)._review_note).length - 1} style={{ ...removeBtnStyle, color: '#6b7280', fontSize: 15, opacity: i === fields.body_sections.filter(s => !(s as any)._review_note).length - 1 ? 0.3 : 1 }} title="Move down">↓</button>
+                        <button onClick={() => removeSection(i)} style={removeBtnStyle}>Remove</button>
+                      </div>
                     </div>
 
                     {/* Per-section insert-below strip */}
