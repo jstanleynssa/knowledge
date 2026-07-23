@@ -79,5 +79,39 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true });
+  // Generate a brief learning analysis for correct/reject/approve feedback
+  let analysis = '';
+  try {
+    const feedbackLabel = feedback_type === 'approve' ? 'verified as correct'
+      : feedback_type === 'correct' ? 'corrected with a suggestion'
+      : 'flagged as wrong';
+    const analysisRes = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      temperature: 0.3,
+      max_tokens: 180,
+      messages: [
+        {
+          role: 'system',
+          content: `You are a Social Security and IRMAA research AI that just received feedback on one of your answers. 
+In 1-2 concise sentences, explain what you learned or confirmed from this feedback. 
+Be specific about the rule, section, or concept involved. Speak in first person. Be professional and precise.`,
+        },
+        {
+          role: 'user',
+          content: [
+            `Question: ${question}`,
+            `Feedback: ${feedbackLabel}`,
+            correction_note ? `Reviewer note: ${correction_note}` : '',
+            correction_tags?.length ? `Issue tags: ${(correction_tags as string[]).join(', ')}` : '',
+            `Answer excerpt: ${original_answer.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300)}`,
+          ].filter(Boolean).join('\n'),
+        },
+      ],
+    });
+    analysis = analysisRes.choices[0].message.content?.trim() ?? '';
+  } catch (e) {
+    console.error('feedback analysis error:', e);
+  }
+
+  return NextResponse.json({ ok: true, analysis });
 }

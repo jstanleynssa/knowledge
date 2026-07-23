@@ -30,6 +30,7 @@ interface Turn {
   loading?: boolean;
   error?: string;
   feedback?: 'approve' | 'correct' | 'reject' | null;
+  feedbackAnalysis?: string;
 }
 
 const VERDICT_STYLE: Record<string, { bg: string; color: string; border: string; label: string }> = {
@@ -56,14 +57,33 @@ function FeedbackBar({ turn, onFeedback }: { turn: Turn; onFeedback: (type: 'app
   const BC = '#cdc4ad'; const BR = '#4a3c20'; const RM = '#b02a34';
 
   if (turn.feedback) {
+    const confirmColor = turn.feedback === 'approve' ? '#059669' : turn.feedback === 'correct' ? CITE : '#DC2626';
+    const confirmLabel = turn.feedback === 'approve' ? 'Verified' : turn.feedback === 'correct' ? 'Suggestion saved' : 'Flagged for review';
     return (
-      <div style={{ fontSize: 12, color: turn.feedback === 'approve' ? '#059669' : turn.feedback === 'correct' ? CITE : '#DC2626', marginTop: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          {turn.feedback === 'approve'
-            ? <path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            : <path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>}
-        </svg>
-        {turn.feedback === 'approve' ? 'Verified' : turn.feedback === 'correct' ? 'Suggestion saved' : 'Flagged for review'}
+      <div>
+        <div style={{ fontSize: 12, color: confirmColor, marginTop: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            {turn.feedback === 'approve'
+              ? <path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              : <path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>}
+          </svg>
+          {confirmLabel}
+        </div>
+        {turn.feedbackAnalysis && (
+          <div style={{
+            marginTop: 8,
+            background: '#F0F9FF',
+            border: '1px solid #BAE6FD',
+            borderRadius: 6,
+            padding: '10px 14px',
+            fontSize: 13,
+            color: '#0369A1',
+            lineHeight: 1.55,
+          }}>
+            <span style={{ fontWeight: 700, fontSize: 11, letterSpacing: '.08em', textTransform: 'uppercase', display: 'block', marginBottom: 4, color: '#0284C7' }}>What I learned</span>
+            {turn.feedbackAnalysis}
+          </div>
+        )}
       </div>
     );
   }
@@ -268,23 +288,31 @@ export default function AskPage() {
     const turn = turns[turnIndex];
     if (!turn?.answer) return;
 
-    await fetch('/api/feedback', {
+    // Optimistically mark feedback so the UI responds immediately
+    setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedback: type } : t));
+
+    const res = await fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        question:        turn.question,
-        original_answer: turn.answer.answer,
+        question:         turn.question,
+        original_answer:  turn.answer.answer,
         corrected_answer: type === 'correct' ? note : undefined,
-        verdict:         turn.answer.verdict,
-        primary_sources: turn.answer.primary_sources,
-        sections_used:   turn.answer.sections_used,
-        feedback_type:   type,
-        correction_note: note,
-        category:        (turn.answer as any).category ?? 'social-security',
+        verdict:          turn.answer.verdict,
+        primary_sources:  turn.answer.primary_sources,
+        sections_used:    turn.answer.sections_used,
+        feedback_type:    type,
+        correction_note:  note,
+        category:         (turn.answer as any).category ?? 'social-security',
       }),
-    }).catch(() => {});
+    }).catch(() => null);
 
-    setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedback: type } : t));
+    if (res?.ok) {
+      const data = await res.json().catch(() => ({}));
+      if (data.analysis) {
+        setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
+      }
+    }
   }
 
   async function handleSubmit(q?: string) {
@@ -446,6 +474,46 @@ export default function AskPage() {
 
         <div ref={bottomRef} />
       </div>
+
+      {/* Follow-up input bar — sticky at bottom when conversation is active */}
+      {!isEmpty && (
+        <div style={{
+          borderTop: `1px solid ${RULE}`,
+          background: PAPER,
+          padding: '12px 24px 14px',
+          flexShrink: 0,
+        }}>
+          <div style={{ maxWidth: 760, margin: '0 auto' }}>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+                placeholder="Ask a follow-up question…"
+                rows={2}
+                style={{
+                  flex: 1, padding: '10px 14px', fontSize: 15, lineHeight: 1.5,
+                  border: `1.5px solid ${NAVY}`, borderRadius: 8, outline: 'none',
+                  resize: 'none', fontFamily: 'inherit', color: '#16202B', background: '#fff',
+                }}
+              />
+              <button
+                onClick={() => handleSubmit()}
+                disabled={!input.trim()}
+                style={{
+                  padding: '10px 18px', borderRadius: 8, border: 'none',
+                  background: !input.trim() ? '#E5E7EB' : NAVY,
+                  color: !input.trim() ? '#9CA3AF' : '#fff',
+                  fontWeight: 700, fontSize: 14, cursor: !input.trim() ? 'default' : 'pointer',
+                  fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0,
+                }}
+              >Ask &rarr;</button>
+            </div>
+            <p style={{ margin: '5px 0 0', fontSize: 11, color: '#9CA3AF' }}>Enter to send &nbsp;&middot;&nbsp; Shift+Enter for new line</p>
+          </div>
+        </div>
+      )}
 
       {/* Footer */}
       {!isEmpty && (
