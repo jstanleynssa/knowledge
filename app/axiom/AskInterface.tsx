@@ -186,11 +186,14 @@ const EXAMPLES = [
 ];
 
 // ── Feedback bar ──────────────────────────────────────────────────────────────
-function UpdatedResponsePanel({ original, revised, onApprove, onReject }: {
+function UpdatedResponsePanel({ original, revised, onApprove, onSuggestAgain }: {
   original: string; revised: string;
-  onApprove: () => void; onReject: () => void;
+  onApprove: () => void;
+  onSuggestAgain: (note: string) => void;
 }) {
-  const [view, setView] = useState<'diff'|'clean'>('diff');
+  const [view, setView]         = useState<'diff'|'clean'>('diff');
+  const [mode, setMode]         = useState<'idle'|'suggesting'>('idle');
+  const [note, setNote]         = useState('');
   const diffHtml = diffWords(original, revised);
   return (
     <div style={{ marginTop: 8 }}>
@@ -216,16 +219,51 @@ function UpdatedResponsePanel({ original, revised, onApprove, onReject }: {
           <span><del style={{ background: 'rgba(220,38,38,0.15)', color: '#F87171', textDecoration: 'line-through', borderRadius: 2, padding: '0 4px' }}>Removed</del></span>
         </div>
       )}
-      {/* Confirm/reject */}
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-        <button onClick={onApprove} style={{ fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          Confirm — fix worked
-        </button>
-        <button onClick={onReject} style={{ fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6, border: `1px solid rgba(220,38,38,0.35)`, background: 'transparent', color: '#F87171', cursor: 'pointer' }}>
-          Still not right
-        </button>
-      </div>
+      {/* Confirm / Still not right */}
+      {mode === 'idle' && (
+        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+          <button onClick={onApprove} style={{ fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            Confirm — fix worked
+          </button>
+          <button
+            onClick={() => setMode('suggesting')}
+            style={{ fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6, border: `1px solid ${BORDER}`, background: 'transparent', color: MUTED, cursor: 'pointer' }}
+          >
+            Still not right
+          </button>
+        </div>
+      )}
+
+      {/* Another suggestion form */}
+      {mode === 'suggesting' && (
+        <div style={{ marginTop: 12, background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 8, padding: '14px 16px' }}>
+          <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: TEXT }}>What still needs to be corrected?</p>
+          <textarea
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="Describe what’s still wrong or what should be changed…"
+            rows={3}
+            autoFocus
+            style={{ width: '100%', fontSize: 14, color: TEXT, background: BG, border: `1px solid ${BORDER}`, borderRadius: 6, padding: '8px 10px', resize: 'none', fontFamily: 'inherit', lineHeight: 1.5, boxSizing: 'border-box' as const, outline: 'none' }}
+          />
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+            <button
+              onClick={() => { if (note.trim()) { onSuggestAgain(note); setNote(''); setMode('idle'); } }}
+              disabled={!note.trim()}
+              style={{ fontSize: 13, fontWeight: 700, padding: '6px 16px', borderRadius: 6, border: 'none', background: note.trim() ? ACCENT : BORDER, color: '#fff', cursor: note.trim() ? 'pointer' : 'default', fontFamily: 'inherit' }}
+            >
+              Rewrite with this correction
+            </button>
+            <button
+              onClick={() => { setMode('idle'); setNote(''); }}
+              style={{ fontSize: 13, color: MUTED, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontFamily: 'inherit' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -291,15 +329,11 @@ function FeedbackBar({
                 original={turn.answer?.answer ?? ''}
                 revised={turn.rerunAnswer.answer}
                 onApprove={() => onRerunFeedback('approve')}
-                onReject={() => onRerunFeedback('reject')}
+                onSuggestAgain={(note) => onFeedback('correct', note)}
               />
             )}
 
-            {turn.rerunFeedback === 'reject' && (
-              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 8, color: '#DC2626' }}>
-                ✗ Flagged for further review
-              </div>
-            )}
+
           </div>
         )}
       </div>
