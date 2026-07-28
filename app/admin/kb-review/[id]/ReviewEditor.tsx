@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition, useCallback, CSSProperties } from 'react';
+import { useState, useTransition, useCallback, useEffect, useRef, CSSProperties } from 'react';
 import { useRouter } from 'next/navigation';
 import type { ReferencePage, BodySection, FaqItem, WorkedExample } from '@/lib/types';
 import { ReferencePageComponent } from '@/components/ReferencePage';
@@ -47,11 +47,45 @@ export function ReviewEditor({
   }));
   const [isPending, startTransition] = useTransition();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFirstRender = useRef(true);
+  const isSaving = useRef(false);
   const [showSuperseded, setShowSuperseded] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({});
   const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({}); 
   const [rewritingSection, setRewritingSection] = useState<Record<number, boolean>>({});
   const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({}); 
+
+  // ── Autosave: debounce 3s after any field change ─────────────────────
+  useEffect(() => {
+    // Skip the initial mount — don’t save when the page first loads
+    if (isFirstRender.current) { isFirstRender.current = false; return; }
+    // Don’t queue an autosave while a manual save or approve is in progress
+    if (isSaving.current || isPending) return;
+
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    setAutoSaveStatus('idle');
+
+    autoSaveTimer.current = setTimeout(async () => {
+      if (isSaving.current || isPending) return;
+      isSaving.current = true;
+      setAutoSaveStatus('saving');
+      try {
+        await saveDraft(page.id, fields);
+        setAutoSaveStatus('saved');
+        // Fade back to idle after 2s
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      } catch {
+        setAutoSaveStatus('idle');
+      } finally {
+        isSaving.current = false;
+      }
+    }, 3000);
+
+    return () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fields]);
 
   function persistFeedback(sectionType: 'body' | 'faq', index: number, type: 'verified' | 'flag', note?: string) {
     const section = sectionType === 'body' ? fields.body_sections[index] : null;
@@ -164,15 +198,20 @@ export function ReviewEditor({
   // ─── Actions ───────────────────────────────────────────────────────────────
 
   function handleSave() {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    isSaving.current = true;
     setSaveStatus('saving');
     startTransition(async () => {
       try {
         await saveDraft(page.id, fields);
         setSaveStatus('saved');
+        setAutoSaveStatus('idle');
         setTimeout(() => setSaveStatus('idle'), 2500);
       } catch (e) {
         setSaveStatus('error');
         alert('Save failed: ' + (e as Error).message);
+      } finally {
+        isSaving.current = false;
       }
     });
   }
@@ -358,6 +397,8 @@ export function ReviewEditor({
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexShrink: 0 }}>
           {saveStatus === 'saved' && <span style={{ fontSize: 13, color: '#86efac' }}>✓ Saved</span>}
           {saveStatus === 'error' && <span style={{ fontSize: 13, color: '#f87171' }}>Save failed</span>}
+          {autoSaveStatus === 'saving' && <span style={{ fontSize: 12, color: '#93C5FD', opacity: 0.8 }}>Autosaving…</span>}
+          {autoSaveStatus === 'saved'  && <span style={{ fontSize: 12, color: '#86efac', opacity: 0.8 }}>✓ Autosaved</span>}
 
           <a
             href={`/preview/${page.id}`}
