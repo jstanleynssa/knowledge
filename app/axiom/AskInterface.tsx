@@ -15,6 +15,82 @@ const DIM      = '#4A6070';
 const CITE     = '#5BA3D0';
 const CITE_BG  = '#0D2033';
 
+// ── Word-level diff (dark theme) ──────────────────────────────────────────
+function stripHtml(html: string): string {
+  return html.replace(/<br\s*\/?>/gi,' ').replace(/<\/p>/gi,' ').replace(/<\/li>/gi,' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+}
+function diffWords(original: string, revised: string): string {
+  const a = stripHtml(original).split(' ');
+  const b = stripHtml(revised).split(' ');
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for (let i=1;i<=m;i++) for (let j=1;j<=n;j++) dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  const ops: Array<{type:'same'|'add'|'del';word:string}> = [];
+  let i=m, j=n;
+  while(i>0||j>0){
+    if(i>0&&j>0&&a[i-1]===b[j-1]){ops.unshift({type:'same',word:b[j-1]});i--;j--;}
+    else if(j>0&&(i===0||dp[i][j-1]>=dp[i-1][j])){ops.unshift({type:'add',word:b[j-1]});j--;}
+    else{ops.unshift({type:'del',word:a[i-1]});i--;}
+  }
+  return ops.map(op=>{
+    const e=op.word.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if(op.type==='same') return e;
+    if(op.type==='add')  return `<ins style="background:rgba(16,185,129,0.2);color:#34D399;text-decoration:none;border-radius:2px;padding:0 1px">${e}</ins>`;
+    return `<del style="background:rgba(220,38,38,0.15);color:#F87171;text-decoration:line-through;border-radius:2px;padding:0 1px">${e}</del>`;
+  }).join(' ');
+}
+
+// ── Loading steps ──────────────────────────────────────────────────────
+const LOADING_STEPS = [
+  { label: 'Searching primary sources',  detail: 'POMS · CFR · SSA Handbook',  ms: 2500 },
+  { label: 'Matching relevant sections', detail: 'Hybrid retrieval · scoring', ms: 3500 },
+  { label: 'Checking verified answers',  detail: 'Expert-reviewed corpus',     ms: 2000 },
+  { label: 'Grounding the response',     detail: 'o4-mini · chain-of-thought', ms: 99999 },
+];
+
+function LoadingBubble() {
+  const [step, setStep] = useState(0);
+  const [dots, setDots] = useState('');
+  useEffect(() => {
+    if (step >= LOADING_STEPS.length - 1) return;
+    const t = setTimeout(() => setStep(s => Math.min(s+1, LOADING_STEPS.length-1)), LOADING_STEPS[step].ms);
+    return () => clearTimeout(t);
+  }, [step]);
+  useEffect(() => {
+    const t = setInterval(() => setDots(d => d.length >= 3 ? '' : d+'.'), 400);
+    return () => clearInterval(t);
+  }, []);
+  const current = LOADING_STEPS[step];
+  return (
+    <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+      <div style={{ position: 'relative', flexShrink: 0, marginTop: 2 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: ACCENT, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>A</div>
+        <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `2px solid ${ACCENT}`, opacity: 0.3, animation: 'axiom-pulse 1.4s ease-in-out infinite' }} />
+      </div>
+      <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '4px 16px 16px 16px', padding: '14px 20px', minWidth: 280 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {LOADING_STEPS.slice(0, step+1).map((s, i) => {
+            const active = i === step, completed = i < step;
+            return (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: completed ? ACCENT : 'transparent', border: active ? `2px solid ${ACCENT}` : completed ? 'none' : `1px solid ${BORDER}`, transition: 'all .3s' }}>
+                  {completed && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L3.5 7.5L8.5 2.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  {active && <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT, animation: 'axiom-blink 1s ease-in-out infinite' }} />}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? TEXT : completed ? MUTED : DIM, transition: 'all .3s' }}>{s.label}{active ? dots : ''}</div>
+                  {active && <div style={{ fontSize: 11, color: DIM, marginTop: 1 }}>{s.detail}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <style>{`@keyframes axiom-pulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.4);opacity:0}}@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+    </div>
+  );
+}
+
 type Source = { section_number: string; url: string; tag: string };
 type SectionUsed = { section_number: string; title: string | null; score: number; source_url?: string };
 type Unverified = { value: string; context: string; found_in_uncited?: string };
@@ -59,6 +135,50 @@ const EXAMPLES = [
 ];
 
 // ── Feedback bar ──────────────────────────────────────────────────────────────
+function UpdatedResponsePanel({ original, revised, onApprove, onReject }: {
+  original: string; revised: string;
+  onApprove: () => void; onReject: () => void;
+}) {
+  const [view, setView] = useState<'diff'|'clean'>('diff');
+  const diffHtml = diffWords(original, revised);
+  return (
+    <div style={{ marginTop: 8 }}>
+      {/* Header + toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#059669' }}>Updated Response</div>
+        <div style={{ display: 'flex', borderRadius: 6, overflow: 'hidden', border: `1px solid ${BORDER}` }}>
+          {(['diff','clean'] as const).map(v => (
+            <button key={v} onClick={() => setView(v)} style={{ fontSize: 11, fontWeight: 600, padding: '4px 12px', border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: view===v ? ACCENT : SURFACE, color: view===v ? '#fff' : MUTED }}>
+              {v === 'diff' ? 'Track Changes' : 'Clean'}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Answer */}
+      <div style={{ background: 'rgba(16,185,129,0.05)', border: `1px solid ${view==='diff' ? BORDER : 'rgba(16,185,129,0.25)'}`, borderRadius: 8, padding: '14px 16px', fontSize: 14, color: TEXT, lineHeight: 1.65 }}>
+        <div dangerouslySetInnerHTML={{ __html: view==='diff' ? diffHtml : revised }} />
+      </div>
+      {/* Legend */}
+      {view === 'diff' && (
+        <div style={{ display: 'flex', gap: 16, marginTop: 5, fontSize: 11, color: DIM }}>
+          <span><ins style={{ background: 'rgba(16,185,129,0.2)', color: '#34D399', textDecoration: 'none', borderRadius: 2, padding: '0 4px' }}>Added</ins></span>
+          <span><del style={{ background: 'rgba(220,38,38,0.15)', color: '#F87171', textDecoration: 'line-through', borderRadius: 2, padding: '0 4px' }}>Removed</del></span>
+        </div>
+      )}
+      {/* Confirm/reject */}
+      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <button onClick={onApprove} style={{ fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 6, border: 'none', background: '#059669', color: '#fff', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          Confirm — fix worked
+        </button>
+        <button onClick={onReject} style={{ fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6, border: `1px solid rgba(220,38,38,0.35)`, background: 'transparent', color: '#F87171', cursor: 'pointer' }}>
+          Still not right
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function FeedbackBar({
   turn,
   onFeedback,
@@ -132,43 +252,12 @@ function FeedbackBar({
             )}
 
             {turn.rerunAnswer && !turn.rerunFeedback && (
-              <div style={{
-                marginTop: 8, background: 'rgba(16,185,129,0.05)',
-                border: `1px solid rgba(16,185,129,0.25)`, borderRadius: 8, padding: '14px 16px',
-              }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#059669', marginBottom: 8 }}>
-                  Updated response
-                </div>
-                <div
-                  style={{ fontSize: 14, color: TEXT, lineHeight: 1.65 }}
-                  dangerouslySetInnerHTML={{ __html: turn.rerunAnswer.answer }}
-                />
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button
-                    onClick={() => onRerunFeedback('approve')}
-                    style={{
-                      fontSize: 12, fontWeight: 700, padding: '5px 14px', borderRadius: 6,
-                      border: 'none', background: '#059669', color: '#fff', cursor: 'pointer',
-                      display: 'inline-flex', alignItems: 'center', gap: 5,
-                    }}
-                  >
-                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-                      <path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    Confirm — fix worked
-                  </button>
-                  <button
-                    onClick={() => onRerunFeedback('reject')}
-                    style={{
-                      fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6,
-                      border: `1px solid rgba(220,38,38,0.35)`, background: 'transparent',
-                      color: '#F87171', cursor: 'pointer',
-                    }}
-                  >
-                    Still not right
-                  </button>
-                </div>
-              </div>
+              <UpdatedResponsePanel
+                original={turn.answer?.answer ?? ''}
+                revised={turn.rerunAnswer.answer}
+                onApprove={() => onRerunFeedback('approve')}
+                onReject={() => onRerunFeedback('reject')}
+              />
             )}
 
             {turn.rerunFeedback && (
@@ -650,23 +739,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
           </div>
 
           {/* Loading */}
-          {turn.loading && (
-            <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-              <div style={{
-                width: 32, height: 32, borderRadius: '50%',
-                background: ACCENT, color: '#fff',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 13, fontWeight: 700, flexShrink: 0,
-              }}>A</div>
-              <div style={{
-                background: SURFACE, border: `1px solid ${BORDER}`,
-                borderRadius: '4px 16px 16px 16px',
-                padding: '16px 20px', color: MUTED, fontSize: 14, fontStyle: 'italic',
-              }}>
-                Searching federal regulations and grounding answer…
-              </div>
-            </div>
-          )}
+          {turn.loading && <LoadingBubble />}
 
           {/* Error */}
           {turn.error && (
