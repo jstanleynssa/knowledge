@@ -251,7 +251,7 @@ function renderProse(prose: string): string {
     .replace(/\n/g, '<br>');
 }
 
-function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback, category, learned, rewriting }: {
+function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback, category, learned, rewriting, existingFeedback }: {
   section: BodySection;
   sourceIndex: Map<string, PrimarySource>;
   sectionIndex?: number;
@@ -259,13 +259,14 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
   category?: string;
   learned?: string;
   rewriting?: boolean;
+  existingFeedback?: { type: 'verified' | 'flag'; reviewer_name: string; created_at: string } | null;
 }) {
   if (section.type === 'table') {
     return (
       <>
         <IrmaaTable section={section} category={category} />
         {sectionIndex !== undefined && onSectionFeedback && (
-          <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} learned={learned} rewriting={rewriting} />
+          <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} learned={learned} rewriting={rewriting} existingFeedback={existingFeedback} />
         )}
       </>
     );
@@ -281,7 +282,7 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
       />
       {(cite || gap) && <CitationBlock source={cite ?? undefined} gap={gap} />}
       {sectionIndex !== undefined && onSectionFeedback && (
-        <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} learned={learned} rewriting={rewriting} />
+        <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} learned={learned} rewriting={rewriting} existingFeedback={existingFeedback} />
       )}
     </>
   );
@@ -329,8 +330,9 @@ interface ReferencePageProps {
   onFaqFeedback?: (index: number, type: 'verified' | 'flag', note?: string) => void;
   /** "What I learned" text per section index, set after a suggestion rewrite completes. */
   sectionLearned?: Record<number, string>;
-  /** Section indices currently being rewritten (show loading state). */
   rewritingSection?: Record<number, boolean>;
+  /** Pre-existing section feedback loaded from DB { [index]: { type, reviewer_name, created_at } } */
+  sectionExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
 }
 
 // Scoped CSS for embedded (non-iframe) preview inside the Next.js shell.
@@ -352,7 +354,7 @@ const embeddedCss = `
 }
 `;
 
-export function ReferencePageComponent({ page, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection }: ReferencePageProps) {
+export function ReferencePageComponent({ page, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection, sectionExistingFeedback }: ReferencePageProps) {
   const categoryLabel = page.category === 'social-security' ? 'Social Security' : 'IRMAA & Medicare';
   const categoryPath = `/${page.category}`;
 
@@ -596,7 +598,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             })()}
           </div>
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} />
           ))}
           {page.worked_example && (() => {
             const we = page.worked_example!;
@@ -774,7 +776,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
 
           {/* Body sections */}
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} />
           ))}
 
           {/* Worked example — standalone HTML document */}

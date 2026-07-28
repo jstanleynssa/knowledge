@@ -16,11 +16,12 @@ interface Props {
   sectionIndex: number;
   label?: string;
   onFeedback: (index: number, type: 'verified' | 'flag', note?: string) => void;
-  learned?: string;    // "What I learned" text returned after a suggestion rewrite
-  rewriting?: boolean; // true while the rewrite API call is in-flight
+  learned?: string;
+  rewriting?: boolean;
+  existingFeedback?: { type: 'verified' | 'flag'; reviewer_name: string; created_at: string } | null;
 }
 
-export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, learned, rewriting }: Props) {
+export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, learned, rewriting, existingFeedback }: Props) {
   const [mode, setMode] = useState<'idle' | 'suggesting'>('idle');
   const [done, setDone] = useState<'verified' | 'flag' | null>(null);
   const [note, setNote] = useState('');
@@ -35,6 +36,7 @@ export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, l
         </svg>
         {done === 'verified' ? 'Verified' : 'Suggestion saved'}
       </div>
+      {/* Show who just verified — this session */}
 
       {/* What I learned — shown after suggestion rewrite completes */}
       {done === 'flag' && (
@@ -92,8 +94,24 @@ export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, l
     </div>
   );
 
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
   return (
-    <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
+    <div style={{ marginTop: 10 }}>
+      {/* Prior feedback from DB — shown until reviewer acts this session */}
+      {existingFeedback && (
+        <div style={{
+          fontSize: 11, color: existingFeedback.type === 'verified' ? BLUE_MID : BROWN_MID,
+          marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4,
+        }}>
+          {existingFeedback.type === 'verified'
+            ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            : <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          }
+          {existingFeedback.type === 'verified' ? 'Verified' : 'Suggestion'} by {existingFeedback.reviewer_name} on {fmtDate(existingFeedback.created_at)}
+        </div>
+      )}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
       <button
         onClick={() => { onFeedback(sectionIndex, 'verified'); setDone('verified'); }}
         style={{
@@ -120,6 +138,7 @@ export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, l
         </svg>
         Make Suggestion
       </button>
+      </div>
     </div>
   );
 }

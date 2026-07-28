@@ -55,7 +55,26 @@ export function ReviewEditor({
   const [sectionFeedback, setSectionFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({});
   const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({}); 
   const [rewritingSection, setRewritingSection] = useState<Record<number, boolean>>({});
-  const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({}); 
+  const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({});
+  const [sectionExistingFeedback, setSectionExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
+
+  // ── Load existing section feedback on mount ────────────────────
+  useEffect(() => {
+    fetch(`/api/admin/section-feedback?page_id=${page.id}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) return;
+        const map: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
+        for (const row of data.feedback ?? []) {
+          if (row.section_type === 'body') {
+            map[row.section_index] = { type: row.feedback_type, reviewer_name: row.reviewer_name, created_at: row.created_at };
+          }
+        }
+        setSectionExistingFeedback(map);
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page.id]);
 
   // ── Autosave: debounce 3s after any field change ─────────────────────
   useEffect(() => {
@@ -107,6 +126,11 @@ export function ReviewEditor({
 
   async function handleSectionFeedback(index: number, type: 'verified' | 'flag', note?: string) {
     setSectionFeedback(prev => ({ ...prev, [index]: { type, note } }));
+    // Update existing feedback display immediately so the "verified by" line shows without reload
+    setSectionExistingFeedback(prev => ({
+      ...prev,
+      [index]: { type, reviewer_name: reviewerName, created_at: new Date().toISOString() },
+    }));
     persistFeedback('body', index, type, note);
 
     // For suggestions: call the rewrite API and update the section on the left
@@ -662,7 +686,7 @@ export function ReviewEditor({
           )}
 
           {/* Rendered page */}
-          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} />
+          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} sectionExistingFeedback={sectionExistingFeedback} />
         </div>
 
       </div>
