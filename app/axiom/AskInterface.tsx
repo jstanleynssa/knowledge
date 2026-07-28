@@ -63,9 +63,15 @@ function LoadingBubble() {
   const current = LOADING_STEPS[step];
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-      <div style={{ position: 'relative', flexShrink: 0, marginTop: 2 }}>
-        <div style={{ width: 32, height: 32, borderRadius: '50%', background: ACCENT, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700 }}>A</div>
-        <div style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: `2px solid ${ACCENT}`, opacity: 0.3, animation: 'axiom-pulse 1.4s ease-in-out infinite' }} />
+      <div style={{ position: 'relative', flexShrink: 0, marginTop: 2, width: 32, height: 32 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: ACCENT, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, position: 'relative', zIndex: 1 }}>A</div>
+        <svg style={{ position: 'absolute', top: -4, left: -4, width: 40, height: 40 }} viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke={ACCENT} strokeWidth="2" strokeOpacity="0.15" />
+          <circle cx="20" cy="20" r="18" stroke={ACCENT} strokeWidth="2" strokeLinecap="round"
+            strokeDasharray="28 85"
+            style={{ animation: 'axiom-spin 1s linear infinite', transformOrigin: '20px 20px' }}
+          />
+        </svg>
       </div>
       <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '4px 16px 16px 16px', padding: '14px 20px', minWidth: 280 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -86,7 +92,7 @@ function LoadingBubble() {
           })}
         </div>
       </div>
-      <style>{`@keyframes axiom-pulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.4);opacity:0}}@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+      <style>{`@keyframes axiom-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
     </div>
   );
 }
@@ -231,24 +237,8 @@ function FeedbackBar({
         {/* Verify-fix panel — only shown after a correction, not after approve/reject */}
         {turn.feedback === 'correct' && (
           <div style={{ marginTop: 12 }}>
-            {!turn.rerunAnswer && !turn.rerunLoading && (
-              <button
-                onClick={onRerun}
-                style={{
-                  fontSize: 12, fontWeight: 700, padding: '6px 14px', borderRadius: 6,
-                  border: `1px solid ${ACCENT}`, background: 'transparent',
-                  color: ACCENT, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M10 6A4 4 0 1 1 6 2M10 2v4H6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                Verify fix
-              </button>
-            )}
-
             {turn.rerunLoading && (
-              <div style={{ fontSize: 12, color: DIM, marginTop: 4 }}>Re-running with your correction…</div>
+              <div style={{ fontSize: 12, color: MUTED, marginTop: 4, fontStyle: 'italic' }}>Rewriting answer with your correction…</div>
             )}
 
             {turn.rerunAnswer && !turn.rerunFeedback && (
@@ -545,28 +535,56 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
     const turn = turns[turnIndex];
     if (!turn?.answer) return;
 
-    setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedback: type } : t));
+    // Snapshot before any state changes
+    const originalAnswer = turn.answer.answer;
+    const question       = turn.question;
+    const primarySources = turn.answer.primary_sources;
+    const correctionNote = note ?? '';
 
-    const res = await fetch('/api/feedback', {
+    // Mark feedback + immediately start rewrite loading if it's a suggestion
+    setTurns(prev => prev.map((t, i) => i === turnIndex ? {
+      ...t,
+      feedback:     type,
+      rerunLoading: type === 'correct' && correctionNote.trim().length > 0,
+      rerunAnswer:  null,
+    } : t));
+
+    // Save feedback in background
+    fetch('/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        question:         turn.question,
-        original_answer:  turn.answer.answer,
-        corrected_answer: type === 'correct' ? note : undefined,
+        question, original_answer: originalAnswer,
+        corrected_answer: type === 'correct' ? correctionNote : undefined,
         verdict:          turn.answer.verdict,
-        primary_sources:  turn.answer.primary_sources,
+        primary_sources:  primarySources,
         sections_used:    turn.answer.sections_used,
         feedback_type:    type,
-        correction_note:  note,
+        correction_note:  correctionNote,
         category:         (turn.answer as any).category ?? 'social-security',
       }),
-    }).catch(() => null);
+    }).then(r => r.json()).then(data => {
+      if (data.analysis) setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
+    }).catch(() => {});
 
-    if (res?.ok) {
-      const data = await res.json().catch(() => ({}));
-      if (data.analysis) {
-        setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
+    // Auto-rewrite immediately on suggestion
+    if (type === 'correct' && correctionNote.trim().length > 0) {
+      try {
+        const res = await fetch('/api/ask/rewrite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, original_answer: originalAnswer, correction_note: correctionNote, primary_sources: primarySources }),
+        });
+        const data = await res.json().catch(() => ({}));
+        setTurns(prev => prev.map((t, i) => i === turnIndex ? {
+          ...t,
+          rerunLoading: false,
+          // Wrap plain-text rewrite in a minimal Answer shape for the existing panel
+          rerunAnswer: data.ok ? { ...turn.answer!, answer: data.answer } : null,
+          feedbackAnalysis: data.learned || t.feedbackAnalysis,
+        } : t));
+      } catch {
+        setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, rerunLoading: false } : t));
       }
     }
   }
