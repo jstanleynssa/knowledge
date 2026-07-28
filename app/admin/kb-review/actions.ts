@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import type { Category, BodySection, FaqItem, WorkedExample, PrimarySource } from '@/lib/types';
 import OpenAI from 'openai';
+import { pingIndexNow } from '@/lib/indexnow';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -157,6 +158,20 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     }
   } catch (e) {
     console.error('verified_answers seed error (non-fatal):', e);
+  }
+
+  // Fetch the page's category so we can ping IndexNow with the right URL
+  try {
+    const { data: published } = await createServiceClient()
+      .from('reference_pages')
+      .select('slug, category')
+      .eq('id', pageId)
+      .single();
+    if (published) {
+      pingIndexNow([{ slug: published.slug, category: published.category }]);
+    }
+  } catch (e) {
+    console.error('IndexNow ping error (non-fatal):', e);
   }
 
   // Trigger Vercel rebuild so the newly-published page goes live immediately.

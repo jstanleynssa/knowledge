@@ -31,35 +31,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const category = body.category as 'social-security' | 'irmaa' | undefined;
-  const count    = Math.min(body.count ?? DEFAULT_COUNT, MAX_COUNT);
-
-  // Find which slugs already exist in the DB
-  const { data: existing } = await service
-    .from('reference_pages')
-    .select('slug');
-  const existingSlugs = new Set((existing ?? []).map(r => r.slug));
-
-  // Filter topic queue: right category, not yet generated
-  const candidates = TOPIC_QUEUE.filter(t =>
-    (!category || t.category === category) &&
-    !existingSlugs.has(t.slug)
-  );
-
-  if (candidates.length === 0) {
-    return NextResponse.json({ queued: [], skipped: [], message: 'No new topics available for this category.' });
-  }
-
-  const batch = candidates.slice(0, count);
-  const queued: string[] = [];
 
   const scriptPath = path.join(process.cwd(), 'scripts/draft/draft_page_v2.ts');
   const envFile    = path.join(process.cwd(), '.env.local');
 
-  for (const topic of batch) {
-    queued.push(topic.slug);
-
-    // Spawn each generation as a detached background process
+  function spawnDraft(topic: { slug: string; title: string; topic: string; category: string }) {
     const env = {
       ...process.env,
       TOPIC:               topic.topic,
@@ -68,23 +44,81 @@ export async function POST(req: NextRequest) {
       CATEGORY:            topic.category,
       SKIP_WORKED_EXAMPLE: 'true',
     };
-
     const child = spawn(
       'npx',
       ['tsx', '--tsconfig', 'tsconfig.json', `--env-file=${envFile}`, scriptPath],
-      {
-        cwd:      process.cwd(),
-        env,
-        detached: true,
-        stdio:    'ignore',
-      }
+      { cwd: process.cwd(), env, detached: true, stdio: 'ignore' },
     );
-    child.unref(); // don't wait for it
+    child.unref();
+  }
+
+  // ── Custom topic mode ─────────────────────────────────────────────────────
+  if (body.custom) {
+    const title    = (body.title as string | undefined)?.trim();
+    const topic    = (body.topic as string | undefined)?.trim();
+    const category = (body.category as string | undefined) ?? 'social-security';
+
+    if (!title || !topic) {
+      return NextResponse.json({ error: 'title and topic are required for custom generation.' }, { status: 400 });
+    }
+
+    // Derive a slug from the title
+    const slug = title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .slice(0, 80);
+
+    spawnDraft({ slug, title, topic, category });
+
+    return NextResponse.json({
+      queued:  [slug],
+      remaining: 0,
+      message: `Generating "${title}" in background — it'll appear in the Needs Review queue shortly.`,
+    });
+  }
+
+  // ── Queue mode: specific slugs selected by reviewer ──────────────────────
+  const requestedSlugs = body.slugs as string[] | undefined;
+  const category       = body.category as 'social-security' | 'irmaa' | undefined;
+  const count          = Math.min(body.count ?? DEFAULT_COUNT, MAX_COUNT);
+
+  // Find which slugs already exist in the DB
+  const { data: existing } = await service
+    .from('reference_pages')
+    .select('slug');
+  const existingSlugs = new Set((existing ?? []).map(r => r.slug));
+
+  let candidates;
+  if (requestedSlugs && requestedSlugs.length > 0) {
+    // Reviewer explicitly selected specific topics — use them in order, skip already-existing
+    const bySlug = new Map(TOPIC_QUEUE.map(t => [t.slug, t]));
+    candidates = requestedSlugs
+      .filter(s => !existingSlugs.has(s) && bySlug.has(s))
+      .map(s => bySlug.get(s)!);
+  } else {
+    // Fallback: take next N by category from queue
+    candidates = TOPIC_QUEUE.filter(t =>
+      (!category || t.category === category) &&
+      !existingSlugs.has(t.slug)
+    ).slice(0, count);
+  }
+
+  if (candidates.length === 0) {
+    return NextResponse.json({ queued: [], skipped: [], message: 'No new topics available — those may already exist.' });
+  }
+
+  const queued: string[] = [];
+  for (const topic of candidates) {
+    queued.push(topic.slug);
+    spawnDraft(topic);
   }
 
   return NextResponse.json({
     queued,
-    remaining: candidates.length - batch.length,
-    message:   `Generating ${batch.length} page${batch.length !== 1 ? 's' : ''} in background — they'll appear in the queue shortly.`,
+    remaining: TOPIC_QUEUE.filter(t => !existingSlugs.has(t.slug)).length - queued.length,
+    message:   `Generating ${queued.length} page${queued.length !== 1 ? 's' : ''} in background — they'll appear in the Needs Review queue shortly.`,
   });
 }

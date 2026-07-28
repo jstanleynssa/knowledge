@@ -3,7 +3,7 @@
 // Derived from supabase/migrations/001_initial_schema.sql
 // ============================================================
 
-export type SourceType = 'poms' | 'cfr' | 'handbook' | 'regs';
+export type SourceType = 'poms' | 'cfr' | 'handbook' | 'regs' | 'cms' | 'medicare';
 export type DocKind = 'rule' | 'toc' | 'empty';
 export type PageStatus = 'draft' | 'in_review' | 'approved' | 'published' | 'retired' | 'superseded';
 export type Category = 'social-security' | 'irmaa';
@@ -20,6 +20,10 @@ export interface SourceDocument {
   source_url: string | null;
   last_updated: string | null;  // SSA's date string, e.g. '10/19/2023'
   scrape_date: string;          // ISO date
+  /** Monotonically increasing per (source_type, source_url). 1 = initial ingest. */
+  ingest_version: number;
+  /** Set when a newer version exists. NULL = current active row. */
+  superseded_at: string | null;
   created_at: string;
 }
 
@@ -141,7 +145,9 @@ export interface OctoparsePOMSRow {
 
 // ─── Normalized row ready for Supabase upsert ─────────────────────────────────
 
-export type SourceDocumentInsert = Omit<SourceDocument, 'id' | 'created_at'>;
+// ingest_version and superseded_at are managed by the versioning logic in each
+// adapter — callers should not set them directly on insert.
+export type SourceDocumentInsert = Omit<SourceDocument, 'id' | 'created_at' | 'ingest_version' | 'superseded_at'>;
 export type ReferencePageInsert = Omit<ReferencePage, 'id' | 'created_at' | 'updated_at' | 'approved_by' | 'approved_at'> & {
   approved_by?: string | null;
   approved_at?: string | null;

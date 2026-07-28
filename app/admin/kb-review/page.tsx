@@ -118,7 +118,8 @@ export default async function KbReviewPage({
   const publishedCount   = publishedRows?.length ?? 0;
   const approvedThisWeek = weekRows?.length ?? 0;
   const existingSlugSet  = new Set((allSlugs ?? []).map(r => r.slug));
-  const remaining        = TOPIC_QUEUE.filter(t => !existingSlugSet.has(t.slug)).length;
+  const remainingTopics  = TOPIC_QUEUE.filter(t => !existingSlugSet.has(t.slug));
+  const remaining        = remainingTopics.length;
 
   function tabHref(overrides: Record<string, string>) {
     const p = new URLSearchParams({ status: activeTab, category: categoryFilter, ...overrides });
@@ -160,7 +161,7 @@ export default async function KbReviewPage({
             )}
             <span><strong style={{ color: '#fff' }}>{remaining}</strong> topics queued</span>
           </div>
-          <GenerateButton remaining={remaining} />
+          <GenerateButton topics={remainingTopics} />
           <span style={{ fontSize: 13, color: NSSA.light }}>
             Reviewing as <strong style={{ color: '#fff' }}>{reviewerName}</strong>
           </span>

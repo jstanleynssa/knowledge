@@ -8,6 +8,17 @@ const nextConfig: NextConfig = {
   // Disable x-powered-by header (clean responses)
   poweredByHeader: false,
 
+  // /ask → /axiom redirect (permanent: false so we can change it later)
+  async redirects() {
+    return [
+      {
+        source: '/ask',
+        destination: '/axiom',
+        permanent: false,
+      },
+    ];
+  },
+
   // Strict headers for security
   async headers() {
     return [

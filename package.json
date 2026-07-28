@@ -14,15 +14,19 @@
     "ingest:octoparse": "tsx --env-file=.env.local scripts/ingest/ingest_octoparse.ts",
     "embed": "tsx --env-file=.env.local scripts/ingest/chunk_and_embed.ts",
     "embed:force": "tsx --env-file=.env.local scripts/ingest/chunk_and_embed.ts --force",
-    "draft": "tsx --env-file=.env.local scripts/draft/draft_page.ts"
+    "draft": "tsx --env-file=.env.local scripts/draft/draft_page.ts",
+    "ingest:cms:pdfs": "tsx --env-file=.env.local scripts/ingest/fetch_cms_pdfs.ts",
+    "ingest:cms:pdfs:check": "tsx --env-file=.env.local scripts/ingest/fetch_cms_pdfs.ts --check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
     "@supabase/ssr": "^0.12.2",
     "@supabase/supabase-js": "^2.110.5",
+    "@types/pdf-parse": "^1.1.5",
     "dotenv": "^17.4.2",
     "next": "16.2.10",
     "openai": "^6.46.0",
+    "pdf-parse": "^2.4.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tsx": "^4.23.1"

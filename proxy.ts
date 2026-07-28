@@ -12,6 +12,15 @@ const ADMIN_EMAIL = 'jstanley@nssapros.com';
 
 export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const hostname = req.headers.get('host') ?? '';
+
+  // ── Subdomain routing ──────────────────────────────────────────────────────
+  // axiom.nssapros.com → rewrite to /axiom
+  if (hostname.startsWith('axiom.') && !pathname.startsWith('/axiom') && !pathname.startsWith('/api') && !pathname.startsWith('/_next')) {
+    const url = req.nextUrl.clone();
+    url.pathname = '/axiom';
+    return NextResponse.rewrite(url);
+  }
 
   // Always allow: login page and auth callback
   if (
@@ -59,5 +68,10 @@ export default async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/auth/callback'],
+  matcher: [
+    '/admin/:path*',
+    '/auth/callback',
+    // Run on root for subdomain rewriting (axiom.nssapros.com → /axiom)
+    '/',
+  ],
 };

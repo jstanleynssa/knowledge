@@ -42,14 +42,16 @@ export function ReviewEditor({
   const router = useRouter();
   const [fields, setFields] = useState<EditableFields>(() => ({
     ...toEditState(page),
-    // Always credit the logged-in reviewer — not a manual entry
+    // Always credit the logged-in reviewer - not a manual entry
     reviewer: reviewerName,
   }));
   const [isPending, startTransition] = useTransition();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [showSuperseded, setShowSuperseded] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({});
-  const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({});
+  const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({}); 
+  const [rewritingSection, setRewritingSection] = useState<Record<number, boolean>>({});
+  const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({}); 
 
   function persistFeedback(sectionType: 'body' | 'faq', index: number, type: 'verified' | 'flag', note?: string) {
     const section = sectionType === 'body' ? fields.body_sections[index] : null;
@@ -69,9 +71,44 @@ export function ReviewEditor({
     }).catch(() => {});
   }
 
-  function handleSectionFeedback(index: number, type: 'verified' | 'flag', note?: string) {
+  async function handleSectionFeedback(index: number, type: 'verified' | 'flag', note?: string) {
     setSectionFeedback(prev => ({ ...prev, [index]: { type, note } }));
     persistFeedback('body', index, type, note);
+
+    // For suggestions: call the rewrite API and update the section on the left
+    if (type === 'flag' && note?.trim()) {
+      const section = fields.body_sections[index];
+      if (!section || section.type === 'table') return; // tables not auto-rewritten yet
+
+      setRewritingSection(prev => ({ ...prev, [index]: true }));
+      try {
+        const res = await fetch('/api/admin/rewrite-section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            heading:     section.heading,
+            prose:       section.prose,
+            note,
+            page_title:  page.title,
+            category:    page.category,
+            citation_ref: section.citation_ref,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          set('body_sections', fields.body_sections.map((s, i) =>
+            i === index ? { ...s, heading: data.heading, prose: data.prose } : s
+          ));
+          if (data.learned) {
+            setSectionLearned(prev => ({ ...prev, [index]: data.learned }));
+          }
+        }
+      } catch (e) {
+        console.error('rewrite-section failed:', e);
+      } finally {
+        setRewritingSection(prev => ({ ...prev, [index]: false }));
+      }
+    }
   }
 
   function handleFaqFeedback(index: number, type: 'verified' | 'flag', note?: string) {
@@ -270,7 +307,7 @@ export function ReviewEditor({
             <div style={{ fontWeight: 700, fontSize: 17, color: '#7F1D1D', marginBottom: 8 }}>⚠️ Mark as Superseded</div>
             <p style={{ fontSize: 14, color: G.text, marginBottom: 16, lineHeight: 1.5 }}>
               This adds a prominent banner to the public page stating this rule is no longer in effect.
-              The page remains published for reference. Describe why below — this note is shown publicly.
+              The page remains published for reference. Describe why below - this note is shown publicly.
             </p>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: G.text, marginBottom: 6 }}>
               Deprecation note (shown on the public page)
@@ -285,7 +322,7 @@ export function ReviewEditor({
             <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button onClick={() => setShowSuperseded(false)} style={secondaryBtn}>Cancel</button>
               <button onClick={handleSupersede} disabled={isPending} style={{ ...primaryBtn, background: '#7F1D1D' }}>
-                {isPending ? 'Saving…' : 'Mark Superseded'}
+                {isPending ? 'Saving...' : 'Mark Superseded'}
               </button>
             </div>
           </div>
@@ -344,7 +381,7 @@ export function ReviewEditor({
             disabled={isPending || saveStatus === 'saving'}
             style={{ background: 'transparent', border: `1px solid ${NSSA.light}`, color: NSSA.light, borderRadius: 6, padding: '7px 16px', cursor: 'pointer', fontSize: 14, fontWeight: 600 }}
           >
-            {saveStatus === 'saving' ? 'Saving…' : 'Save for Later'}
+            {saveStatus === 'saving' ? 'Saving...' : 'Save for Later'}
           </button>
 
           <button
@@ -352,7 +389,7 @@ export function ReviewEditor({
             disabled={isPending}
             style={{ background: '#16a34a', border: 'none', color: '#fff', borderRadius: 6, padding: '8px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}
           >
-            {isPending ? 'Saving…' : '✓ Approve'}
+            {isPending ? 'Saving...' : '✓ Approve'}
           </button>
         </div>
       </div>
@@ -360,7 +397,7 @@ export function ReviewEditor({
       {/* ── Two-column body ────────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: `calc(100vh - ${HEADER_H}px)` }}>
 
-        {/* LEFT — Editable form */}
+        {/* LEFT - Editable form */}
         <div style={{ overflowY: 'auto', borderRight: `1px solid ${G.border}`, background: '#fff' }}>
           <div style={{ padding: '24px 28px', maxWidth: 640, margin: '0 auto' }}>
 
@@ -368,10 +405,10 @@ export function ReviewEditor({
               <FormRow label="Title (H1)">
                 <FInput value={fields.title} onChange={v => set('title', v)} />
               </FormRow>
-              <FormRow label={`SEO Title — ${fields.seo_title.length}/60 chars`} warn={fields.seo_title.length > 60}>
+              <FormRow label={`SEO Title - ${fields.seo_title.length}/60 chars`} warn={fields.seo_title.length > 60}>
                 <FInput value={fields.seo_title} onChange={v => set('seo_title', v)} />
               </FormRow>
-              <FormRow label={`Meta Description — ${fields.meta_description.length}/160 chars`} warn={fields.meta_description.length > 160}>
+              <FormRow label={`Meta Description - ${fields.meta_description.length}/160 chars`} warn={fields.meta_description.length > 160}>
                 <FTextarea value={fields.meta_description} onChange={v => set('meta_description', v)} rows={2} />
               </FormRow>
               <FormRow label="Eyebrow label (e.g. 'Claiming Rules')">
@@ -383,7 +420,7 @@ export function ReviewEditor({
               <RichTextEditor
                 value={fields.quick_answer}
                 onChange={v => set('quick_answer', v)}
-                placeholder="The short answer shown at the top of the page…"
+                placeholder="The short answer shown at the top of the page..."
                 minHeight={120}
               />
             </FieldGroup>
@@ -392,7 +429,12 @@ export function ReviewEditor({
               {fields.body_sections
                 .filter(s => !(s as any)._review_note)
                 .map((section, i) => (
-                  <div key={i} style={{ background: G.bg, borderRadius: 8, padding: '14px 16px', marginBottom: 10 }}>
+                  <div key={i} style={{ background: G.bg, borderRadius: 8, padding: '14px 16px', marginBottom: 10, position: 'relative', opacity: rewritingSection[i] ? 0.6 : 1, transition: 'opacity .2s' }}>
+                    {rewritingSection[i] && (
+                      <div style={{ position: 'absolute', inset: 0, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5, background: 'rgba(243,244,246,0.7)' }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: G.text }}>⟳ Applying suggestion…</span>
+                      </div>
+                    )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <span style={chipLabel}>
                         {section.type === 'table' ? '📊 Table' : `Section ${i + 1}`}
@@ -495,7 +537,7 @@ export function ReviewEditor({
                     )}
                   </div>
                 ))}
-              {/* Bottom insert buttons — always visible even with 0 sections */}
+              {/* Bottom insert buttons - always visible even with 0 sections */}
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                 <button onClick={addSection} style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
                 <button onClick={addTable}   style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
@@ -535,7 +577,7 @@ export function ReviewEditor({
             </FieldGroup>
 
             <FieldGroup label="Superseded / Retired">
-              <FormRow label="Deprecation note — only fill if marking this rule superseded. Shown publicly on the page.">
+              <FormRow label="Deprecation note - only fill if marking this rule superseded. Shown publicly on the page.">
                 <FTextarea
                   value={fields.deprecation_note}
                   onChange={v => set('deprecation_note', v)}
@@ -551,7 +593,7 @@ export function ReviewEditor({
           </div>
         </div>
 
-        {/* RIGHT — Live preview */}
+        {/* RIGHT - Live preview */}
         <div style={{ overflowY: 'auto', background: '#FFFDF5' }}>
           {/* Preview label bar */}
           <div style={{
@@ -561,10 +603,10 @@ export function ReviewEditor({
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: G.text }}>Live Preview</span>
-            <span style={{ fontSize: 12, color: G.text }}>— updates as you edit</span>
+            <span style={{ fontSize: 12, color: G.text }}>- updates as you edit</span>
           </div>
 
-          {/* Compact verification flag count — details shown inline in page below */}
+          {/* Compact verification flag count - details shown inline in page below */}
           {verificationFlags.length > 0 && (
             <div style={{
               margin: '12px 20px 0',
@@ -574,12 +616,12 @@ export function ReviewEditor({
               display: 'flex', alignItems: 'center', gap: 6,
             }}>
               <span>⚠</span>
-              <span>{verificationFlags.length} value{verificationFlags.length !== 1 ? 's' : ''} flagged for review — see red blocks inline below</span>
+              <span>{verificationFlags.length} value{verificationFlags.length !== 1 ? 's' : ''} flagged for review - see red blocks inline below</span>
             </div>
           )}
 
           {/* Rendered page */}
-          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} />
+          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} />
         </div>
 
       </div>

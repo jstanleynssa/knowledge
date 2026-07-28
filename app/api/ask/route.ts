@@ -9,6 +9,8 @@
  * - Self-verification gate
  */
 import { NextRequest, NextResponse } from 'next/server';
+
+export const maxDuration = 60; // Vercel Pro max for serverless functions
 import OpenAI from 'openai';
 import { hybridRetrieve, type RetrievedSection } from '@/scripts/retrieval/hybrid';
 import { verifyClaims } from '@/scripts/draft/verify';
@@ -102,38 +104,55 @@ async function multiQueryRetrieve(queries: string[], topKPerQuery = 8): Promise<
 
 // ── [3] Verified answers retrieval ────────────────────────────────────────────
 
-async function getVerifiedContext(question: string, category: string): Promise<string> {
+async function getVerifiedContext(question: string, category: string, embedding?: number[]): Promise<string> {
   try {
-    // Embed the question
-    const embRes = await openai.embeddings.create({ model: 'text-embedding-3-small', input: question });
-    const embedding = embRes.data[0].embedding;
+    // Use pre-computed embedding when available — avoids a redundant OpenAI round-trip
+    const emb = embedding ?? (await openai.embeddings.create({ model: 'text-embedding-3-small', input: question })).data[0].embedding;
 
     const supabase = createServiceClient();
-    // Find similar verified answers
-    const { data } = await supabase.rpc('match_verified_answers', {
-      query_embedding: embedding,
-      match_count: 3,
-      match_threshold: 0.75,
-      filter_category: category,
-    });
 
-    if (!data || data.length === 0) {
-      // Fallback: pull from approved reference pages
-      const { data: pages } = await supabase
-        .from('reference_pages')
-        .select('title, h1, quick_answer, primary_sources')
-        .eq('status', 'published')
-        .eq('category', category)
-        .limit(3);
+    // Search verified_answers across BOTH categories — SSA-44/IRMAA questions are
+    // frequently misclassified as 'social-security' by the query interpreter because
+    // the form is issued by SSA. Filtering by category here caused correct answers
+    // to be invisible. The corpus is small so cross-category search is cheap and safe.
+    // Run both category lookups in parallel
+    const otherCategory = category === 'irmaa' ? 'social-security' : 'irmaa';
+    const [{ data: allHits }, { data: otherHits }] = await Promise.all([
+      supabase.rpc('match_verified_answers', {
+        query_embedding: emb,
+        match_count: 5,
+        match_threshold: 0.70,
+        filter_category: category,
+      }),
+      supabase.rpc('match_verified_answers', {
+        query_embedding: emb,
+        match_count: 5,
+        match_threshold: 0.70,
+        filter_category: otherCategory,
+      }),
+    ]);
 
-      if (!pages || pages.length === 0) return '';
+    const combined = [...(allHits ?? []), ...(otherHits ?? [])]
+      .sort((a: any, b: any) => b.similarity - a.similarity)
+      .slice(0, 3);
 
-      return '\n\n--- VERIFIED REFERENCE PAGES (approved by expert reviewers) ---\n' +
-        pages.map(p => `Title: ${p.h1 || p.title}\n${p.quick_answer}`).join('\n\n---\n');
+    if (combined.length > 0) {
+      return '\n\n--- VERIFIED ANSWERS (confirmed correct by expert reviewers) ---\n' +
+        combined.map((va: any) => `Q: ${va.question}\nA: ${va.answer}`).join('\n\n---\n');
     }
 
-    return '\n\n--- VERIFIED ANSWERS (confirmed correct by expert reviewers) ---\n' +
-      (data as any[]).map((va: any) => `Q: ${va.question}\nA: ${va.answer}`).join('\n\n---\n');
+    // Fallback: pull from published reference pages (both categories)
+    const { data: pages } = await supabase
+      .from('reference_pages')
+      .select('title, h1, quick_answer, primary_sources')
+      .eq('status', 'published')
+      .in('category', [category, otherCategory])
+      .limit(4);
+
+    if (!pages || pages.length === 0) return '';
+
+    return '\n\n--- VERIFIED REFERENCE PAGES (approved by expert reviewers) ---\n' +
+      pages.map(p => `Title: ${p.h1 || p.title}\n${p.quick_answer}`).join('\n\n---\n');
   } catch {
     return '';
   }
@@ -172,7 +191,7 @@ async function generateAnswer(
   verifiedContext: string,
   history: HistoryMessage[],
 ): Promise<{ verdict: string; verdict_summary: string; answer: string; primary_sources: PrimarySource[]; gaps: string[] }> {
-  const MAX_CHARS = 10000;
+  const MAX_CHARS = 5000;
   const sourceBlock = sections
     .map(s => {
       const text = s.full_text.length > MAX_CHARS ? s.full_text.slice(0, MAX_CHARS) + '\n[... truncated ...]' : s.full_text;
@@ -196,15 +215,15 @@ SOURCE SECTIONS:
 ${sourceBlock}`;
 
   const res = await openai.chat.completions.create({
-    model: 'o4-mini',
-    reasoning_effort: 'medium',
-    max_completion_tokens: 8000,
+    model: 'gpt-4o',
+    max_tokens: 4000,
+    temperature: 0,
     response_format: { type: 'json_object' },
     messages: [
-      { role: 'developer' as any, content: AGENT_SYSTEM_PROMPT },
+      { role: 'system', content: AGENT_SYSTEM_PROMPT },
       { role: 'user', content: userPrompt },
     ],
-  } as any);
+  });
 
   try {
     const parsed = JSON.parse(res.choices[0].message.content ?? '{}');
@@ -223,14 +242,24 @@ ${sourceBlock}`;
 // ── Handler ────────────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  try {
   const { question, history = [] } = await req.json().catch(() => ({ question: '', history: [] }));
   if (!question?.trim()) return NextResponse.json({ error: 'question required' }, { status: 400 });
 
   // [1] Interpret + decompose
   const interpreted = await interpretQuery(question, history);
 
-  // [2] Multi-query retrieval
-  const sections = await multiQueryRetrieve(interpreted.retrieval_queries);
+  // Embed clean_question once — reused by verified-context lookup (saves one OpenAI round-trip)
+  const questionEmbedding = await openai.embeddings.create({
+    model: 'text-embedding-3-small',
+    input: interpreted.clean_question,
+  }).then(r => r.data[0].embedding);
+
+  // [2] + [3] Run retrieval and verified-context lookup in parallel
+  const [sections, verifiedContext] = await Promise.all([
+    multiQueryRetrieve(interpreted.retrieval_queries),
+    getVerifiedContext(interpreted.clean_question, interpreted.category, questionEmbedding),
+  ]);
 
   if (sections.length === 0) {
     return NextResponse.json({
@@ -240,9 +269,6 @@ export async function POST(req: NextRequest) {
       retrieval_queries: interpreted.retrieval_queries, sections_used: [],
     });
   }
-
-  // [3] Verified context (approved KB pages + feedback corpus)
-  const verifiedContext = await getVerifiedContext(interpreted.clean_question, interpreted.category);
 
   // [4] Generate grounded answer
   const result = await generateAnswer(
@@ -275,4 +301,11 @@ export async function POST(req: NextRequest) {
     sections_used:     sections.map(s => ({ section_number: s.section_number, title: s.title, score: s.score, source_url: s.source_url })),
     verification:      { passed: verification.passed, unverified: verification.unverified },
   });
+  } catch (err: any) {
+    console.error('[/api/ask] unhandled error:', err);
+    return NextResponse.json(
+      { error: 'Internal server error', detail: err?.message ?? 'unknown' },
+      { status: 500 }
+    );
+  }
 }

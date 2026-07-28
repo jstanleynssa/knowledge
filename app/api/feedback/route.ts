@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       : feedback_type === 'correct' ? 'corrected with a suggestion'
       : 'flagged as wrong';
     const analysisRes = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       temperature: 0.3,
       max_tokens: 180,
       messages: [
@@ -111,7 +111,11 @@ Be specific about the rule, section, or concept involved. Speak in first person.
     analysis = analysisRes.choices[0].message.content?.trim() ?? '';
   } catch (e) {
     console.error('feedback analysis error:', e);
+    analysis = 'Feedback saved — unable to generate learning summary at this time.';
   }
+
+  // Ensure analysis is never empty so the UI card always renders
+  if (!analysis) analysis = 'Feedback saved to the verified answers corpus.';
 
   return NextResponse.json({ ok: true, analysis });
 }

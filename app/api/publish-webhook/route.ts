@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
+import { pingIndexNow } from '@/lib/indexnow';
 
 export const runtime = 'nodejs';
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
   // Fetch approved pages
   const { data: approved, error: fetchErr } = await supabase
     .from('reference_pages')
-    .select('id, slug')
+    .select('id, slug, category')
     .eq('status', 'approved');
 
   if (fetchErr) {
@@ -59,6 +60,9 @@ export async function POST(req: NextRequest) {
 
   const slugs = approved.map((r) => r.slug);
   console.log(`Published ${slugs.length} pages: ${slugs.join(', ')}`);
+
+  // Ping IndexNow — non-fatal
+  pingIndexNow(approved.map((r) => ({ slug: r.slug, category: r.category })));
 
   // Trigger Vercel rebuild via deploy hook
   const deployHook = process.env.VERCEL_DEPLOY_HOOK_URL;

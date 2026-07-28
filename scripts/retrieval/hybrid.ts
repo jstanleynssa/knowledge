@@ -85,7 +85,10 @@ async function vectorSearch(
     match_count: candidateK,
     match_threshold: 0, // unused now; kept for API compatibility
   });
-  if (error) throw new Error('Vector search failed: ' + error.message);
+  if (error) {
+    console.warn('[vectorSearch] falling back to keyword-only — vector index unavailable:', error.message);
+    return [];
+  }
   // Filter by threshold client-side
   const all = (data as ChunkResult[]) ?? [];
   return all.filter(c => c.similarity >= threshold).slice(0, topK);
@@ -194,17 +197,22 @@ async function keywordSearch(query: string, topK: number): Promise<FtsResult[]> 
     ? [...specificTerms, ...broadTerms].slice(0, 6)
     : specificTerms.slice(0, 4);
 
-  for (const term of ilikeTerms) {
-    const { data: ilikeData } = await supabase
-      .from('source_documents')
-      .select('section_number, title, full_text, source_url')
-      .ilike('full_text', `%${term}%`)
-      .eq('doc_kind', 'rule')
-      .not('full_text', 'is', null)
-      .not('section_number', 'like', 'PR %')   // exclude state precedent rulings
-      .not('section_number', 'like', 'PS %')   // exclude state policy statements
-      .limit(15);
-
+  // Run all ILIKE queries in parallel instead of sequentially
+  const ilikeResults = await Promise.all(
+    ilikeTerms.map(term =>
+      supabase
+        .from('source_documents')
+        .select('section_number, title, full_text, source_url')
+        .ilike('full_text', `%${term}%`)
+        .eq('doc_kind', 'rule')
+        .is('superseded_at', null)
+        .not('full_text', 'is', null)
+        .not('section_number', 'like', 'PR %')
+        .not('section_number', 'like', 'PS %')
+        .limit(15)
+    )
+  );
+  for (const { data: ilikeData } of ilikeResults) {
     for (const row of (ilikeData ?? [])) {
       if (row.section_number && !results.has(row.section_number)) {
         results.set(row.section_number, row as FtsResult);
@@ -309,7 +317,8 @@ export async function hybridRetrieve(
     .from('source_documents')
     .select('section_number, title, full_text, source_url')
     .in('section_number', topSNs)
-    .eq('doc_kind', 'rule');
+    .eq('doc_kind', 'rule')
+    .is('superseded_at', null);  // never serve content from superseded docs
 
   if (docErr) throw new Error('Section fetch failed: ' + docErr.message);
 

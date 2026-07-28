@@ -16,21 +16,43 @@ interface Props {
   sectionIndex: number;
   label?: string;
   onFeedback: (index: number, type: 'verified' | 'flag', note?: string) => void;
+  learned?: string;    // "What I learned" text returned after a suggestion rewrite
+  rewriting?: boolean; // true while the rewrite API call is in-flight
 }
 
-export function SectionFeedback({ sectionIndex, label = 'section', onFeedback }: Props) {
+export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, learned, rewriting }: Props) {
   const [mode, setMode] = useState<'idle' | 'suggesting'>('idle');
   const [done, setDone] = useState<'verified' | 'flag' | null>(null);
   const [note, setNote] = useState('');
 
   if (done) return (
-    <div style={{ fontSize: 12, color: done === 'verified' ? BLUE_MID : BROWN_MID, marginTop: 8, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-        {done === 'verified'
-          ? <path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-          : <path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>}
-      </svg>
-      {done === 'verified' ? 'Verified' : 'Suggestion saved'}
+    <div style={{ marginTop: 8 }}>
+      <div style={{ fontSize: 12, color: done === 'verified' ? BLUE_MID : BROWN_MID, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5 }}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          {done === 'verified'
+            ? <path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            : <path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>}
+        </svg>
+        {done === 'verified' ? 'Verified' : 'Suggestion saved'}
+      </div>
+
+      {/* What I learned — shown after suggestion rewrite completes */}
+      {done === 'flag' && (
+        rewriting
+          ? <div style={{ marginTop: 6, fontSize: 12, color: BROWN_MID, fontStyle: 'italic' }}>Updating section…</div>
+          : learned
+            ? <div style={{
+                marginTop: 8,
+                background: '#F0F9FF',
+                border: '1px solid #BAE6FD',
+                borderRadius: 6,
+                padding: '10px 14px',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#0284C7', marginBottom: 4 }}>What I learned</div>
+                <div style={{ fontSize: 13, color: '#0369A1', lineHeight: 1.55 }}>{learned}</div>
+              </div>
+            : null
+      )}
     </div>
   );
 
