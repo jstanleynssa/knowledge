@@ -41,41 +41,84 @@ function diffWords(original: string, revised: string): string {
 }
 
 // ── Loading steps ──────────────────────────────────────────────────────
+// Step timings (ms) and the progress milestone each step fills TO (0-90%)
+// Last step holds at 90% — the answer arriving is the 100% signal.
 const LOADING_STEPS = [
   { label: 'Searching primary sources',  detail: 'POMS · CFR · SSA Handbook',  ms: 2500 },
   { label: 'Matching relevant sections', detail: 'Hybrid retrieval · scoring', ms: 3500 },
   { label: 'Checking verified answers',  detail: 'Expert-reviewed corpus',     ms: 2000 },
   { label: 'Grounding the response',     detail: 'o4-mini · chain-of-thought', ms: 99999 },
 ];
+const STEP_FROM = [0, 25, 50, 75];   // % where each step starts
+const STEP_TO   = [25, 50, 75, 90];  // % where each step ends
+const CIRCUMFERENCE = 2 * Math.PI * 18; // ≈ 113.1
+
+function easeOut(t: number) { return 1 - Math.pow(1 - t, 2); }
 
 function LoadingBubble() {
-  const [step, setStep] = useState(0);
-  const [dots, setDots] = useState('');
+  const [step, setStep]         = useState(0);
+  const [progress, setProgress] = useState(0);  // 0-100
+  const [dots, setDots]         = useState('');
+  const stepStart = useRef(Date.now());
+
+  // Advance steps
   useEffect(() => {
     if (step >= LOADING_STEPS.length - 1) return;
-    const t = setTimeout(() => setStep(s => Math.min(s+1, LOADING_STEPS.length-1)), LOADING_STEPS[step].ms);
+    const t = setTimeout(() => {
+      setStep(s => s + 1);
+      stepStart.current = Date.now();
+    }, LOADING_STEPS[step].ms);
     return () => clearTimeout(t);
   }, [step]);
+
+  // Smooth progress tick — 50ms interval
+  useEffect(() => {
+    const id = setInterval(() => {
+      const elapsed  = Date.now() - stepStart.current;
+      const duration = step < LOADING_STEPS.length - 1
+        ? LOADING_STEPS[step].ms
+        : 18000; // last step: assume ~18s, asymptotically approaches 90%
+      const t     = Math.min(elapsed / duration, step < LOADING_STEPS.length - 1 ? 1 : 0.97);
+      const eased = easeOut(t);
+      setProgress(STEP_FROM[step] + (STEP_TO[step] - STEP_FROM[step]) * eased);
+    }, 50);
+    return () => clearInterval(id);
+  }, [step]);
+
+  // Pulsing dots
   useEffect(() => {
     const t = setInterval(() => setDots(d => d.length >= 3 ? '' : d+'.'), 400);
     return () => clearInterval(t);
   }, []);
-  const current = LOADING_STEPS[step];
+
+  const offset = CIRCUMFERENCE * (1 - progress / 100);
+
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+      {/* Avatar with progress arc */}
       <div style={{ position: 'relative', flexShrink: 0, marginTop: 2, width: 32, height: 32 }}>
         <div style={{ width: 32, height: 32, borderRadius: '50%', background: ACCENT, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, position: 'relative', zIndex: 1 }}>A</div>
-        <svg style={{ position: 'absolute', top: -4, left: -4, width: 40, height: 40 }} viewBox="0 0 40 40" fill="none">
+        <svg style={{ position: 'absolute', top: -4, left: -4, width: 40, height: 40 }}
+          viewBox="0 0 40 40" fill="none"
+        >
+          {/* Track */}
           <circle cx="20" cy="20" r="18" stroke={ACCENT} strokeWidth="2" strokeOpacity="0.15" />
-          <circle cx="20" cy="20" r="18" stroke={ACCENT} strokeWidth="2" strokeLinecap="round"
-            strokeDasharray="28 85"
-            style={{ animation: 'axiom-spin 1s linear infinite', transformOrigin: '20px 20px' }}
+          {/* Progress arc — starts at top (-90deg = -25% offset) */}
+          <circle
+            cx="20" cy="20" r="18"
+            stroke={ACCENT} strokeWidth="2" strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            strokeDashoffset={offset}
+            transform="rotate(-90 20 20)"
+            style={{ transition: 'stroke-dashoffset 0.1s linear' }}
           />
         </svg>
       </div>
+
+      {/* Step list */}
       <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: '4px 16px 16px 16px', padding: '14px 20px', minWidth: 280 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {LOADING_STEPS.slice(0, step+1).map((s, i) => {
+          {LOADING_STEPS.slice(0, step + 1).map((s, i) => {
             const active = i === step, completed = i < step;
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -84,7 +127,9 @@ function LoadingBubble() {
                   {active && <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT, animation: 'axiom-blink 1s ease-in-out infinite' }} />}
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? TEXT : completed ? MUTED : DIM, transition: 'all .3s' }}>{s.label}{active ? dots : ''}</div>
+                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? TEXT : completed ? MUTED : DIM, transition: 'all .3s' }}>
+                    {s.label}{active ? dots : ''}
+                  </div>
                   {active && <div style={{ fontSize: 11, color: DIM, marginTop: 1 }}>{s.detail}</div>}
                 </div>
               </div>
@@ -92,7 +137,7 @@ function LoadingBubble() {
           })}
         </div>
       </div>
-      <style>{`@keyframes axiom-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
+      <style>{`@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
     </div>
   );
 }

@@ -95,99 +95,73 @@ const LOADING_STEPS = [
   { label: 'Grounding the response',      detail: 'o4-mini · chain-of-thought',       ms: 99999 }, // holds until done
 ];
 
-function LoadingBubble() {
-  const [step, setStep]   = useState(0);
-  const [dots, setDots]   = useState('');
+const STEP_FROM_N = [0, 25, 50, 75];
+const STEP_TO_N   = [25, 50, 75, 90];
+const CIRCUM_N    = 2 * Math.PI * 18;
+function easeOutN(t: number) { return 1 - Math.pow(1 - t, 2); }
 
-  // Advance steps on their individual timers
+function LoadingBubble() {
+  const [step, setStep]         = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [dots, setDots]         = useState('');
+  const stepStart               = useRef(Date.now());
+
   useEffect(() => {
     if (step >= LOADING_STEPS.length - 1) return;
-    const t = setTimeout(() => setStep(s => Math.min(s + 1, LOADING_STEPS.length - 1)), LOADING_STEPS[step].ms);
+    const t = setTimeout(() => { setStep(s => s + 1); stepStart.current = Date.now(); }, LOADING_STEPS[step].ms);
     return () => clearTimeout(t);
   }, [step]);
 
-  // Pulsing dots independent of step
+  useEffect(() => {
+    const id = setInterval(() => {
+      const elapsed  = Date.now() - stepStart.current;
+      const duration = step < LOADING_STEPS.length - 1 ? LOADING_STEPS[step].ms : 18000;
+      const t     = Math.min(elapsed / duration, step < LOADING_STEPS.length - 1 ? 1 : 0.97);
+      setProgress(STEP_FROM_N[step] + (STEP_TO_N[step] - STEP_FROM_N[step]) * easeOutN(t));
+    }, 50);
+    return () => clearInterval(id);
+  }, [step]);
+
   useEffect(() => {
     const t = setInterval(() => setDots(d => d.length >= 3 ? '' : d + '.'), 400);
     return () => clearInterval(t);
   }, []);
 
-  const current = LOADING_STEPS[step];
+  const offset = CIRCUM_N * (1 - progress / 100);
 
   return (
     <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
-      {/* Avatar with pulse ring */}
-      <div style={{ position: 'relative', flexShrink: 0, marginTop: 2 }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%', background: NAVY, color: '#fff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 13, fontWeight: 700,
-        }}>N</div>
-        <div style={{
-          position: 'absolute', inset: -3, borderRadius: '50%',
-          border: `2px solid ${NAVY}`, opacity: 0.3,
-          animation: 'axiom-pulse 1.4s ease-in-out infinite',
-        }} />
+      <div style={{ position: 'relative', flexShrink: 0, marginTop: 2, width: 32, height: 32 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: NAVY, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, position: 'relative', zIndex: 1 }}>N</div>
+        <svg style={{ position: 'absolute', top: -4, left: -4, width: 40, height: 40 }} viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="18" stroke={NAVY} strokeWidth="2" strokeOpacity="0.15" />
+          <circle cx="20" cy="20" r="18" stroke={NAVY} strokeWidth="2" strokeLinecap="round"
+            strokeDasharray={CIRCUM_N} strokeDashoffset={offset}
+            transform="rotate(-90 20 20)"
+            style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+          />
+        </svg>
       </div>
-
-      <div style={{
-        background: '#fff', border: `1px solid ${RULE}`,
-        borderRadius: '4px 16px 16px 16px',
-        padding: '14px 20px', minWidth: 280,
-      }}>
-        {/* Step progress */}
+      <div style={{ background: '#fff', border: `1px solid ${RULE}`, borderRadius: '4px 16px 16px 16px', padding: '14px 20px', minWidth: 280 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {LOADING_STEPS.slice(0, step + 1).map((s, i) => {
-            const active    = i === step;
-            const completed = i < step;
+            const active = i === step, completed = i < step;
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {/* Status icon */}
-                <div style={{
-                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: completed ? NAVY : active ? 'transparent' : '#E5E7EB',
-                  border: active ? `2px solid ${NAVY}` : 'none',
-                  transition: 'all .3s',
-                }}>
-                  {completed && (
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <path d="M1.5 5L3.5 7.5L8.5 2.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {active && (
-                    <div style={{
-                      width: 6, height: 6, borderRadius: '50%', background: NAVY,
-                      animation: 'axiom-blink 1s ease-in-out infinite',
-                    }} />
-                  )}
+                <div style={{ width: 18, height: 18, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: completed ? NAVY : 'transparent', border: active ? `2px solid ${NAVY}` : completed ? 'none' : 'none', transition: 'all .3s' }}>
+                  {completed && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1.5 5L3.5 7.5L8.5 2.5" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                  {active && <div style={{ width: 6, height: 6, borderRadius: '50%', background: NAVY, animation: 'axiom-blink 1s ease-in-out infinite' }} />}
                 </div>
-                {/* Label */}
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? NAVY : completed ? SOFT : '#9CA3AF', transition: 'all .3s' }}>
-                    {s.label}{active ? dots : ''}
-                  </div>
-                  {active && (
-                    <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{s.detail}</div>
-                  )}
+                  <div style={{ fontSize: 13, fontWeight: active ? 600 : 400, color: active ? NAVY : completed ? SOFT : '#9CA3AF', transition: 'all .3s' }}>{s.label}{active ? dots : ''}</div>
+                  {active && <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 1 }}>{s.detail}</div>}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Keyframe animations injected once */}
-      <style>{`
-        @keyframes axiom-pulse {
-          0%, 100% { transform: scale(1);   opacity: 0.3; }
-          50%       { transform: scale(1.4); opacity: 0; }
-        }
-        @keyframes axiom-blink {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.3; }
-        }
-      `}</style>
+      <style>{`@keyframes axiom-blink{0%,100%{opacity:1}50%{opacity:0.3}}`}</style>
     </div>
   );
 }
