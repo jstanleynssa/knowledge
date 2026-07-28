@@ -293,18 +293,33 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function FaqBlock({ items, onFaqFeedback }: {
+function FaqBlock({ items, onFaqFeedback, faqLearned, rewritingFaq, faqExistingFeedback }: {
   items: FaqItem[];
   onFaqFeedback?: (index: number, type: 'verified' | 'flag', note?: string) => void;
+  faqLearned?: Record<number, string>;
+  rewritingFaq?: Record<number, boolean>;
+  faqExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
 }) {
   return (
     <>
       {items.map((item, i) => (
-        <div key={i} className="faq-item">
+        <div key={i} className="faq-item" style={{ position: 'relative', opacity: rewritingFaq?.[i] ? 0.6 : 1, transition: 'opacity .2s' }}>
+          {rewritingFaq?.[i] && (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 5, background: 'rgba(255,255,255,0.7)', borderRadius: 4 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#6b7280' }}>⟳ Applying suggestion…</span>
+            </div>
+          )}
           <p className="lead">{capitalize(item.q)}</p>
           <p className="faq-a">{item.a}</p>
           {onFaqFeedback && (
-            <SectionFeedback sectionIndex={i} label="FAQ answer" onFeedback={onFaqFeedback} />
+            <SectionFeedback
+              sectionIndex={i}
+              label="FAQ answer"
+              onFeedback={onFaqFeedback}
+              learned={faqLearned?.[i]}
+              rewriting={rewritingFaq?.[i]}
+              existingFeedback={faqExistingFeedback?.[i]}
+            />
           )}
         </div>
       ))}
@@ -331,8 +346,10 @@ interface ReferencePageProps {
   /** "What I learned" text per section index, set after a suggestion rewrite completes. */
   sectionLearned?: Record<number, string>;
   rewritingSection?: Record<number, boolean>;
-  /** Pre-existing section feedback loaded from DB { [index]: { type, reviewer_name, created_at } } */
   sectionExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
+  faqLearned?: Record<number, string>;
+  rewritingFaq?: Record<number, boolean>;
+  faqExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
 }
 
 // Scoped CSS for embedded (non-iframe) preview inside the Next.js shell.
@@ -354,7 +371,7 @@ const embeddedCss = `
 }
 `;
 
-export function ReferencePageComponent({ page, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection, sectionExistingFeedback }: ReferencePageProps) {
+export function ReferencePageComponent({ page, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection, sectionExistingFeedback, faqLearned, rewritingFaq, faqExistingFeedback }: ReferencePageProps) {
   const categoryLabel = page.category === 'social-security' ? 'Social Security' : 'IRMAA & Medicare';
   const categoryPath = `/${page.category}`;
 
@@ -620,7 +637,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
           {page.faq.length > 0 && (
             <>
               <h2>Frequently asked</h2>
-              <FaqBlock items={page.faq} onFaqFeedback={onFaqFeedback} />
+              <FaqBlock items={page.faq} onFaqFeedback={onFaqFeedback} faqLearned={faqLearned} rewritingFaq={rewritingFaq} faqExistingFeedback={faqExistingFeedback} />
             </>
           )}
           <aside className={`cta${isIrmaa ? ' cta-irmaa' : ''}`} aria-label="Find an advisor">
@@ -802,7 +819,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
           {page.faq.length > 0 && (
             <>
               <h2>Frequently asked</h2>
-              <FaqBlock items={page.faq} onFaqFeedback={onFaqFeedback} />
+              <FaqBlock items={page.faq} onFaqFeedback={onFaqFeedback} faqLearned={faqLearned} rewritingFaq={rewritingFaq} faqExistingFeedback={faqExistingFeedback} />
             </>
           )}
 

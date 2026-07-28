@@ -57,6 +57,9 @@ export function ReviewEditor({
   const [rewritingSection, setRewritingSection] = useState<Record<number, boolean>>({});
   const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({});
   const [sectionExistingFeedback, setSectionExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
+  const [rewritingFaq, setRewritingFaq]       = useState<Record<number, boolean>>({});
+  const [faqLearned, setFaqLearned]           = useState<Record<number, string>>({});
+  const [faqExistingFeedback, setFaqExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
 
   // ── Load existing section feedback on mount ────────────────────
   useEffect(() => {
@@ -64,13 +67,15 @@ export function ReviewEditor({
       .then(r => r.json())
       .then(data => {
         if (!data.ok) return;
-        const map: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
+        const bodyMap: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
+        const faqMap:  Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
         for (const row of data.feedback ?? []) {
-          if (row.section_type === 'body') {
-            map[row.section_index] = { type: row.feedback_type, reviewer_name: row.reviewer_name, created_at: row.created_at };
-          }
+          const entry = { type: row.feedback_type, reviewer_name: row.reviewer_name, created_at: row.created_at };
+          if (row.section_type === 'body') bodyMap[row.section_index] = entry;
+          if (row.section_type === 'faq')  faqMap[row.section_index]  = entry;
         }
-        setSectionExistingFeedback(map);
+        setSectionExistingFeedback(bodyMap);
+        setFaqExistingFeedback(faqMap);
       })
       .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -169,9 +174,44 @@ export function ReviewEditor({
     }
   }
 
-  function handleFaqFeedback(index: number, type: 'verified' | 'flag', note?: string) {
+  async function handleFaqFeedback(index: number, type: 'verified' | 'flag', note?: string) {
     setFaqFeedback(prev => ({ ...prev, [index]: { type, note } }));
+    setFaqExistingFeedback(prev => ({
+      ...prev,
+      [index]: { type, reviewer_name: reviewerName, created_at: new Date().toISOString() },
+    }));
     persistFeedback('faq', index, type, note);
+
+    // Auto-rewrite the FAQ answer on suggestion
+    if (type === 'flag' && note?.trim()) {
+      const faqItem = fields.faq[index];
+      if (!faqItem) return;
+      setRewritingFaq(prev => ({ ...prev, [index]: true }));
+      try {
+        const res = await fetch('/api/admin/rewrite-section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            heading:     faqItem.q,
+            prose:       faqItem.a,
+            note,
+            page_title:  page.title,
+            category:    page.category,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          set('faq', fields.faq.map((f, i) =>
+            i === index ? { ...f, a: data.prose } : f
+          ));
+          if (data.learned) setFaqLearned(prev => ({ ...prev, [index]: data.learned }));
+        }
+      } catch (e) {
+        console.error('faq rewrite failed:', e);
+      } finally {
+        setRewritingFaq(prev => ({ ...prev, [index]: false }));
+      }
+    }
   }
   const [supersededNote, setSupersededNote] = useState(page.deprecation_note ?? '');
 
@@ -686,7 +726,7 @@ export function ReviewEditor({
           )}
 
           {/* Rendered page */}
-          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} sectionExistingFeedback={sectionExistingFeedback} />
+          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} sectionExistingFeedback={sectionExistingFeedback} faqLearned={faqLearned} rewritingFaq={rewritingFaq} faqExistingFeedback={faqExistingFeedback} />
         </div>
 
       </div>
