@@ -26,12 +26,21 @@ type CoverageData = {
   suggested_next: Array<{ cluster: string; label: string; total: number; sample: string[] }>;
 };
 
-const SOURCE_META: Record<string, { label: string; color: string; description: string }> = {
-  poms:     { label: 'POMS',        color: '#1E40AF', description: 'SSA Program Operations Manual System — primary rule corpus' },
-  cfr:      { label: 'CFR',         color: '#065F46', description: 'Code of Federal Regulations Title 20 — SS & Medicare regulations' },
-  handbook: { label: 'SSA Handbook',color: '#7C3AED', description: 'Social Security Handbook — plain-language rules' },
-  cms:      { label: 'CMS',         color: '#B45309', description: 'CMS.gov content — Medicare programs, coverage, enrollment' },
-  medicare: { label: 'Medicare.gov',color: '#9D174D', description: 'Medicare.gov — beneficiary-facing plans, apps, tools' },
+const SOURCE_META: Record<string, {
+  label: string; color: string; description: string;
+  // Estimated % of ingested docs that are advisor-relevant (rules, guidance, coverage info)
+  // Excludes: navigational pages, provider billing studies, admin notices, blank/toc docs
+  relevancePct: number;
+  // What "good coverage" looks like for this source
+  targetNote: string;
+  // Whether direct citation is the primary value or retrieval depth is
+  citationMode: 'primary' | 'retrieval';
+}> = {
+  poms:     { label: 'POMS',         color: '#1E40AF', description: 'SSA Program Operations Manual System — the authoritative SS rules', relevancePct: 33, targetNote: 'Cover all Tier 1 topic clusters (~40 areas)', citationMode: 'primary' },
+  cfr:      { label: 'CFR',          color: '#065F46', description: 'Code of Federal Regulations Title 20 — SS & Medicare law', relevancePct: 90, targetNote: 'Cite key SS/IRMAA regulatory sections', citationMode: 'primary' },
+  handbook: { label: 'SSA Handbook', color: '#7C3AED', description: 'Social Security Handbook — plain-language rules', relevancePct: 100, targetNote: 'Cover all major SS benefit topics', citationMode: 'primary' },
+  cms:      { label: 'CMS',          color: '#B45309', description: 'CMS.gov — Medicare programs, coverage, enrollment, IRMAA', relevancePct: 8, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
+  medicare: { label: 'Medicare.gov', color: '#9D174D', description: 'Medicare.gov — beneficiary plans, apps, enrollment tools', relevancePct: 25, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
 };
 
 function ProgressBar({ pct, color }: { pct: number; color?: string }) {
@@ -136,12 +145,17 @@ export default async function CoveragePage() {
         </div>
 
         {/* ── Corpus breakdown ── */}
-        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 12px' }}>Corpus Breakdown</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Corpus Breakdown</h2>
+        <p style={{ fontSize: 13, color: G.text, margin: '0 0 16px', lineHeight: 1.5 }}>
+          The goal is not to cite every document — it’s to cover the rules and regulations that matter most to advisors.
+          POMS, CFR, and the Handbook are the primary citation sources. CMS and Medicare.gov deepen retrieval quality
+          and will be directly cited as Medicare/IRMAA pages are drafted.
+        </p>
         <div style={{ background: '#fff', border: `1px solid ${G.border}`, borderRadius: 8, overflow: 'hidden', marginBottom: 32 }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: G.bg, borderBottom: `1px solid ${G.border}` }}>
-                {['Source', 'Description', 'Documents', 'Citations Used', 'Citation Share'].map(h => (
+                {['Source', 'Description', 'Docs Ingested', 'Est. Relevant', 'Pages Citing', 'Coverage Goal'].map(h => (
                   <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: G.text }}>{h}</th>
                 ))}
               </tr>
@@ -151,33 +165,41 @@ export default async function CoveragePage() {
                 const meta = SOURCE_META[t];
                 const docs = docCounts[t] ?? 0;
                 const cites = citationsBySource[t] ?? 0;
-                const pct = totalCitations > 0 ? Math.round((cites / totalCitations) * 100) : 0;
+                const relevant = Math.round(docs * meta.relevancePct / 100);
+                // Pages citing this source = pages with at least one citation from this source
+                const pagesCiting = (pages ?? []).filter(p =>
+                  ((p.primary_sources as any[]) ?? []).some((s: any) => {
+                    const sec: string = s.section_number ?? '';
+                    if (t === 'poms')     return /^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sec);
+                    if (t === 'cfr')      return /^20\s+CFR/i.test(sec);
+                    if (t === 'handbook') return /^HBK/i.test(sec);
+                    if (t === 'cms')      return /cms\.gov/i.test(sec) || /^CMS/i.test(sec);
+                    if (t === 'medicare') return /medicare\.gov/i.test(sec);
+                    return false;
+                  })
+                ).length;
+                const isPrimary = meta.citationMode === 'primary';
                 return (
                   <tr key={t} style={{ borderBottom: `1px solid ${G.border}` }}>
                     <td style={{ padding: '12px 14px' }}>
                       <span style={{ background: meta.color, color: '#fff', fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 4 }}>{meta.label}</span>
                     </td>
-                    <td style={{ padding: '12px 14px', color: '#374151', fontSize: 12 }}>{meta.description}</td>
+                    <td style={{ padding: '12px 14px', color: '#374151', fontSize: 12, maxWidth: 240 }}>{meta.description}</td>
                     <td style={{ padding: '12px 14px', fontWeight: 600, color: NSSA_DARK }}>{docs.toLocaleString()}</td>
-                    <td style={{ padding: '12px 14px', color: cites > 0 ? '#059669' : G.text, fontWeight: cites > 0 ? 600 : 400 }}>{cites}</td>
-                    <td style={{ padding: '12px 14px', width: 160 }}>
-                      {totalCitations > 0 ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div style={{ flex: 1 }}><ProgressBar pct={pct} color={meta.color} /></div>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: pct > 0 ? meta.color : '#9CA3AF', minWidth: 32, textAlign: 'right' }}>{pct}%</span>
-                        </div>
-                      ) : <span style={{ color: G.text }}>—</span>}
+                    <td style={{ padding: '12px 14px', color: G.text }}>
+                      {isPrimary ? `~${relevant.toLocaleString()}` : <span style={{ fontSize: 11, color: G.text, fontStyle: 'italic' }}>retrieval depth</span>}
                     </td>
+                    <td style={{ padding: '12px 14px' }}>
+                      <span style={{ fontWeight: 600, color: pagesCiting > 0 ? '#059669' : G.text }}>
+                        {pagesCiting > 0 ? `${pagesCiting} page${pagesCiting !== 1 ? 's' : ''}` : '—'}
+                      </span>
+                    </td>
+                    <td style={{ padding: '12px 14px', fontSize: 12, color: G.text, maxWidth: 220 }}>{meta.targetNote}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
-
-        {/* ── Note about CMS/Medicare coverage ── */}
-        <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 8, padding: '14px 18px', marginBottom: 28, fontSize: 13, color: '#92400E' }}>
-          <strong>Coverage note:</strong> CMS (20,764 docs) and Medicare.gov (404 docs) are ingested and searchable but not yet directly cited in published pages — citations currently reference POMS, CFR, and Handbook sections. As Medicare/IRMAA pages are drafted and published, CMS citation counts will grow.
         </div>
 
         {/* ── POMS cluster breakdown ── */}
