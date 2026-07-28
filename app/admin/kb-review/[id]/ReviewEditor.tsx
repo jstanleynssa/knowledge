@@ -473,6 +473,17 @@ export function ReviewEditor({
             Full preview ↗
           </a>
 
+          {page.status === 'published' && (
+            <a
+              href={`https://knowledge.nssapros.com/${page.category}/${page.slug}`}
+              target="_blank"
+              rel="noopener"
+              style={{ color: '#86efac', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}
+            >
+              View live ↗
+            </a>
+          )}
+
           <button
             onClick={() => setShowSuperseded(true)}
             disabled={isPending}

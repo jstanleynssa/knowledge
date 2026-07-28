@@ -263,6 +263,16 @@ export default async function KbReviewPage({
                   <div style={{ fontSize: 13, color: G.text }}>
                     {page.eyebrow && <span style={{ marginRight: 8, color: '#8A5A00', fontWeight: 500 }}>{page.eyebrow}</span>}
                     <code style={{ background: G.bg, padding: '1px 6px', borderRadius: 3, marginRight: 8 }}>{page.slug}</code>
+                    {page.status === 'published' && (
+                      <a
+                        href={`https://knowledge.nssapros.com/${page.category}/${page.slug}`}
+                        target="_blank" rel="noopener"
+                        onClick={e => e.stopPropagation()}
+                        style={{ marginRight: 8, color: NSSA.medium, fontWeight: 600, textDecoration: 'none', fontSize: 12 }}
+                      >
+                        View live ↗
+                      </a>
+                    )}
                     {citations} citation{citations !== 1 ? 's' : ''}
                     {page.approved_by
                       ? <span style={{ marginLeft: 8, color: '#059669' }}>· ✓ {page.approved_by}</span>
