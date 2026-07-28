@@ -295,10 +295,9 @@ function FeedbackBar({
               />
             )}
 
-            {turn.rerunFeedback && (
-              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 8,
-                color: turn.rerunFeedback === 'approve' ? '#059669' : '#DC2626' }}>
-                {turn.rerunFeedback === 'approve' ? '✓ Fix confirmed — answer added to verified corpus' : '✗ Flagged for further review'}
+            {turn.rerunFeedback === 'reject' && (
+              <div style={{ fontSize: 12, fontWeight: 600, marginTop: 8, color: '#DC2626' }}>
+                ✗ Flagged for further review
               </div>
             )}
           </div>
@@ -413,16 +412,30 @@ function AnswerBubble({
 
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Verdict pill */}
-        {a.verdict !== 'no_advice_to_evaluate' && (
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: vs.bg, border: `1px solid ${vs.border}`, borderRadius: 20,
-            padding: '4px 12px', marginBottom: 10, fontSize: 12, fontWeight: 700, color: vs.color,
-          }}>
-            {vs.label}
-            {a.verdict_summary && <span style={{ fontWeight: 400, marginLeft: 4 }}>&mdash; {a.verdict_summary}</span>}
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+          {a.verdict !== 'no_advice_to_evaluate' && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: vs.bg, border: `1px solid ${vs.border}`, borderRadius: 20,
+              padding: '4px 12px', fontSize: 12, fontWeight: 700, color: vs.color,
+            }}>
+              {vs.label}
+              {a.verdict_summary && <span style={{ fontWeight: 400, marginLeft: 4 }}>&mdash; {a.verdict_summary}</span>}
+            </div>
+          )}
+          {turn.rerunFeedback === 'approve' && (
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)',
+              borderRadius: 20, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: '#34D399',
+            }}>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                <path d="M1.5 5L3.5 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              Answer updated
+            </div>
+          )}
+        </div>
 
         {/* Answer text */}
         <div style={{
@@ -654,10 +667,19 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
   async function handleRerunFeedback(turnIndex: number, type: 'approve' | 'reject') {
     const turn = turns[turnIndex];
     if (!turn?.rerunAnswer) return;
-    setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, rerunFeedback: type } : t));
+
     if (type === 'approve') {
-      // Save the verified re-run answer to strengthen the corpus
-      await fetch('/api/feedback', {
+      // Promote the rewritten answer into the main answer bubble
+      // and clear the updated-response panel — the main bubble now shows the correct text
+      setTurns(prev => prev.map((t, i) => i === turnIndex ? {
+        ...t,
+        answer:       { ...t.answer!, answer: turn.rerunAnswer!.answer },
+        rerunAnswer:  null,
+        rerunFeedback: 'approve',
+      } : t));
+
+      // Save approved answer to verified corpus
+      fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -665,11 +687,14 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
           original_answer: turn.rerunAnswer.answer,
           feedback_type:   'approve',
           category:        (turn.rerunAnswer as any).category ?? (turn.answer as any)?.category ?? 'social-security',
-          primary_sources: turn.rerunAnswer.primary_sources,
-          sections_used:   turn.rerunAnswer.sections_used,
+          primary_sources: turn.rerunAnswer.primary_sources ?? turn.answer?.primary_sources ?? [],
+          sections_used:   turn.rerunAnswer.sections_used   ?? turn.answer?.sections_used   ?? [],
           correction_note: 'Reviewer confirmed fix via verify-fix flow',
         }),
       }).catch(() => null);
+    } else {
+      // Reject — just mark it, leave the original visible
+      setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, rerunFeedback: type } : t));
     }
   }
 
