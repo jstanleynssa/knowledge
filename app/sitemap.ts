@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .eq('status', 'published');
 
   const pages: MetadataRoute.Sitemap = (data ?? []).map((row) => ({
-    url: `https://knowledge.nssapros.com/${row.category}/${row.slug}`,
+    url: `https://www.nssapros.com/codex/${row.category}/${row.slug}`,
     lastModified: row.date_modified ?? row.date_published ?? undefined,
     changeFrequency: 'monthly',
     priority: 0.8,
@@ -23,18 +23,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     {
-      url: 'https://knowledge.nssapros.com',
+      url: 'https://www.nssapros.com/codex',
       lastModified: new Date().toISOString().split('T')[0],
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
-      url: 'https://knowledge.nssapros.com/social-security',
+      url: 'https://www.nssapros.com/codex/social-security',
       changeFrequency: 'weekly',
       priority: 0.9,
     },
     {
-      url: 'https://knowledge.nssapros.com/irmaa',
+      url: 'https://www.nssapros.com/codex/irmaa',
       changeFrequency: 'weekly',
       priority: 0.9,
     },

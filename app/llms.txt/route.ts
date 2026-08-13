@@ -50,19 +50,19 @@ This content is intended for licensed financial advisors, insurance producers, t
 
 ## Social Security (${ss.length} pages)
 
-${pageLines(ss, 'https://knowledge.nssapros.com/social-security')}
+${pageLines(ss, 'https://www.nssapros.com/codex/social-security')}
 
 ## IRMAA & Medicare (${irmaa.length} pages)
 
-${pageLines(irmaa, 'https://knowledge.nssapros.com/irmaa')}
+${pageLines(irmaa, 'https://www.nssapros.com/codex/irmaa')}
 
 ## Key URLs
 
-- Knowledge Base home: https://knowledge.nssapros.com
-- Social Security index: https://knowledge.nssapros.com/social-security
-- IRMAA & Medicare index: https://knowledge.nssapros.com/irmaa
+- Knowledge Base home: https://www.nssapros.com/codex
+- Social Security index: https://www.nssapros.com/codex/social-security
+- IRMAA & Medicare index: https://www.nssapros.com/codex/irmaa
 - AXIOM (AI research tool for professionals): https://axiom.nssapros.com
-- NSSA advisor directory: https://directory.nssapros.com
+- NSSA advisor directory: https://www.nssapros.com/directory
 - NSSA main site: https://www.nssapros.com
 
 ## About the source corpus

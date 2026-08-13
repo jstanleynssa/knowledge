@@ -35,7 +35,7 @@ export function KbFooter({ wrapped = false }: Props) {
           style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>
           IRMAA Certification &rsaquo;
         </a>
-        <a href="https://directory.nssapros.com" target="_blank" rel="noopener"
+        <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener"
           style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>
           Find an Advisor &rsaquo;
         </a>

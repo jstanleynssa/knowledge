@@ -11,6 +11,7 @@ import { createServiceClient } from '@/lib/supabase';
 import { AskInterface } from './AskInterface';
 import { DisclaimerFooter } from '@/components/DisclaimerFooter';
 import { AxiomGate } from './GateForm';
+import { ReviewerGate } from './ReviewerGate';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,12 +91,19 @@ function StatCell({
 export default async function AxiomPage() {
   // ── Password gate ──────────────────────────────────────────────────────────
   const axiomPassword = process.env.AXIOM_PASSWORD;
+  const cookieStore = await cookies();
   if (axiomPassword) {
-    const cookieStore = await cookies();
     const access = cookieStore.get('axiom_access');
     if (access?.value !== axiomPassword) {
       return <AxiomGate />;
     }
+  }
+
+  // ── Reviewer gate (who are you?) ─────────────────────────────────────────
+  const reviewerCookie = cookieStore.get('axiom_reviewer');
+  const reviewerName = reviewerCookie?.value ?? null;
+  if (!reviewerName) {
+    return <ReviewerGate />;
   }
 
   const { totalDocs, totalChunks } = await fetchStats();
@@ -202,7 +210,7 @@ export default async function AxiomPage() {
         </section>
 
         {/* ── C. Ask interface — directly under copy ───────────────────────── */}
-        <AskInterface sourceSummary={sourceSummary} />
+        <AskInterface sourceSummary={sourceSummary} reviewerName={reviewerName} />
 
         {/* ── D. Stats strip ───────────────────────────────────────────────── */}
         <div style={{
@@ -281,7 +289,7 @@ export default async function AxiomPage() {
               style={{ color: ACCENT, textDecoration: 'none' }}>Social Security Certification &rsaquo;</a>
             <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener"
               style={{ color: ACCENT, textDecoration: 'none' }}>IRMAA Certification &rsaquo;</a>
-            <a href="https://directory.nssapros.com" target="_blank" rel="noopener"
+            <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener"
               style={{ color: ACCENT, textDecoration: 'none' }}>Find an Advisor &rsaquo;</a>
           </div>
 

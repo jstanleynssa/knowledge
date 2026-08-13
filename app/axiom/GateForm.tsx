@@ -18,7 +18,7 @@ export function AxiomGate() {
     setLoading(true);
     setError('');
 
-    const res = await fetch('/api/axiom-auth', {
+    const res = await fetch('/codex/api/axiom-auth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password }),

@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Serve the app under /codex on www.nssapros.com
+  basePath: '/codex',
+
+  // Redirect /codex/ → /codex (no trailing slash) — fixes duplicate content in Moz crawl
+  trailingSlash: false,
+
+  // Allow Server Actions from www.nssapros.com (proxied via Cloudflare Worker)
+  // Without this, Next.js CSRF protection rejects actions where Origin != Host
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['www.nssapros.com', 'knowledge.nssapros.com', 'axiom.nssapros.com'],
+    },
+  },
+
   // Reference pages are pure SSG: no client JS, immutable after publish.
   // The API route (/api/publish-webhook) needs server runtime → can't use output:'export'.
   // Vercel handles SSG pages natively without full static export.
@@ -15,6 +29,22 @@ const nextConfig: NextConfig = {
         source: '/ask',
         destination: '/axiom',
         permanent: false,
+      },
+      // Slug shortening — 301s for published pages (preserves ranking signals)
+      {
+        source: '/social-security/benefit-recalculation-after-work',
+        destination: '/social-security/benefit-recalculation',
+        permanent: true,
+      },
+      {
+        source: '/social-security/appealing-social-security-denial',
+        destination: '/social-security/appealing-ssa-denial',
+        permanent: true,
+      },
+      {
+        source: '/social-security/widow-benefit-vs-own-retirement',
+        destination: '/social-security/widow-vs-own-retirement',
+        permanent: true,
       },
     ];
   },

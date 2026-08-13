@@ -271,6 +271,17 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
       </>
     );
   }
+
+  if (section.type === 'crossref' && section.ref_page_slug && section.ref_page_category) {
+    const href = `/codex/${section.ref_page_category}/${section.ref_page_slug}`;
+    return (
+      <div style={{ border: '1px solid #BFDBFE', borderRadius: 8, padding: '16px 20px', background: '#EFF6FF', margin: '16px 0' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#1E40AF', marginBottom: 6 }}>🔗 Related Page</div>
+        <a href={href} style={{ fontWeight: 700, fontSize: 16, color: '#1E40AF', textDecoration: 'none' }}>{section.ref_page_title ?? section.heading}</a>
+        {section.ref_context && <p style={{ fontSize: 14, color: '#374151', marginTop: 6, marginBottom: 0 }}>{section.ref_context}</p>}
+      </div>
+    );
+  }
   const cite = section.citation_ref ? sourceIndex.get(section.citation_ref) : null;
   const { clean: cleanProse, gap } = extractSourceGap(section.prose);
   return (
@@ -311,6 +322,11 @@ function FaqBlock({ items, onFaqFeedback, faqLearned, rewritingFaq, faqExistingF
           )}
           <p className="lead">{capitalize(item.q)}</p>
           <p className="faq-a">{item.a}</p>
+          {item.ref_page_id && item.ref_page_slug && item.ref_page_category && (
+            <p style={{ marginTop: 6, fontSize: 14 }}>
+              🔗 <a href={`/codex/${item.ref_page_category}/${item.ref_page_slug}`} style={{ color: '#1C80BC', fontWeight: 600 }}>{item.ref_page_title}</a>
+            </p>
+          )}
           {onFaqFeedback && (
             <SectionFeedback
               sectionIndex={i}
@@ -388,7 +404,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
       })
     : null;
 
-  const ctaUrl = `https://directory.nssapros.com/?utm_source=knowledge&utm_medium=referral&utm_campaign=kb_cta&utm_content=${page.slug}`;
+  const ctaUrl = `https://www.nssapros.com/directory/?utm_source=knowledge&utm_medium=referral&utm_campaign=kb_cta&utm_content=${page.slug}`;
 
   // ── CTA: anchor text pools (varied per page render for SEO anchor diversity) ──
   const SS_URL   = 'https://www.nssapros.com/social-security-training';
@@ -493,13 +509,13 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             'https://x.com/nssapros',
             'https://www.youtube.com/@nssapros',
             'https://www.credly.com/org/nssa',
-            'https://knowledge.nssapros.com',
+            'https://www.nssapros.com/codex',
           ],
         },
         isPartOf: {
           '@type': 'WebSite',
           name: 'NSSA Knowledge Base',
-          url: 'https://knowledge.nssapros.com',
+          url: 'https://www.nssapros.com/codex',
         },
       },
       {
@@ -513,9 +529,9 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Knowledge Base', item: 'https://knowledge.nssapros.com' },
-          { '@type': 'ListItem', position: 2, name: categoryLabel, item: `https://knowledge.nssapros.com${categoryPath}` },
-          { '@type': 'ListItem', position: 3, name: page.title, item: `https://knowledge.nssapros.com${categoryPath}/${page.slug}` },
+          { '@type': 'ListItem', position: 1, name: 'Knowledge Base', item: 'https://www.nssapros.com/codex' },
+          { '@type': 'ListItem', position: 2, name: categoryLabel, item: `https://www.nssapros.com/codex${categoryPath}` },
+          { '@type': 'ListItem', position: 3, name: page.title, item: `https://www.nssapros.com/codex${categoryPath}/${page.slug}` },
         ],
       },
     ],
@@ -556,7 +572,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
           <div className="preview-banner">
             <div style={{display:'flex',alignItems:'center',gap:12}}>
               <strong>⚠ Preview</strong>
-              <span className="pmeta">This page is not live — for review only</span>
+              <span className="pmeta">Review editor preview — status shown right</span>
             </div>
             <span className="pstatus">{STATUS_LABELS[page.status] ?? page.status}</span>
           </div>
@@ -578,23 +594,36 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             </div>
           </div>
         )}
-        <header className="masthead">
-          <div className="wrap">
-            <a className="kb-mark" href="https://knowledge.nssapros.com">
-              NSSA <span>Knowledge Base</span>
+        <header style={{borderBottom:'1px solid #e5e7eb',background:'#fff',position:'sticky',top:0,zIndex:50}}>
+          <div style={{maxWidth:1152,margin:'0 auto',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
+            <a href="https://www.nssapros.com" style={{flexShrink:0}}>
+              <img
+                src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/blog/nssa-logo.png"
+                alt="NSSA Professionals"
+                style={{height:40,width:'auto',display:'block'}}
+              />
             </a>
-            <a className="home" href="https://www.nssapros.com">
-              nssapros.com &rsaquo;
-            </a>
+            <nav style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
+              {[
+                ['About Us','https://www.nssapros.com/about'],
+                ['Social Security Training','https://www.nssapros.com/social-security-training'],
+                ['IRMAA Medicare Training','https://www.nssapros.com/irmaa-medicare-training-course'],
+                ['Find an Advisor','https://www.nssapros.com/directory'],
+                ['Contact Us','https://www.nssapros.com/contact'],
+                ['Log In','https://www.nssapros.com/login'],
+              ].map(([label,href]) => (
+                <a key={label} href={href} style={{fontSize:14,color:'#4b5563',textDecoration:'none',whiteSpace:'nowrap'}}>{label}</a>
+              ))}
+            </nav>
           </div>
         </header>
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <a href="https://knowledge.nssapros.com">Knowledge Base</a>
+            <a href="https://www.nssapros.com/codex">Knowledge Base</a>
             <span className="sep">/</span>
-            <a href={`https://knowledge.nssapros.com${categoryPath}`}>{categoryLabel}</a>
+            <a href={`https://www.nssapros.com/codex${categoryPath}`}>{categoryLabel}</a>
             {page.eyebrow && (
-              <><span className="sep">/</span><a href={`https://knowledge.nssapros.com${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
+              <><span className="sep">/</span><a href={`https://www.nssapros.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
             )}
             <span className="sep">/</span>
             {page.title}
@@ -674,7 +703,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             <div className="foot-links">
               <a href="https://www.nssapros.com/social-security-training" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
               <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
-              <a href="https://directory.nssapros.com" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
+              <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
             </div>
             <div className="foot-disc">
               National Social Security Advisors (NSSA&reg;) is the nation&apos;s first Social Security certification
@@ -696,13 +725,13 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{page.seo_title}</title>
         <meta name="description" content={page.meta_description} />
-        <link rel="canonical" href={`https://knowledge.nssapros.com${categoryPath}/${page.slug}`} />
+        <link rel="canonical" href={`https://www.nssapros.com/codex${categoryPath}/${page.slug}`} />
 
         {/* OpenGraph */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={page.title} />
         <meta property="og:description" content={page.meta_description} />
-        <meta property="og:url" content={`https://knowledge.nssapros.com${categoryPath}/${page.slug}`} />
+        <meta property="og:url" content={`https://www.nssapros.com/codex${categoryPath}/${page.slug}`} />
         <meta property="og:site_name" content="NSSA Knowledge Base" />
         {page.og_image_url && <meta property="og:image" content={page.og_image_url} />}
 
@@ -728,7 +757,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
           <div className="preview-banner">
             <div style={{display:'flex',alignItems:'center',gap:12}}>
               <strong>⚠ Preview</strong>
-              <span className="pmeta">This page is not live — for review only</span>
+              <span className="pmeta">Review editor preview — status shown right</span>
             </div>
             <span className="pstatus">{STATUS_LABELS[page.status] ?? page.status}</span>
           </div>
@@ -750,24 +779,37 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             </div>
           </div>
         )}
-        <header className="masthead">
-          <div className="wrap">
-            <a className="kb-mark" href="https://knowledge.nssapros.com">
-              NSSA <span>Knowledge Base</span>
+        <header style={{borderBottom:'1px solid #e5e7eb',background:'#fff',position:'sticky',top:0,zIndex:50}}>
+          <div style={{maxWidth:1152,margin:'0 auto',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
+            <a href="https://www.nssapros.com" style={{flexShrink:0}}>
+              <img
+                src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/blog/nssa-logo.png"
+                alt="NSSA Professionals"
+                style={{height:40,width:'auto',display:'block'}}
+              />
             </a>
-            <a className="home" href="https://www.nssapros.com">
-              nssapros.com &rsaquo;
-            </a>
+            <nav style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
+              {[
+                ['About Us','https://www.nssapros.com/about'],
+                ['Social Security Training','https://www.nssapros.com/social-security-training'],
+                ['IRMAA Medicare Training','https://www.nssapros.com/irmaa-medicare-training-course'],
+                ['Find an Advisor','https://www.nssapros.com/directory'],
+                ['Contact Us','https://www.nssapros.com/contact'],
+                ['Log In','https://www.nssapros.com/login'],
+              ].map(([label,href]) => (
+                <a key={label} href={href} style={{fontSize:14,color:'#4b5563',textDecoration:'none',whiteSpace:'nowrap'}}>{label}</a>
+              ))}
+            </nav>
           </div>
         </header>
 
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <a href="https://knowledge.nssapros.com">Knowledge Base</a>
+            <a href="https://www.nssapros.com/codex">Knowledge Base</a>
             <span className="sep">/</span>
-            <a href={`https://knowledge.nssapros.com${categoryPath}`}>{categoryLabel}</a>
+            <a href={`https://www.nssapros.com/codex${categoryPath}`}>{categoryLabel}</a>
             {page.eyebrow && (
-              <><span className="sep">/</span><a href={`https://knowledge.nssapros.com${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
+              <><span className="sep">/</span><a href={`https://www.nssapros.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
             )}
             <span className="sep">/</span>
             {page.title}
@@ -861,7 +903,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             <div className="foot-links">
               <a href="https://www.nssapros.com/social-security-training" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
               <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
-              <a href="https://directory.nssapros.com" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
+              <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
             </div>
             <div className="foot-disc">
               National Social Security Advisors (NSSA&reg;) is the nation&apos;s first Social Security certification

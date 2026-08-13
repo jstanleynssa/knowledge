@@ -10,8 +10,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import { TOPIC_QUEUE } from '@/lib/topic-queue';
-import { spawn } from 'child_process';
-import path from 'path';
+import { runDraft } from '@/scripts/draft/draft_page_v2';
+
+export const maxDuration = 300; // 5 minutes — allow full draft pipeline to complete
 
 const ADMIN_EMAIL    = 'jstanley@nssapros.com';
 const DEFAULT_COUNT  = 5;
@@ -32,24 +33,18 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}));
 
-  const scriptPath = path.join(process.cwd(), 'scripts/draft/draft_page_v2.ts');
-  const envFile    = path.join(process.cwd(), '.env.local');
-
-  function spawnDraft(topic: { slug: string; title: string; topic: string; category: string }) {
-    const env = {
-      ...process.env,
-      TOPIC:               topic.topic,
-      TITLE:               topic.title,
-      SLUG:                topic.slug,
-      CATEGORY:            topic.category,
-      SKIP_WORKED_EXAMPLE: 'true',
-    };
-    const child = spawn(
-      'npx',
-      ['tsx', '--tsconfig', 'tsconfig.json', `--env-file=${envFile}`, scriptPath],
-      { cwd: process.cwd(), env, detached: true, stdio: 'ignore' },
-    );
-    child.unref();
+  async function spawnDraft(
+    topic: { slug: string; title: string; topic: string; category: string },
+    sourcesFilter?: string[]
+  ) {
+    return runDraft({
+      topic:             topic.topic,
+      title:             topic.title,
+      slug:              topic.slug,
+      category:          topic.category as any,
+      skipWorkedExample: true,
+      ...(sourcesFilter && sourcesFilter.length > 0 ? { sourcesFilter: sourcesFilter as any } : {}),
+    });
   }
 
   // ── Custom topic mode ─────────────────────────────────────────────────────
@@ -71,13 +66,20 @@ export async function POST(req: NextRequest) {
       .replace(/-+/g, '-')
       .slice(0, 80);
 
-    spawnDraft({ slug, title, topic, category });
+    const sources = Array.isArray(body.sources) ? body.sources as string[] : undefined;
 
-    return NextResponse.json({
-      queued:  [slug],
-      remaining: 0,
-      message: `Generating "${title}" in background — it'll appear in the Needs Review queue shortly.`,
-    });
+    try {
+      const result = await spawnDraft({ slug, title, topic, category }, sources);
+      return NextResponse.json({
+        queued:  [slug],
+        pageId:  result?.id,
+        remaining: 0,
+        message: `"${title}" has been generated and is ready to review.`,
+      });
+    } catch (e) {
+      console.error('Draft generation error:', e);
+      return NextResponse.json({ error: 'Generation failed: ' + (e as Error).message }, { status: 500 });
+    }
   }
 
   // ── Queue mode: specific slugs selected by reviewer ──────────────────────
@@ -111,14 +113,23 @@ export async function POST(req: NextRequest) {
   }
 
   const queued: string[] = [];
+  const errors: string[] = [];
   for (const topic of candidates) {
     queued.push(topic.slug);
-    spawnDraft(topic);
+    try {
+      await spawnDraft(topic);
+    } catch (e) {
+      console.error(`Draft error for ${topic.slug}:`, e);
+      errors.push(topic.slug);
+    }
   }
 
+  const succeeded = queued.filter(s => !errors.includes(s));
   return NextResponse.json({
-    queued,
-    remaining: TOPIC_QUEUE.filter(t => !existingSlugs.has(t.slug)).length - queued.length,
-    message:   `Generating ${queued.length} page${queued.length !== 1 ? 's' : ''} in background — they'll appear in the Needs Review queue shortly.`,
+    queued: succeeded,
+    remaining: TOPIC_QUEUE.filter(t => !existingSlugs.has(t.slug)).length - succeeded.length,
+    message: succeeded.length > 0
+      ? `Generated ${succeeded.length} page${succeeded.length !== 1 ? 's' : ''} — check the Needs Review queue.`
+      : 'Generation failed — check server logs.',
   });
 }

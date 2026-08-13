@@ -11,6 +11,10 @@ export const metadata = {
   title: 'IRMAA & Medicare Reference | NSSA Knowledge Base',
   description:
     'Authoritative IRMAA and Medicare rules for financial advisors — income thresholds, appeals, Part B and Part D surcharges. Verified against SSA POMS.',
+  // Canonical strips ?topic= query params — prevents duplicate content for each topic filter
+  alternates: {
+    canonical: 'https://www.nssapros.com/codex/irmaa',
+  },
 };
 
 export default async function IrmaaIndex({
@@ -33,7 +37,7 @@ export default async function IrmaaIndex({
     <CategoryIndex
       category="irmaa"
       categoryLabel="IRMAA & Medicare"
-      categoryPath="/irmaa"
+      categoryPath="/codex/irmaa"
       pages={(data ?? []) as Partial<ReferencePage>[]}
       activeTopic={topic}
       description="Authoritative IRMAA income thresholds, Medicare Part B and Part D surcharges, life-changing event appeals, and enrollment rules — verified against SSA POMS."

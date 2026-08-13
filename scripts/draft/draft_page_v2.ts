@@ -23,24 +23,33 @@
 
 import OpenAI from 'openai';
 import { createServiceClient } from '@/lib/supabase';
-import { hybridRetrieve, type RetrievedSection } from '../retrieval/hybrid';
+import { hybridRetrieve, SS_SOURCES, IRMAA_SOURCES, type RetrievedSection, type SourceType } from '../retrieval/hybrid';
 import { verifyClaims, type DraftFields } from './verify';
 import type { Category, BodySection, FaqItem, PrimarySource } from '@/lib/types';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const topic    = process.env.TOPIC;
-const title    = process.env.TITLE;
-const slug     = process.env.SLUG;
-const category = (process.env.CATEGORY ?? 'social-security') as Category;
-const topK     = parseInt(process.env.TOP_K ?? '15', 10);
-const dryRun          = process.env.DRY_RUN === 'true'; // print output without saving
-const skipWorkedExample = process.env.SKIP_WORKED_EXAMPLE === 'true';
-
-if (!topic || !title || !slug) {
-  console.error('Required env vars: TOPIC, TITLE, SLUG');
-  process.exit(1);
+export interface DraftTopicOptions {
+  topic: string;
+  title: string;
+  slug: string;
+  category?: Category;
+  topK?: number;
+  dryRun?: boolean;
+  skipWorkedExample?: boolean;
+  /** Restrict retrieval to specific source corpora. Defaults to SS_SOURCES or IRMAA_SOURCES by category. */
+  sourcesFilter?: SourceType[];
 }
+
+// Top-level vars for CLI usage (populated by runDraft or CLI entrypoint)
+let topic: string | undefined;
+let title: string | undefined;
+let slug: string | undefined;
+let category: Category = 'social-security';
+let topK = 15;
+let dryRun = false;
+let skipWorkedExample = false;
+let _sourcesFilter: SourceType[] | undefined;
 
 // ─── Hardened system prompt ───────────────────────────────────────────────────
 //
@@ -145,7 +154,22 @@ function validateCitations(
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-async function main() {
+export async function runDraft(opts: DraftTopicOptions): Promise<{ id: string; status: string }> {
+  // Set module-level vars from options
+  topic    = opts.topic;
+  title    = opts.title;
+  slug     = opts.slug;
+  category = (opts.category ?? 'social-security') as Category;
+  topK     = opts.topK ?? 15;
+  dryRun   = opts.dryRun ?? false;
+  skipWorkedExample = opts.skipWorkedExample ?? true;
+  _sourcesFilter = opts.sourcesFilter;
+
+  const result = await main();
+  return result;
+}
+
+async function main(): Promise<{ id: string; status: string }> {
   const supabase = createServiceClient();
 
   // ── [1] Hybrid retrieval ──────────────────────────────────────────────────
@@ -153,7 +177,9 @@ async function main() {
   console.log(`Query: "${topic}"`);
   console.log(`Fetching top ${topK} sections via hybrid search…`);
 
-  const { sections, trace } = await hybridRetrieve(topic!, { topK });
+  const defaultSources = category === 'irmaa' ? IRMAA_SOURCES : SS_SOURCES;
+  const sourcesFilter = _sourcesFilter && _sourcesFilter.length > 0 ? _sourcesFilter : defaultSources;
+  const { sections, trace } = await hybridRetrieve(topic!, { topK, sourcesFilter });
 
   console.log(`\nRetrieved ${sections.length} sections:`);
   sections.forEach((s, i) => {
@@ -171,8 +197,7 @@ async function main() {
   }
 
   if (sections.length === 0) {
-    console.error('No sections retrieved. Check the corpus and embedding index.');
-    process.exit(1);
+    throw new Error('No sections retrieved. Check the corpus and embedding index.');
   }
 
   // ── [2] Grounded drafting ─────────────────────────────────────────────────
@@ -201,9 +226,7 @@ async function main() {
     const jsonText = responseText.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim();
     draft = JSON.parse(jsonText);
   } catch {
-    console.error('Failed to parse model output as JSON:');
-    console.error(responseText.slice(0, 1000));
-    process.exit(1);
+    throw new Error('Failed to parse model output as JSON: ' + responseText.slice(0, 500));
   }
 
   // ── Citation validation ───────────────────────────────────────────────────
@@ -212,8 +235,7 @@ async function main() {
   if (invalidCitations.length > 0) {
     console.error('\n✗ CITATION VALIDATION FAILED — invented section numbers:');
     invalidCitations.forEach(sn => console.error(`  ${sn}`));
-    console.error('Draft NOT saved. The model cited sections not in the retrieved set.');
-    process.exit(1);
+    throw new Error('Citation validation failed: ' + invalidCitations.join(', '));
   }
   console.log('✓ All citations trace to retrieved sections');
 
@@ -258,7 +280,7 @@ async function main() {
   if (dryRun) {
     console.log('DRY_RUN=true — draft:\n');
     console.log(JSON.stringify(draft, null, 2));
-    return;
+    return { id: 'dry-run', status: 'dry-run' };
   }
 
   // Check for existing slug
@@ -269,9 +291,7 @@ async function main() {
     .single();
 
   if (existing) {
-    console.error(`Slug "${slug}" already exists (status: ${existing.status}).`);
-    console.error('To update, edit the existing draft in the review UI or delete the existing row first.');
-    process.exit(1);
+    throw new Error(`Slug "${slug}" already exists (status: ${existing.status}).`);
   }
 
   const today = new Date().toISOString().split('T')[0];
@@ -313,8 +333,7 @@ async function main() {
     .single();
 
   if (insertErr) {
-    console.error('Insert failed:', insertErr.message);
-    process.exit(1);
+    throw new Error('Insert failed: ' + insertErr.message);
   }
 
   const savedStatus = verification.passed ? 'draft' : 'in_review (flagged for human review)';
@@ -323,6 +342,25 @@ async function main() {
   console.log(`  Status: ${savedStatus}`);
   console.log(`  Status: draft → review at /admin/kb-review/${inserted.id}`);
   console.log(`\nRetrieval trace stored in draft_metadata for auditing.`);
+  return { id: inserted.id, status: savedStatus };
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+// CLI entrypoint
+if (require.main === module || process.env.TOPIC) {
+  const cliTopic = process.env.TOPIC;
+  const cliTitle = process.env.TITLE;
+  const cliSlug  = process.env.SLUG;
+  if (!cliTopic || !cliTitle || !cliSlug) {
+    console.error('Required env vars: TOPIC, TITLE, SLUG');
+    process.exit(1);
+  }
+  runDraft({
+    topic: cliTopic,
+    title: cliTitle,
+    slug: cliSlug,
+    category: (process.env.CATEGORY ?? 'social-security') as Category,
+    topK: parseInt(process.env.TOP_K ?? '15', 10),
+    dryRun: process.env.DRY_RUN === 'true',
+    skipWorkedExample: process.env.SKIP_WORKED_EXAMPLE === 'true',
+  }).catch(err => { console.error(err); process.exit(1); });
+}

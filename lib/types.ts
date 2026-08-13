@@ -39,13 +39,19 @@ export interface SourceChunk {
 // ─── Layer 2 ──────────────────────────────────────────────────────────────────
 
 export interface BodySection {
-  type?: 'prose' | 'table';   // defaults to 'prose' for backward compat
+  type?: 'prose' | 'table' | 'crossref';   // defaults to 'prose' for backward compat
   heading: string;
   prose: string;
   citation_ref?: string;       // section_number that sourced this claim
   // Table-specific fields (only used when type === 'table')
   headers?: string[];          // column header labels
   rows?: string[][];           // row data [row][col]
+  // Cross-reference fields (only used when type === 'crossref')
+  ref_page_id?: string;        // UUID of the referenced page
+  ref_page_slug?: string;      // slug for URL building
+  ref_page_title?: string;     // display title
+  ref_page_category?: string;  // category for URL building
+  ref_context?: string;        // short description of why this is referenced
 }
 
 export interface WorkedExample {
@@ -56,6 +62,11 @@ export interface WorkedExample {
 export interface FaqItem {
   q: string;
   a: string;
+  // Optional cross-reference link
+  ref_page_id?: string;
+  ref_page_slug?: string;
+  ref_page_title?: string;
+  ref_page_category?: string;
 }
 
 export interface PrimarySource {

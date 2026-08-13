@@ -8,11 +8,14 @@ export const metadata: Metadata = {
   title: 'NSSA Knowledge Base',
   description:
     'Plain-language Social Security and IRMAA reference, verified against SSA POMS and reviewed by subject-matter experts.',
-  metadataBase: new URL('https://knowledge.nssapros.com'),
+  metadataBase: new URL('https://www.nssapros.com'),
+  alternates: {
+    canonical: 'https://www.nssapros.com/codex',
+  },
   openGraph: {
     type: 'website',
     siteName: 'NSSA Knowledge Base',
-    url: 'https://knowledge.nssapros.com',
+    url: 'https://www.nssapros.com/codex',
   },
 };
 

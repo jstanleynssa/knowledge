@@ -13,6 +13,10 @@ export const metadata = {
   title: 'Social Security Reference | NSSA Knowledge Base',
   description:
     'Authoritative Social Security rules for financial advisors — claiming rules, spousal benefits, survivor benefits, WEP, GPO, and more. Verified against SSA POMS.',
+  // Canonical strips ?topic= query params — prevents duplicate content for each topic filter
+  alternates: {
+    canonical: 'https://www.nssapros.com/codex/social-security',
+  },
 };
 
 export default async function SocialSecurityIndex({
@@ -35,7 +39,7 @@ export default async function SocialSecurityIndex({
     <CategoryIndex
       category="social-security"
       categoryLabel="Social Security"
-      categoryPath="/social-security"
+      categoryPath="/codex/social-security"
       pages={(data ?? []) as Partial<ReferencePage>[]}
       activeTopic={topic}
       description="Authoritative rules for Social Security claiming, spousal and survivor benefits, earnings test, WEP, and GPO — verified against the SSA Program Operations Manual System (POMS)."

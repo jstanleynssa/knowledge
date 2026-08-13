@@ -143,7 +143,7 @@ function extractKeyTerms(query: string): string[] {
   return [...new Set(terms)];
 }
 
-async function keywordSearch(query: string, topK: number): Promise<FtsResult[]> {
+async function keywordSearch(query: string, topK: number, sourcesFilter: SourceType[] = SS_SOURCES): Promise<FtsResult[]> {
   const supabase = createServiceClient();
   const results = new Map<string, FtsResult>();
 
@@ -177,7 +177,10 @@ async function keywordSearch(query: string, topK: number): Promise<FtsResult[]> 
       console.warn('FTS search error (continuing):', ftsErr.message);
     } else {
       for (const row of (ftsData ?? []) as FtsResult[]) {
-        if (row.section_number) results.set(row.section_number, row);
+        if (!row.section_number) continue;
+        const srcType = classifySection(row.section_number);
+        if (srcType && !sourcesFilter.includes(srcType)) continue;
+        results.set(row.section_number, row);
       }
     }
   }
@@ -205,6 +208,7 @@ async function keywordSearch(query: string, topK: number): Promise<FtsResult[]> 
         .select('section_number, title, full_text, source_url')
         .ilike('full_text', `%${term}%`)
         .eq('doc_kind', 'rule')
+        .in('source_type', sourcesFilter)
         .is('superseded_at', null)
         .not('full_text', 'is', null)
         .not('section_number', 'like', 'PR %')
@@ -231,6 +235,26 @@ function rrfScore(rank: number): number {
 
 // ─── Main export ──────────────────────────────────────────────────────────────
 
+/** Source types for the retrieval filter */
+export type SourceType = 'poms' | 'cfr' | 'handbook' | 'cms' | 'medicare';
+
+/** Default sources for SS pages — primary citation sources only */
+export const SS_SOURCES:      SourceType[] = ['poms', 'cfr', 'handbook'];
+/** Default sources for IRMAA/Medicare pages — add medicare.gov and cms */
+export const IRMAA_SOURCES:   SourceType[] = ['poms', 'cfr', 'handbook', 'medicare', 'cms'];
+/** All sources — used for live Q&A axiom (broader retrieval) */
+export const ALL_SOURCES:     SourceType[] = ['poms', 'cfr', 'handbook', 'cms', 'medicare'];
+
+/** Classify a section_number string to its source type */
+export function classifySection(sectionNumber: string): SourceType | null {
+  if (/^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sectionNumber)) return 'poms';
+  if (/^20\s+CFR/i.test(sectionNumber))                                   return 'cfr';
+  if (/^HBK/i.test(sectionNumber))                                        return 'handbook';
+  if (/^CMS:/i.test(sectionNumber))                                       return 'cms';
+  if (/^MCR:/i.test(sectionNumber))                                       return 'medicare';
+  return null;
+}
+
 export interface HybridRetrieveOptions {
   /** Number of sections to return. Default 10. */
   topK?: number;
@@ -240,6 +264,12 @@ export interface HybridRetrieveOptions {
   keywordTopK?: number;
   /** Min vector similarity threshold. Default 0.65. */
   threshold?: number;
+  /**
+   * Restrict retrieval to specific source types.
+   * Defaults to SS_SOURCES ['poms', 'cfr', 'handbook'] — excludes CMS noise.
+   * Pass IRMAA_SOURCES for Medicare/IRMAA pages, ALL_SOURCES for live Q&A.
+   */
+  sourcesFilter?: SourceType[];
 }
 
 export async function hybridRetrieve(
@@ -247,10 +277,11 @@ export async function hybridRetrieve(
   options: HybridRetrieveOptions = {},
 ): Promise<{ sections: RetrievedSection[]; trace: RetrievalTrace }> {
   const {
-    topK       = 10,
-    vectorTopK = 40,
+    topK        = 10,
+    vectorTopK  = 40,
     keywordTopK = 25,
-    threshold  = 0.50,  // text-embedding-3-small cosine sims for SS policy text top ~0.55-0.70
+    threshold   = 0.50,  // text-embedding-3-small cosine sims for SS policy text top ~0.55-0.70
+    sourcesFilter = SS_SOURCES,
   } = options;
 
   const supabase = createServiceClient();
@@ -267,6 +298,9 @@ export async function hybridRetrieve(
   for (const chunk of chunks) {
     if (!chunk.section_number) continue;
     if (EXCLUDED_PREFIXES.some(p => chunk.section_number.startsWith(p))) continue;
+    // Filter by allowed source types
+    const chunkSource = classifySection(chunk.section_number);
+    if (chunkSource && !sourcesFilter.includes(chunkSource)) continue;
     const current = vectorBySection.get(chunk.section_number) ?? 0;
     if (chunk.similarity > current) {
       vectorBySection.set(chunk.section_number, chunk.similarity);
@@ -279,7 +313,7 @@ export async function hybridRetrieve(
     .map(([sn, sim], i) => ({ section_number: sn, rank: i + 1, similarity: sim }));
 
   // ── Keyword search ─────────────────────────────────────────────────────────
-  const kwResults = await keywordSearch(query, keywordTopK);
+  const kwResults = await keywordSearch(query, keywordTopK, sourcesFilter);
   const kwRanked = kwResults.map((r, i) => ({ ...r, rank: i + 1 }));
 
   // ── RRF fusion ─────────────────────────────────────────────────────────────

@@ -12,7 +12,9 @@ import { createSessionClient } from '@/lib/supabase';
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = req.nextUrl;
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/admin/kb-review';
+  const rawNext = searchParams.get('next') ?? '/admin/kb-review';
+  // Ensure path includes basePath prefix
+  const next = rawNext.startsWith('/codex') ? rawNext : `/codex${rawNext}`;
 
   if (code) {
     const supabase = await createSessionClient();

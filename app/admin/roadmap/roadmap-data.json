@@ -1,0 +1,621 @@
+{
+  "generated": "2026-08-11",
+  "clusters": [
+    {
+      "name": "WEP & Fairness Act",
+      "kw_count": 30,
+      "volume": 6992,
+      "avg_rank": 22,
+      "avg_diff": 41,
+      "score": 1799,
+      "top_keywords": [
+        {
+          "keyword": "wep",
+          "volume": 5090,
+          "rank": 27,
+          "difficulty": 47
+        },
+        {
+          "keyword": "what is wep",
+          "volume": 1592,
+          "rank": 28,
+          "difficulty": 44
+        },
+        {
+          "keyword": "what is wep?",
+          "volume": 64,
+          "rank": 57,
+          "difficulty": 54
+        },
+        {
+          "keyword": "social security wep calculator",
+          "volume": 38,
+          "rank": 13,
+          "difficulty": 44
+        },
+        {
+          "keyword": "social security windfall provision calculator",
+          "volume": 38,
+          "rank": 16,
+          "difficulty": 45
+        },
+        {
+          "keyword": "social security spousal benefit government pension",
+          "volume": 27,
+          "rank": 33,
+          "difficulty": 52
+        }
+      ],
+      "tier": "P1"
+    },
+    {
+      "name": "Spousal & Deemed Filing",
+      "kw_count": 110,
+      "volume": 4564,
+      "avg_rank": 16,
+      "avg_diff": 42,
+      "score": 1458,
+      "top_keywords": [
+        {
+          "keyword": "how to apply for spousal social security benefits",
+          "volume": 939,
+          "rank": 18,
+          "difficulty": 54
+        },
+        {
+          "keyword": "social security divorced spouse benefits",
+          "volume": 407,
+          "rank": 31,
+          "difficulty": 45
+        },
+        {
+          "keyword": "apply for social security spousal benefits",
+          "volume": 295,
+          "rank": 15,
+          "difficulty": 53
+        },
+        {
+          "keyword": "applying for social security spousal benefits",
+          "volume": 295,
+          "rank": 25,
+          "difficulty": 54
+        },
+        {
+          "keyword": "social security divorced spouse",
+          "volume": 287,
+          "rank": 28,
+          "difficulty": 43
+        },
+        {
+          "keyword": "social security disability spousal benefits",
+          "volume": 221,
+          "rank": 24,
+          "difficulty": 42
+        }
+      ],
+      "tier": "P1"
+    },
+    {
+      "name": "Credits & Earnings Record",
+      "kw_count": 78,
+      "volume": 4229,
+      "avg_rank": 20,
+      "avg_diff": 46,
+      "score": 1422,
+      "top_keywords": [
+        {
+          "keyword": "social security credits",
+          "volume": 1429,
+          "rank": 23,
+          "difficulty": 51
+        },
+        {
+          "keyword": "social security work credits",
+          "volume": 747,
+          "rank": 18,
+          "difficulty": 39
+        },
+        {
+          "keyword": "delayed retirement credits",
+          "volume": 298,
+          "rank": 6,
+          "difficulty": 46
+        },
+        {
+          "keyword": "social security quarters",
+          "volume": 278,
+          "rank": 20,
+          "difficulty": 52
+        },
+        {
+          "keyword": "40 quarters social security",
+          "volume": 156,
+          "rank": 18,
+          "difficulty": 42
+        },
+        {
+          "keyword": "social security 40 quarters",
+          "volume": 156,
+          "rank": 22,
+          "difficulty": 47
+        }
+      ],
+      "tier": "P1"
+    },
+    {
+      "name": "SS Tax & Withholding",
+      "kw_count": 34,
+      "volume": 4325,
+      "avg_rank": 22,
+      "avg_diff": 49,
+      "score": 1336,
+      "top_keywords": [
+        {
+          "keyword": "social security tax withholding",
+          "volume": 1875,
+          "rank": 23,
+          "difficulty": 47
+        },
+        {
+          "keyword": "social security withholding",
+          "volume": 1508,
+          "rank": 20,
+          "difficulty": 47
+        },
+        {
+          "keyword": "are taxes withheld from social security",
+          "volume": 390,
+          "rank": 19,
+          "difficulty": 54
+        },
+        {
+          "keyword": "are taxes withheld from social security payments",
+          "volume": 102,
+          "rank": 19,
+          "difficulty": 49
+        },
+        {
+          "keyword": "tax withholding on social security",
+          "volume": 47,
+          "rank": 17,
+          "difficulty": 47
+        },
+        {
+          "keyword": "how do i get taxes withheld from social security",
+          "volume": 36,
+          "rank": 19,
+          "difficulty": 47
+        }
+      ],
+      "tier": "P1"
+    },
+    {
+      "name": "Earnings Test & Garnishment",
+      "kw_count": 22,
+      "volume": 4940,
+      "avg_rank": 26,
+      "avg_diff": 49,
+      "score": 875,
+      "top_keywords": [
+        {
+          "keyword": "can social security be garnished",
+          "volume": 2166,
+          "rank": 40,
+          "difficulty": 41
+        },
+        {
+          "keyword": "social security earnings test",
+          "volume": 1103,
+          "rank": 28,
+          "difficulty": 53
+        },
+        {
+          "keyword": "social security garnishment",
+          "volume": 615,
+          "rank": 30,
+          "difficulty": 49
+        },
+        {
+          "keyword": "is a pension considered earned income",
+          "volume": 470,
+          "rank": 38,
+          "difficulty": 47
+        },
+        {
+          "keyword": "can you garnish social security",
+          "volume": 207,
+          "rank": 18,
+          "difficulty": 46
+        },
+        {
+          "keyword": "garnishment of social security benefits",
+          "volume": 73,
+          "rank": 41,
+          "difficulty": 45
+        }
+      ],
+      "tier": "P2"
+    },
+    {
+      "name": "Filing Age & FRA",
+      "kw_count": 17,
+      "volume": 2736,
+      "avg_rank": 30,
+      "avg_diff": 47,
+      "score": 618,
+      "top_keywords": [
+        {
+          "keyword": "fra social security",
+          "volume": 1020,
+          "rank": 21,
+          "difficulty": 61
+        },
+        {
+          "keyword": "social security fra",
+          "volume": 1020,
+          "rank": 21,
+          "difficulty": 61
+        },
+        {
+          "keyword": "fra meaning",
+          "volume": 451,
+          "rank": 33,
+          "difficulty": 49
+        },
+        {
+          "keyword": "ss fra",
+          "volume": 106,
+          "rank": 17,
+          "difficulty": 55
+        },
+        {
+          "keyword": "social security disability age 62",
+          "volume": 37,
+          "rank": 45,
+          "difficulty": 41
+        },
+        {
+          "keyword": "security financial group frank",
+          "volume": 27,
+          "rank": 33,
+          "difficulty": 11
+        }
+      ],
+      "tier": "P2"
+    },
+    {
+      "name": "SSA Forms & Procedures",
+      "kw_count": 4,
+      "volume": 379,
+      "avg_rank": 10,
+      "avg_diff": 48,
+      "score": 178,
+      "top_keywords": [
+        {
+          "keyword": "form ssa-2",
+          "volume": 215,
+          "rank": 4,
+          "difficulty": 48
+        },
+        {
+          "keyword": "ssa-2",
+          "volume": 114,
+          "rank": 8,
+          "difficulty": 50
+        },
+        {
+          "keyword": "form ssa2",
+          "volume": 39,
+          "rank": 5,
+          "difficulty": 43
+        },
+        {
+          "keyword": "appeal form ssa benefits",
+          "volume": 11,
+          "rank": 21,
+          "difficulty": 50
+        }
+      ],
+      "tier": "P2"
+    },
+    {
+      "name": "Survivor Benefits",
+      "kw_count": 30,
+      "volume": 515,
+      "avg_rank": 25,
+      "avg_diff": 43,
+      "score": 135,
+      "top_keywords": [
+        {
+          "keyword": "how long do you have to request survivor benefits",
+          "volume": 92,
+          "rank": 23,
+          "difficulty": 50
+        },
+        {
+          "keyword": "social security widows benefits at age 60",
+          "volume": 63,
+          "rank": 38,
+          "difficulty": 51
+        },
+        {
+          "keyword": "transfer from survivor benefits to ssi",
+          "volume": 27,
+          "rank": 12,
+          "difficulty": 58
+        },
+        {
+          "keyword": "do i lose deceased husbands psers if i remarry",
+          "volume": 27,
+          "rank": 19,
+          "difficulty": 44
+        },
+        {
+          "keyword": "late retirement affect survivor",
+          "volume": 27,
+          "rank": 19,
+          "difficulty": 44
+        },
+        {
+          "keyword": "does widow social security affect income",
+          "volume": 27,
+          "rank": 21,
+          "difficulty": 49
+        }
+      ],
+      "tier": "P2"
+    },
+    {
+      "name": "Disability & SSDI",
+      "kw_count": 29,
+      "volume": 347,
+      "avg_rank": 27,
+      "avg_diff": 42,
+      "score": 90,
+      "top_keywords": [
+        {
+          "keyword": "90 va disability and social security",
+          "volume": 58,
+          "rank": 32,
+          "difficulty": 38
+        },
+        {
+          "keyword": "ssdi under parents",
+          "volume": 47,
+          "rank": 6,
+          "difficulty": 41
+        },
+        {
+          "keyword": "red eagle wage earner social security disability",
+          "volume": 27,
+          "rank": 25,
+          "difficulty": 37
+        },
+        {
+          "keyword": "annuity affect disability",
+          "volume": 27,
+          "rank": 32,
+          "difficulty": 26
+        },
+        {
+          "keyword": "retirement social security with disabled child",
+          "volume": 27,
+          "rank": 45,
+          "difficulty": 50
+        },
+        {
+          "keyword": "how to apply for adult child disability",
+          "volume": 27,
+          "rank": 46,
+          "difficulty": 37
+        }
+      ],
+      "tier": "P3"
+    },
+    {
+      "name": "Medicare Enrollment",
+      "kw_count": 24,
+      "volume": 271,
+      "avg_rank": 23,
+      "avg_diff": 48,
+      "score": 82,
+      "top_keywords": [
+        {
+          "keyword": "medicare tax deduction on paycheck",
+          "volume": 31,
+          "rank": 22,
+          "difficulty": 49
+        },
+        {
+          "keyword": "do we always have to pay medicare tax",
+          "volume": 27,
+          "rank": 11,
+          "difficulty": 49
+        },
+        {
+          "keyword": "medicare bill more than social security payment",
+          "volume": 27,
+          "rank": 24,
+          "difficulty": 48
+        },
+        {
+          "keyword": "medicare increase social security 2020",
+          "volume": 27,
+          "rank": 30,
+          "difficulty": 45
+        },
+        {
+          "keyword": "rising medicare costs",
+          "volume": 23,
+          "rank": 28,
+          "difficulty": 48
+        },
+        {
+          "keyword": "social security raise and medicare increase",
+          "volume": 17,
+          "rank": 15,
+          "difficulty": 58
+        }
+      ],
+      "tier": "P3"
+    },
+    {
+      "name": "Benefits for Others",
+      "kw_count": 11,
+      "volume": 166,
+      "avg_rank": 27,
+      "avg_diff": 40,
+      "score": 56,
+      "top_keywords": [
+        {
+          "keyword": "social security benefits for grandchildren",
+          "volume": 70,
+          "rank": 14,
+          "difficulty": 45
+        },
+        {
+          "keyword": "surviving grandchild rights social security",
+          "volume": 27,
+          "rank": 13,
+          "difficulty": 42
+        },
+        {
+          "keyword": "how to apply for adult child benefits disability",
+          "volume": 27,
+          "rank": 43,
+          "difficulty": 35
+        },
+        {
+          "keyword": "how to collect ex-husband social security",
+          "volume": 18,
+          "rank": 28,
+          "difficulty": 51
+        },
+        {
+          "keyword": "divorce social security and disabled child",
+          "volume": 11,
+          "rank": 21,
+          "difficulty": 29
+        },
+        {
+          "keyword": "social security for minor dependents",
+          "volume": 5,
+          "rank": 21,
+          "difficulty": 48
+        }
+      ],
+      "tier": "P3"
+    },
+    {
+      "name": "Retroactive Benefits",
+      "kw_count": 6,
+      "volume": 116,
+      "avg_rank": 24,
+      "avg_diff": 40,
+      "score": 36,
+      "top_keywords": [
+        {
+          "keyword": "social security retirement retroactive payments",
+          "volume": 55,
+          "rank": 17,
+          "difficulty": 40
+        },
+        {
+          "keyword": "delayed benefits social security back pay",
+          "volume": 27,
+          "rank": 27,
+          "difficulty": 48
+        },
+        {
+          "keyword": "social security benefits retroactively taxed",
+          "volume": 27,
+          "rank": 39,
+          "difficulty": 33
+        },
+        {
+          "keyword": "is your first social security check retroactive",
+          "volume": 5,
+          "rank": 19,
+          "difficulty": 42
+        },
+        {
+          "keyword": "social security and retroactive pension benefits",
+          "volume": 1,
+          "rank": 18,
+          "difficulty": 43
+        },
+        {
+          "keyword": "senior benefit to be paid retroactively",
+          "volume": 1,
+          "rank": 24,
+          "difficulty": 34
+        }
+      ],
+      "tier": "P3"
+    },
+    {
+      "name": "IRMAA",
+      "kw_count": 7,
+      "volume": 67,
+      "avg_rank": 18,
+      "avg_diff": 41,
+      "score": 24,
+      "top_keywords": [
+        {
+          "keyword": "medicare premium overpayment refund",
+          "volume": 20,
+          "rank": 13,
+          "difficulty": 35
+        },
+        {
+          "keyword": "does medicare premiums come out of ssa",
+          "volume": 11,
+          "rank": 22,
+          "difficulty": 52
+        },
+        {
+          "keyword": "medicare premiums withheld on ssa-1099",
+          "volume": 11,
+          "rank": 27,
+          "difficulty": 37
+        },
+        {
+          "keyword": "social security hold harmless medicare premiums",
+          "volume": 11,
+          "rank": 41,
+          "difficulty": 36
+        },
+        {
+          "keyword": "medicare premiums withheld",
+          "volume": 8,
+          "rank": 17,
+          "difficulty": 50
+        },
+        {
+          "keyword": "paid medicare premium twice",
+          "volume": 5,
+          "rank": 4,
+          "difficulty": 35
+        }
+      ],
+      "tier": "P3"
+    },
+    {
+      "name": "Delayed Retirement Credits",
+      "kw_count": 1,
+      "volume": 11,
+      "avg_rank": 3,
+      "avg_diff": 40,
+      "score": 6,
+      "top_keywords": [
+        {
+          "keyword": "social security drc",
+          "volume": 11,
+          "rank": 3,
+          "difficulty": 40
+        }
+      ],
+      "tier": "P3"
+    }
+  ]
+}

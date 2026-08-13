@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AXIOM / CODEX — Corpus Coverage · Lighthouse</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background:#040e1a;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+      height:100vh; overflow:hidden; color:#b8cfe0; user-select:none;
+    }
+    canvas { position:fixed; top:0; left:0; cursor:grab; }
+    canvas.drag { cursor:grabbing; }
+
+    #hdr {
+      position:fixed;top:0;left:0;right:0;z-index:30;
+      display:flex;align-items:center;gap:10px;padding:10px 20px;
+      background:rgba(4,14,26,.92);backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,255,255,.055);pointer-events:none;
+    }
+    .ht{font-size:14px;font-weight:700;color:#ddeeff;}
+    .hp{font-size:9.5px;font-weight:600;padding:2px 8px;border-radius:100px;
+      background:rgba(71,162,218,.12);border:1px solid rgba(71,162,218,.28);color:#47a2da;letter-spacing:.05em;}
+    .hsp{flex:1;}
+    .hs{font-size:11px;color:#2a4260;}
+    .hs b{color:#8dc9ed;}
+    .hh{font-size:10px;color:#1a3248;font-style:italic;}
+
+    /* SPACING CONTROL */
+    #spacing{
+      position:fixed;top:50px;right:16px;z-index:30;
+      background:rgba(4,12,22,.88);backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.07);border-radius:100px;
+      padding:6px 14px;display:flex;align-items:center;gap:8px;
+      pointer-events:all;
+    }
+    #spacing label{font-size:10px;color:#2a4260;font-weight:600;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
+    #spacing input{width:90px;-webkit-appearance:none;appearance:none;
+      height:3px;border-radius:2px;background:rgba(255,255,255,.1);outline:none;cursor:pointer;}
+    #spacing input::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;
+      border-radius:50%;background:#47a2da;cursor:pointer;box-shadow:0 0 6px rgba(71,162,218,.6);}
+    #spacing span{font-size:11px;font-weight:700;color:#47a2da;min-width:28px;text-align:right;
+      font-variant-numeric:tabular-nums;}
+    #modes{
+      position:fixed;top:50px;left:50%;transform:translateX(-50%);
+      display:flex;gap:6px;z-index:30;pointer-events:all;
+    }
+    .mb{font-size:11px;font-weight:600;padding:5px 16px;border-radius:100px;
+      cursor:pointer;border:1px solid;transition:all .22s;letter-spacing:.04em;white-space:nowrap;}
+    .ms{background:rgba(176,42,52,.15);border-color:rgba(176,42,52,.4);color:#ed8c9a;}
+    .ms.on{background:#b02a34cc;color:#fff;border-color:#b02a34;}
+    .mc{background:rgba(71,162,218,.10);border-color:rgba(71,162,218,.35);color:#8dc9ed;}
+    .mc.on{background:#1c80bccc;color:#fff;border-color:#1c80bc;}
+
+    .lp{
+      position:fixed;top:96px;left:16px;z-index:30;width:290px;
+      background:rgba(4,12,22,.88);backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px 14px;
+    }
+    .pl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#1a3248;margin-bottom:9px;}
+    .ctbl{width:100%;border-collapse:collapse;font-size:10.5px;}
+    .ctbl th{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      color:#1a3248;text-align:right;padding:0 5px 5px;border-bottom:1px solid rgba(255,255,255,.07);white-space:nowrap;}
+    .ctbl th:first-child{text-align:left;padding-left:0;}
+    .ctbl td{padding:4px 5px;text-align:right;font-variant-numeric:tabular-nums;
+      border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;}
+    .ctbl td:first-child{text-align:left;font-weight:600;padding-left:0;}
+    .ctbl tr:last-child td{border-bottom:none;}
+    .pdiv{height:1px;background:rgba(255,255,255,.07);margin:9px 0;}
+    .pr{display:flex;align-items:center;gap:7px;margin-bottom:5px;font-size:11px;}
+    .pd{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+    .pn{color:#3a5870;}
+    .sn2{font-size:9.5px;color:#1a3248;line-height:1.7;margin-top:3px;}
+
+    /* funnel panel */
+    .fb{margin-bottom:9px;}
+    .fb-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;}
+    .fb-l{font-size:11px;}.fb-n{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+    .fb-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.07);overflow:hidden;margin-bottom:2px;}
+    .fb-f{height:100%;border-radius:2px;}.fb-p{font-size:9.5px;font-weight:600;}
+    .arr{color:#1a3248;font-size:11px;margin:2px 0 6px 4px;display:block;}
+
+    #stats{
+      position:fixed;bottom:22px;right:18px;z-index:30;text-align:right;min-width:200px;
+      background:rgba(4,12,22,.88);backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 16px;
+    }
+    .sn{font-size:26px;font-weight:800;line-height:1.1;}
+    .sl{font-size:10px;color:#1a3248;font-weight:600;letter-spacing:.07em;text-transform:uppercase;margin-top:1px;}
+    .sdiv{height:1px;background:rgba(255,255,255,.07);margin:8px 0;}
+    .sr{display:flex;justify-content:space-between;gap:18px;margin-bottom:4px;font-size:11px;}
+    .sr .n{font-weight:700;font-variant-numeric:tabular-nums;}
+    .sr .l{color:#1a3248;}
+
+    #badge{
+      position:fixed;bottom:22px;left:16px;z-index:30;
+      background:rgba(4,12,22,.88);backdrop-filter:blur(12px);
+      border:1px solid rgba(28,128,188,.2);border-radius:10px;padding:11px 14px;
+    }
+    .bn{font-size:26px;font-weight:800;line-height:1;}
+    .bbar{height:4px;background:rgba(255,255,255,.07);border-radius:2px;margin:4px 0;overflow:hidden;}
+    .bfill{height:100%;background:linear-gradient(90deg,#1c80bc,#8dc9ed);border-radius:2px;}
+    .bpct{font-size:11px;font-weight:700;}
+    .bsub{font-size:10px;color:#1a3248;margin-top:3px;line-height:1.6;}
+
+    #tt{
+      position:fixed;pointer-events:none;z-index:40;
+      background:rgba(4,10,20,.97);border:1px solid rgba(255,255,255,.1);
+      border-radius:8px;padding:8px 12px;opacity:0;transition:opacity .12s;font-size:12px;
+    }
+    #tt.show{opacity:1;}
+    #ttn{font-size:13px;font-weight:700;margin-bottom:2px;}
+    #ttb{color:#263d52;font-size:11px;line-height:1.6;}
+  </style>
+</head>
+<body>
+
+<canvas id="cv"></canvas>
+
+<div id="hdr">
+  <span style="font-size:19px;line-height:1">🔭</span>
+  <span class="ht">AXIOM / CODEX — Corpus Coverage</span>
+  <span class="hp">Lighthouse</span>
+  <div class="hsp"></div>
+  <a href="/codex/admin/kb-review" style="font-size:12px;color:#2a4260;text-decoration:none;margin-right:4px">← Admin</a>
+  <span style="color:#1a3248;margin-right:8px">/</span>
+  <span class="hh">drag to rotate &nbsp;·&nbsp;</span>
+  <span class="hs"><b>40,882</b> docs &nbsp;·&nbsp; <b>~12,241</b> relevant rules &nbsp;·&nbsp; <b>44</b> cited &nbsp;·&nbsp; <b>145</b> verifications</span>
+</div>
+
+<div id="spacing">
+  <label>Spacing</label>
+  <input type="range" id="spacing-slider" min="0.4" max="4.0" step="0.1" value="1.6">
+  <span id="spacing-val">1.6×</span>
+</div>
+
+<div id="modes">
+  <button class="mb ms on" id="btn-src"  onclick="setMode('source')">By Source</button>
+  <button class="mb mc"    id="btn-cov"  onclick="setMode('coverage')">By Coverage Funnel</button>
+</div>
+
+<!-- SOURCE panel -->
+<div class="lp" id="pan-src">
+  <div class="pl">Source Corpus</div>
+  <table class="ctbl">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th style="color:#3a5870">Total</th>
+        <th style="color:#b02a34">Relevant</th>
+        <th style="color:#8dc9ed">Cited</th>
+        <th style="color:#47a2da">%</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td style="color:#b02a34">POMS</td><td style="color:#3a5870">16,850</td><td style="color:#b02a34">8,549</td><td style="color:#8dc9ed">31</td><td style="color:#47a2da">0.4%</td></tr>
+      <tr><td style="color:#dd5962">CMS</td><td style="color:#3a5870">20,764</td><td style="color:#dd5962">807</td><td style="color:#1a3248">—</td><td style="color:#1a3248">—</td></tr>
+      <tr><td style="color:#c13e4e">CFR · 20</td><td style="color:#3a5870">2,004</td><td style="color:#c13e4e">1,783</td><td style="color:#8dc9ed">5</td><td style="color:#47a2da">0.3%</td></tr>
+      <tr><td style="color:#ed8c9a">Medicare</td><td style="color:#3a5870">404</td><td style="color:#ed8c9a">242</td><td style="color:#1a3248">—</td><td style="color:#1a3248">—</td></tr>
+      <tr><td style="color:#c0a8b0">Handbook</td><td style="color:#3a5870">860</td><td style="color:#c0a8b0">860</td><td style="color:#8dc9ed">8</td><td style="color:#47a2da">0.9%</td></tr>
+    </tbody>
+  </table>
+  <div class="pdiv"></div>
+  <div class="pr"><div class="pd" style="background:#243040"></div><span class="pn">Non-relevant / TOC</span></div>
+  <div class="pr"><div class="pd" style="background:#8dc9ed;box-shadow:0 0 5px #8dc9ed77"></div><span class="pn" style="color:#8dc9ed">Cited rule (1 dot = 1 rule)</span></div>
+  <div class="pdiv"></div>
+  <div class="pl" style="margin-bottom:4px">Regulatory relationships</div>
+  <div class="sn2">
+    POMS ↔ CFR · 20 — federal SS law<br>
+    POMS ↔ Handbook — SSA guidance<br>
+    CMS ↔ Medicare — same program<br>
+    POMS ↔ CMS — IRMAA / Medicare<br>
+    CFR ↔ CMS — 42 CFR Medicare
+  </div>
+</div>
+
+<!-- COVERAGE panel -->
+<div class="lp" id="pan-cov" style="display:none">
+  <div class="pl">Coverage Funnel</div>
+  <div class="fb">
+    <div class="fb-row"><span class="fb-l" style="color:#3a5870">All Ingested</span><span class="fb-n" style="color:#3a5870">40,882</span></div>
+    <div class="fb-bar"><div class="fb-f" style="width:100%;background:#243040"></div></div>
+    <div class="fb-p" style="color:#263d52">rule + toc + empty, all sources</div>
+  </div>
+  <span class="arr">↓</span>
+  <div class="fb">
+    <div class="fb-row"><span class="fb-l" style="color:#c13e4e">Relevant Rules</span><span class="fb-n" style="color:#dd5962">12,241</span></div>
+    <div class="fb-bar"><div class="fb-f" style="width:29.9%;background:#b02a34"></div></div>
+    <div class="fb-p" style="color:#c13e4e">29.9% of ingested docs</div>
+  </div>
+  <span class="arr">↓</span>
+  <div class="fb">
+    <div class="fb-row"><span class="fb-l" style="color:#8dc9ed">Cited in Pages</span><span class="fb-n" style="color:#8dc9ed">44</span></div>
+    <div class="fb-bar"><div class="fb-f" style="width:0.36%;background:#8dc9ed"></div></div>
+    <div class="fb-p" style="color:#47a2da">0.36% of relevant rules cited</div>
+  </div>
+  <div style="margin-top:10px;padding:8px 10px;background:rgba(141,201,237,.06);border:1px solid rgba(141,201,237,.18);border-radius:6px;font-size:9.5px;color:#263d52;line-height:1.55">
+    Gray ≈ 10 ingested docs<br>Red ≈ 10 relevant rules<br>Blue = 1 cited rule (1:1)
+  </div>
+</div>
+
+<div id="badge">
+  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+    <div class="bn" style="color:#8dc9ed">44</div>
+    <div style="font-size:11px;color:#1a3248">rules cited in pages</div>
+  </div>
+  <div class="bbar"><div class="bfill" style="width:.36%"></div></div>
+  <div class="bpct" style="color:#47a2da">0.36% of relevant rules cited</div>
+  <div style="height:9px"></div>
+  <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:3px">
+    <div class="bn" style="color:#47a2da">145</div>
+    <div style="font-size:11px;color:#1a3248">human verifications</div>
+  </div>
+  <div class="bbar"><div class="bfill" style="width:1.2%"></div></div>
+  <div class="bsub">116 CODEX sections + 29 AXIOM responses<br>across 17 published pages</div>
+</div>
+
+<div id="stats">
+  <div class="sn" style="color:#c13e4e">40,882</div>
+  <div class="sl">Documents Ingested</div>
+  <div class="sdiv"></div>
+  <div class="sr"><span class="l">Rule sections</span><span class="n" style="color:#dd5962">38,014</span></div>
+  <div class="sr"><span class="l">Relevant rules</span><span class="n" style="color:#b02a34">12,241</span></div>
+  <div class="sr"><span class="l">Cited rules</span><span class="n" style="color:#8dc9ed">44</span></div>
+  <div class="sdiv"></div>
+  <div class="sr"><span class="l">Published pages</span><span class="n" style="color:#47a2da">17</span></div>
+  <div class="sr"><span class="l">CODEX verified</span><span class="n" style="color:#47a2da">116</span></div>
+  <div class="sr"><span class="l">AXIOM verified</span><span class="n" style="color:#8dc9ed">29</span></div>
+  <div class="sr"><span class="l">Total verifications</span><span class="n" style="color:#8dc9ed">145</span></div>
+</div>
+
+<div id="tt"><div id="ttn"></div><div id="ttb"></div></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  DATA — fetched live from /api/admin/coverage-stats
+//  Fallback hardcoded values used while loading
+// ═══════════════════════════════════════════════════════════
+let SOURCES = {
+  poms:     { label:"POMS",         desc:"SSA Program Operations Manual System",  total:16850, relevant:8549,  cited:31, cr:"#b02a34", cb:"#8dc9ed" },
+  cms:      { label:"CMS",          desc:"CMS.gov — Medicare & Medicaid policy",  total:20764, relevant:807,   cited:0,  cr:"#dd5962", cb:"#8dc9ed" },
+  cfr:      { label:"CFR · 20",     desc:"Code of Federal Regulations, Title 20", total:2004,  relevant:1783,  cited:5,  cr:"#c13e4e", cb:"#8dc9ed" },
+  handbook: { label:"SSA Handbook", desc:"Social Security Handbook",               total:860,   relevant:860,   cited:8,  cr:"#f0d4d8", cb:"#8dc9ed" },
+  medicare: { label:"Medicare.gov", desc:"Medicare.gov official guidance",          total:404,   relevant:242,   cited:0,  cr:"#ed8c9a", cb:"#8dc9ed" },
+};
+
+// Fetch live stats and rebuild if available
+async function loadLiveStats(){
+  try {
+    const res  = await fetch('/codex/api/admin/coverage-stats');
+    if(!res.ok) return;
+    const data = await res.json();
+    const s    = data.sources;
+    if(!s) return;
+    const COLOR_MAP = {
+      poms:{cr:'#b02a34',cb:'#8dc9ed'}, cms:{cr:'#dd5962',cb:'#8dc9ed'},
+      cfr:{cr:'#c13e4e',cb:'#8dc9ed'}, handbook:{cr:'#f0d4d8',cb:'#8dc9ed'},
+      medicare:{cr:'#ed8c9a',cb:'#8dc9ed'},
+    };
+    for(const [key,val] of Object.entries(s)){
+      if(!SOURCES[key]) continue;
+      SOURCES[key] = {
+        ...SOURCES[key],
+        total:    val.total_docs,
+        relevant: val.relevant,
+        cited:    val.cited_total,  // use unified total (pages + AXIOM)
+        ...COLOR_MAP[key],
+      };
+    }
+    // Update header stat counts
+    const totalDocs    = data.totals?.docs    ?? 40882;
+    const totalRelev   = data.totals?.relevant ?? 12241;
+    const totalCited   = data.totals?.cited_total ?? 44;
+    const totalVer     = data.verifications?.total ?? 145;
+    document.querySelector('.hs').innerHTML =
+      `<b>${totalDocs.toLocaleString()}</b> docs &nbsp;·&nbsp; `+
+      `<b>~${totalRelev.toLocaleString()}</b> relevant rules &nbsp;·&nbsp; `+
+      `<b>${totalCited}</b> cited &nbsp;·&nbsp; `+
+      `<b>${totalVer}</b> verifications`;
+    // Rebuild nodes with updated numbers
+    if(typeof buildAll === 'function' && typeof animRaf !== 'undefined'){
+      cancelAnimationFrame(animRaf);
+      buildAll();
+      buildCoverageHomes();
+      const _t=performance.now()*0.001;
+      tickNodes(_t);
+      animRaf=requestAnimationFrame(animate);
+    }
+  } catch(e){
+    console.warn('Coverage stats fetch failed, using cached values:', e);
+  }
+}
+const SCALE = 10;
+
+// ── 3D positions: close together so clusters overlap like a Venn diagram
+// Adjacency: POMS↔CFR, POMS↔Handbook, CMS↔CFR, CMS↔Medicare
+const CLUSTER_3D = {
+  poms:     { x:-155, y: -30, z:  50 },
+  cms:      { x: 165, y:  20, z:  35 },
+  cfr:      { x:   5, y:-185, z: -35 },
+  handbook: { x:-150, y: 175, z: -50 },
+  medicare: { x: 165, y: 170, z: -60 },
+};
+
+// Visual radius for each cluster (dots distributed within this distance from center)
+const CLUSTER_R = {
+  poms:     155,
+  cms:      165,
+  cfr:       90,
+  handbook:  80,
+  medicare:  72,
+};
+
+// Coverage funnel positions (linear, non-overlapping)
+const COV_POS = {
+  gray:     { x:-340 },
+  relevant: { x:   0 },
+  cited:    { x: 380 },
+};
+
+// Real cited rules from Supabase (2026-08-08)
+const CITED_RULES = [
+  {sn:"RS 00207.001",src:"poms",pages:["survivor-benefits"]},
+  {sn:"RS 00207.002",src:"poms",pages:["widow-vs-own-retirement","survivor-benefits"]},
+  {sn:"RS 00207.003",src:"poms",pages:["widow-vs-own-retirement","survivor-benefits"]},
+  {sn:"RS 00605.360",src:"poms",pages:["wep-explained"]},
+  {sn:"RS 00620.200",src:"poms",pages:["benefit-recalculation"]},
+  {sn:"GN 01701.305",src:"poms",pages:["wep-explained"]},
+  {sn:"GN 02608.100",src:"poms",pages:["government-pension-offset"]},
+  {sn:"GN 02608.104",src:"poms",pages:["government-pension-offset"]},
+  {sn:"GN 02608.401",src:"poms",pages:["government-pension-offset"]},
+  {sn:"HI 00805.324",src:"poms",pages:["medicare-part-b-late-enrollment"]},
+  {sn:"HI 00805.346",src:"poms",pages:["medicare-part-b-late-enrollment"]},
+  {sn:"HI 00805.350",src:"poms",pages:["medicare-part-a-coverage"]},
+  {sn:"HI 00815.001",src:"poms",pages:["medicare-part-a-coverage"]},
+  {sn:"HI 01101.001",src:"poms",pages:["irmaa"]},
+  {sn:"HI 01101.010",src:"poms",pages:["irmaa-income-thresholds"]},
+  {sn:"HI 01101.020",src:"poms",pages:["irmaa"]},
+  {sn:"HI 01101.031",src:"poms",pages:["irmaa-income-thresholds","irmaa","irmaa-magi-income"]},
+  {sn:"HI 01101.035",src:"poms",pages:["irmaa-look-back-period"]},
+  {sn:"HI 01120.001",src:"poms",pages:["irmaa-form-ssa-44"]},
+  {sn:"HI 01120.050",src:"poms",pages:["irmaa-look-back-period"]},
+  {sn:"HI 01120.055",src:"poms",pages:["irmaa-look-back-period"]},
+  {sn:"HI 01140.001",src:"poms",pages:["irmaa-income-thresholds","irmaa-magi-income"]},
+  {sn:"HI 01190.015",src:"poms",pages:["irmaa-income-thresholds"]},
+  {sn:"HI 01194.105",src:"poms",pages:["irmaa-magi-income"]},
+  {sn:"NL 00708.100",src:"poms",pages:["appealing-ssa-denial"]},
+  {sn:"NL 00710.010",src:"poms",pages:["appealing-ssa-denial"]},
+  {sn:"NL 00711.035",src:"poms",pages:["survivor-benefits-children"]},
+  {sn:"NL 00711.040",src:"poms",pages:["widow-vs-own-retirement"]},
+  {sn:"NL 00725.485",src:"poms",pages:["wep-explained"]},
+  {sn:"RM 01310.010",src:"poms",pages:["social-security-credits"]},
+  {sn:"DI 12026.001",src:"poms",pages:["appealing-ssa-denial"]},
+  {sn:"20 CFR 404.211",src:"cfr",pages:["primary-insurance-amount"]},
+  {sn:"20 CFR 404.284",src:"cfr",pages:["benefit-recalculation"]},
+  {sn:"20 CFR 404.285",src:"cfr",pages:["benefit-recalculation"]},
+  {sn:"20 CFR 404.335",src:"cfr",pages:["widow-vs-own-retirement"]},
+  {sn:"20 CFR 404.812",src:"cfr",pages:["social-security-credits"]},
+  {sn:"HBK 0127",src:"handbook",pages:["medicare-part-a-coverage"]},
+  {sn:"HBK 0212",src:"handbook",pages:["social-security-credits"]},
+  {sn:"HBK 0311",src:"handbook",pages:["divorced-spouse-benefits"]},
+  {sn:"HBK 0340",src:"handbook",pages:["survivor-benefits-children"]},
+  {sn:"HBK 0414",src:"handbook",pages:["survivor-benefits-children"]},
+  {sn:"HBK 0718",src:"handbook",pages:["wep-explained"]},
+  {sn:"HBK 2000",src:"handbook",pages:["appealing-ssa-denial"]},
+  {sn:"HBK 2501",src:"handbook",pages:["irmaa-magi-income"]},
+];
+
+function getTopicGroup(sn){
+  if(/^HI 011/.test(sn)||/^HI 008/.test(sn)) return "IRMAA-Medicare";
+  if(/^RS 002/.test(sn)) return "Spousal-Divorced";
+  if(/^RS/.test(sn))     return "Retirement-Surv";
+  if(/^GN 026/.test(sn)) return "Filing-Admin";
+  if(/^GN|^NL|^RM|^DI/.test(sn)) return "Filing-Admin";
+  if(/^20 CFR/.test(sn)) return "CFR-Regs";
+  if(/^HBK/.test(sn))    return "Handbook-Ben";
+  return "Filing-Admin";
+}
+
+const TOPIC_GROUPS = {
+  "IRMAA-Medicare":   { color:"#47a2da" },
+  "Spousal-Divorced": { color:"#8dc9ed" },
+  "Retirement-Surv":  { color:"#8dc9ed" },
+  "Filing-Admin":     { color:"#8dc9ed" },
+  "CFR-Regs":         { color:"#8dc9ed" },
+  "Handbook-Ben":     { color:"#d6eaf4" },
+};
+
+// System-to-system connections between cluster centers
+const SYS_LINKS = [
+  {a:"poms",b:"cfr",      w:1.5,alpha:.28,label:"federal SS law"},
+  {a:"poms",b:"handbook", w:1.2,alpha:.22,label:"SSA guidance"},
+  {a:"cms", b:"medicare", w:1.5,alpha:.28,label:"Medicare program"},
+  {a:"poms",b:"cms",      w:1.0,alpha:.15,label:"IRMAA policy"},
+  {a:"cfr", b:"cms",      w:0.8,alpha:.12,label:"42 CFR"},
+];
+
+// ═══════════════════════════════════════════════════════════
+//  CANVAS
+// ═══════════════════════════════════════════════════════════
+const canvas = document.getElementById("cv");
+const ctx    = canvas.getContext("2d");
+let W=0, H=0, DPR=devicePixelRatio||1;
+function resize(){
+  W=window.innerWidth; H=window.innerHeight;
+  canvas.width=W*DPR; canvas.height=H*DPR;
+  canvas.style.width=W+"px"; canvas.style.height=H+"px";
+  ctx.resetTransform(); ctx.scale(DPR,DPR);
+}
+resize();
+
+// ═══════════════════════════════════════════════════════════
+//  3D ROTATION + PROJECTION
+// ═══════════════════════════════════════════════════════════
+let rotY=-0.12, rotX=0.06;
+
+function project3D(p3){
+  const cosY=Math.cos(rotY), sinY=Math.sin(rotY);
+  const x1=p3.x*cosY-p3.z*sinY, z1=p3.x*sinY+p3.z*cosY;
+  const cosX=Math.cos(rotX), sinX=Math.sin(rotX);
+  const y1=p3.y*cosX-z1*sinX, z2=p3.y*sinX+z1*cosX;
+  const fov=1000, sc=fov/(fov+z2);
+  return {x:W/2+x1*sc, y:H/2+y1*sc, depth:z2, scale:sc};
+}
+
+const PROJ={};
+function updateProj(){
+  for(const [k,p3] of Object.entries(CLUSTER_3D)) PROJ[k]=project3D(p3);
+}
+updateProj();
+
+// ═══════════════════════════════════════════════════════════
+//  NODES — placed within cluster circles (Venn style)
+// ═══════════════════════════════════════════════════════════
+let nodes=[], ruleLinks=[], mode="source", spacingScale=1.6;
+
+// Uniform distribution within a circle (sqrt gives uniform by area)
+function inCircle(R){
+  const r=R*Math.pow(Math.random(),0.65); // slight center concentration
+  const a=Math.random()*Math.PI*2;
+  return {x:r*Math.cos(a), y:r*Math.sin(a)};
+}
+
+function clusterCenterScreen(sid){
+  if(mode==="source") return {x:PROJ[sid].x, y:PROJ[sid].y};
+  return {x:0, y:0}; // overridden in coverage mode
+}
+
+function buildAll(){
+  nodes=[]; ruleLinks=[];
+  const byGroup={};
+
+  for(const [sid,s] of Object.entries(SOURCES)){
+    const R=CLUSTER_R[sid];
+    const gN=Math.round((s.total-s.relevant)/SCALE);
+    const rN=Math.round((s.relevant-s.cited)/SCALE);
+    // cited dots built from CITED_RULES below — bN and topicSeq not used
+
+    for(let i=0;i<gN;i++){
+      const off=inCircle(R);
+      nodes.push({type:"gray",source:sid,color:"#243040",r:3,
+        nhx:off.x/R, nhy:off.y/R,
+        hx:off.x,hy:off.y,
+        ph:Math.random()*Math.PI*2, ds:0.06+Math.random()*0.10, dr:2+Math.random()*5,
+        x:0,y:0});
+    }
+    for(let i=0;i<rN;i++){
+      const off=inCircle(R);
+      nodes.push({type:"relevant",source:sid,color:s.cr,r:3,
+        nhx:off.x/R, nhy:off.y/R,
+        hx:off.x,hy:off.y,
+        ph:Math.random()*Math.PI*2, ds:0.06+Math.random()*0.10, dr:2+Math.random()*5,
+        x:0,y:0});
+    }
+    // Use real cited rules for this source
+    const srcRules = CITED_RULES.filter(r=>r.src===sid);
+    for(const rule of srcRules){
+      const off=inCircle(R*0.7);
+      const grp=getTopicGroup(rule.sn);
+      const node={type:"cited",source:sid,color:s.cb,r:3,
+        nhx:off.x/(R*0.7), nhy:off.y/(R*0.7),
+        hx:off.x,hy:off.y,
+        sectionNumber:rule.sn, pages:rule.pages, topicGroup:grp,
+        ph:Math.random()*Math.PI*2, ds:0.05+Math.random()*0.08, dr:1+Math.random()*3,
+        x:0,y:0};
+      nodes.push(node);
+      if(!byGroup[grp]) byGroup[grp]=[];
+      byGroup[grp].push(node);
+    }
+  }
+
+  // Rule-to-rule connections within topic groups
+  for(const [grp,members] of Object.entries(byGroup)){
+    const col=TOPIC_GROUPS[grp]?.color||"#8dc9ed";
+    if(members.length<=7){
+      for(let i=0;i<members.length;i++)
+        for(let j=i+1;j<members.length;j++)
+          ruleLinks.push({a:members[i],b:members[j],color:col});
+    } else {
+      for(let i=0;i<members.length-1;i++)
+        ruleLinks.push({a:members[i],b:members[i+1],color:col});
+      ruleLinks.push({a:members[members.length-1],b:members[0],color:col});
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  COVERAGE MODE POSITIONS
+// ═══════════════════════════════════════════════════════════
+const COV_R = { gray:220, relevant:170, cited:90 };
+
+function buildCoverageHomes(){
+  // Reassign home positions for coverage mode (three blobs side by side)
+  const grays    = nodes.filter(n=>n.type==="gray");
+  const rels     = nodes.filter(n=>n.type==="relevant");
+  const blues    = nodes.filter(n=>n.type==="cited");
+
+  grays.forEach(n=>{ const o=inCircle(COV_R.gray);    n.chx=o.x; n.chy=o.y; });
+  rels.forEach(n=>{  const o=inCircle(COV_R.relevant); n.chx=o.x; n.chy=o.y; });
+  blues.forEach(n=>{ const o=inCircle(COV_R.cited);   n.chx=o.x; n.chy=o.y; });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ANIMATION LOOP (no physics — pure drift)
+// ═══════════════════════════════════════════════════════════
+let qtree, animRaf;
+
+function tickNodes(t){
+  if(mode==="source"){
+    for(const n of nodes){
+      const p=PROJ[n.source];
+      const R=CLUSTER_R[n.source]*(n.type==="cited"?0.7:1)*spacingScale;
+      n.x=p.x + n.nhx*R + Math.cos(t*n.ds+n.ph)*n.dr;
+      n.y=p.y + n.nhy*R + Math.sin(t*n.ds*1.3+n.ph+1)*n.dr;
+    }
+  } else {
+    for(const n of nodes){
+      const cx = W/2 + (n.type==="cited"?COV_POS.cited.x : n.type==="relevant"?COV_POS.relevant.x : COV_POS.gray.x);
+      const Rc = (n.type==="cited"?COV_R.cited : n.type==="relevant"?COV_R.relevant : COV_R.gray)*spacingScale;
+      const chx = n.chx||n.hx, chy = n.chy||n.hy;
+      const baseR = n.type==="cited"?COV_R.cited:n.type==="relevant"?COV_R.relevant:COV_R.gray;
+      n.x = cx + (chx/baseR)*Rc + Math.cos(t*n.ds+n.ph)*n.dr;
+      n.y = H/2 + (chy/baseR)*Rc + Math.sin(t*n.ds*1.3+n.ph+1)*n.dr;
+    }
+  }
+  qtree = d3.quadtree(nodes, n=>n.x, n=>n.y);
+}
+
+function animate(ts){
+  const t=ts*0.001;
+  tickNodes(t);
+  render();
+  animRaf=requestAnimationFrame(animate);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════════
+function render(){
+  ctx.clearRect(0,0,W,H);
+
+  // Depth order: furthest-back sources rendered first
+  const srcOrder = Object.keys(SOURCES).sort((a,b)=>(PROJ[b]?.depth||0)-(PROJ[a]?.depth||0));
+
+  // ── System arcs between cluster centers (always visible, regardless of spacing)
+  if(mode==="source"){
+    ctx.save();
+    for(const lk of SYS_LINKS){
+      const a=PROJ[lk.a], b=PROJ[lk.b];
+      if(!a||!b) continue;
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      const dx=b.x-a.x, dy=b.y-a.y;
+      const px=-dy*0.25, py=dx*0.25;
+      ctx.beginPath(); ctx.moveTo(a.x,a.y);
+      ctx.quadraticCurveTo(mx+px,my+py,b.x,b.y);
+      ctx.strokeStyle=`rgba(180,120,120,${lk.alpha})`;
+      ctx.lineWidth=lk.w; ctx.setLineDash([5,6]); ctx.stroke();
+      ctx.setLineDash([]);
+      // midpoint label
+      ctx.font="9px -apple-system,sans-serif";
+      ctx.textAlign="center";
+      ctx.fillStyle=`rgba(160,110,110,.45)`;
+      ctx.fillText(lk.label, mx+px*.5, my+py*.5-3);
+    }
+    ctx.restore();
+  }
+
+  // ── Gray dots (low opacity — behind everything)
+  ctx.globalAlpha=0.50;
+  for(const sid of srcOrder)
+    for(const n of nodes)
+      if(n.source===sid && n.type==="gray"){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+        ctx.fillStyle=n.color; ctx.fill();
+      }
+
+  // ── Red dots (slightly more opaque)
+  ctx.globalAlpha=0.62;
+  for(const sid of srcOrder)
+    for(const n of nodes)
+      if(n.source===sid && n.type==="relevant"){
+        ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+        ctx.fillStyle=n.color; ctx.fill();
+      }
+
+  ctx.globalAlpha=1.0;
+
+  // ── Rule-to-rule connections
+  for(const lk of ruleLinks){
+    ctx.beginPath(); ctx.moveTo(lk.a.x,lk.a.y); ctx.lineTo(lk.b.x,lk.b.y);
+    ctx.strokeStyle=lk.color+"25"; ctx.lineWidth=0.8; ctx.stroke();
+  }
+
+  // ── Blue cited dots (full opacity, glow)
+  for(const n of nodes){
+    if(n.type!=="cited") continue;
+    const g=ctx.createRadialGradient(n.x,n.y,n.r*.4,n.x,n.y,n.r*3.5);
+    g.addColorStop(0,n.color+"50"); g.addColorStop(1,n.color+"00");
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r*3.5,0,Math.PI*2);
+    ctx.fillStyle=g; ctx.fill();
+    ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx.fillStyle=n.color; ctx.fill();
+  }
+
+  // ── Cluster labels
+  if(mode==="source"){
+    for(const [sid,s] of Object.entries(SOURCES)){
+      const p=PROJ[sid];
+      const R=CLUSTER_R[sid];
+      const sc=Math.max(0.75,Math.min(1.25,p.scale));
+      ctx.save(); ctx.textAlign="center";
+      ctx.font=`bold ${Math.round(12*sc)}px -apple-system,sans-serif`;
+      ctx.fillStyle=s.cr+"ee";
+      ctx.fillText(s.label, p.x, p.y-(R*sc+8));
+      ctx.font=`${Math.round(9.5*sc)}px -apple-system,sans-serif`;
+      ctx.fillStyle=s.cr+"66";
+      ctx.fillText(s.total.toLocaleString()+" docs", p.x, p.y-(R*sc-6));
+      ctx.restore();
+    }
+  } else {
+    const cx=W/2;
+    const labels=[
+      {type:"gray",   cx:cx+COV_POS.gray.x,    R:COV_R.gray,     color:"#3a5870", title:"All Ingested",  sub:"40,882 docs"},
+      {type:"relevant",cx:cx+COV_POS.relevant.x,R:COV_R.relevant, color:"#c13e4e", title:"Relevant Rules", sub:"~12,241"},
+      {type:"cited",  cx:cx+COV_POS.cited.x,    R:COV_R.cited,    color:"#8dc9ed", title:"Cited",          sub:"44 rules"},
+    ];
+    for(const lb of labels){
+      ctx.save(); ctx.textAlign="center";
+      ctx.font=`bold 13px -apple-system,sans-serif`;
+      ctx.fillStyle=lb.color+"ee";
+      ctx.fillText(lb.title, lb.cx, H/2-(lb.R+10));
+      ctx.font=`10px -apple-system,sans-serif`;
+      ctx.fillStyle=lb.color+"77";
+      ctx.fillText(lb.sub, lb.cx, H/2-(lb.R-6));
+      ctx.restore();
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  TOOLTIP
+// ═══════════════════════════════════════════════════════════
+const ttEl=document.getElementById("tt");
+
+canvas.addEventListener("mousemove",e=>{
+  if(dragging||!qtree){ ttEl.classList.remove("show"); return; }
+  const f=qtree.find(e.clientX,e.clientY,20);
+  if(!f){ ttEl.classList.remove("show"); return; }
+  const s=SOURCES[f.source];
+  const ttn=document.getElementById("ttn"), ttb=document.getElementById("ttb");
+  if(f.type==="cited"){
+    ttn.innerHTML=`<span style="color:#8dc9ed;font-weight:800;font-family:ui-monospace,monospace">${f.sectionNumber||"Cited Rule"}</span>`;
+    ttn.style.color="#8dc9ed";
+    const pageList=(f.pages||[]).map(p=>p.replace(/-/g," ")).join(", ");
+    ttb.innerHTML=`Source: <b style="color:${s.cr}">${s.label}</b><br>Cited in: <span style="color:#8dc9ed">${pageList}</span><br><span style="color:#1a3248">${f.topicGroup?.replace(/-/g," ")||""}</span>`;
+  } else if(f.type==="relevant"){
+    ttn.textContent=s.label+" — Relevant Rule"; ttn.style.color=f.color;
+    ttb.innerHTML=`${s.desc}<br><span style="color:#1a3248">1 dot ≈ ${SCALE} relevant rules · ${s.relevant.toLocaleString()} total</span>`;
+  } else {
+    ttn.textContent=s.label+" — Ingested"; ttn.style.color="#3a5870";
+    ttb.innerHTML=`${s.desc}<br><span style="color:#1a3248">1 dot ≈ ${SCALE} docs · TOC / empty / non-relevant</span>`;
+  }
+  ttEl.style.left=(e.clientX+14)+"px"; ttEl.style.top=(e.clientY-40)+"px";
+  ttEl.classList.add("show");
+});
+canvas.addEventListener("mouseleave",()=>ttEl.classList.remove("show"));
+
+// ═══════════════════════════════════════════════════════════
+//  DRAG TO ROTATE
+// ═══════════════════════════════════════════════════════════
+let dragging=false, dragX=0, dragY=0;
+
+canvas.addEventListener("mousedown",e=>{
+  if(mode!=="source") return;
+  dragging=true; dragX=e.clientX; dragY=e.clientY;
+  canvas.classList.add("drag"); ttEl.classList.remove("show");
+});
+window.addEventListener("mousemove",e=>{
+  if(!dragging) return;
+  rotY+=(e.clientX-dragX)*0.005; rotX+=(e.clientY-dragY)*0.004;
+  rotX=Math.max(-0.7,Math.min(0.7,rotX));
+  dragX=e.clientX; dragY=e.clientY;
+  updateProj(); // dots follow instantly on next animation tick
+});
+window.addEventListener("mouseup",()=>{ dragging=false; canvas.classList.remove("drag"); });
+
+canvas.addEventListener("touchstart",e=>{ const t=e.touches[0]; dragX=t.clientX; dragY=t.clientY; dragging=true; e.preventDefault(); },{passive:false});
+window.addEventListener("touchmove",e=>{
+  if(!dragging) return;
+  const t=e.touches[0];
+  rotY+=(t.clientX-dragX)*0.005; rotX+=(t.clientY-dragY)*0.004;
+  rotX=Math.max(-0.7,Math.min(0.7,rotX));
+  dragX=t.clientX; dragY=t.clientY;
+  updateProj(); e.preventDefault();
+},{passive:false});
+window.addEventListener("touchend",()=>dragging=false);
+
+// ═══════════════════════════════════════════════════════════
+//  MODE TOGGLE
+// ═══════════════════════════════════════════════════════════
+function setMode(m){
+  mode=m;
+  document.getElementById("btn-src").classList.toggle("on",m==="source");
+  document.getElementById("btn-cov").classList.toggle("on",m==="coverage");
+  document.getElementById("pan-src").style.display =m==="source"?"block":"none";
+  document.getElementById("pan-cov").style.display =m==="coverage"?"block":"none";
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RESIZE
+// ═══════════════════════════════════════════════════════════
+let rszT;
+window.addEventListener("resize",()=>{
+  clearTimeout(rszT);
+  rszT=setTimeout(()=>{ resize(); updateProj(); },120);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SPACING SLIDER
+// ═══════════════════════════════════════════════════════════
+const sliderEl = document.getElementById('spacing-slider');
+const sliderVal = document.getElementById('spacing-val');
+sliderEl.addEventListener('input', e => {
+  spacingScale = parseFloat(e.target.value);
+  sliderVal.textContent = spacingScale.toFixed(1) + '×';
+});
+sliderEl.value = spacingScale;
+sliderVal.textContent = spacingScale.toFixed(1) + '×';
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+buildAll();
+buildCoverageHomes();
+// Initial tick to place dots before first paint
+const _t0=performance.now()*0.001;
+tickNodes(_t0);
+animRaf=requestAnimationFrame(animate);
+// Load live stats in background — rebuilds if data has changed
+loadLiveStats();
+
+console.log(`nodes=${nodes.length} blue=${nodes.filter(n=>n.type==="cited").length} links=${ruleLinks.length}`);
+</script>
+</body>
+</html>

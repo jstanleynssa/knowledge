@@ -590,7 +590,22 @@ const ANSWER_CSS = `
 `;
 
 // ── Main component ────────────────────────────────────────────────────────────
-export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
+export interface AskTheme {
+  accent:           string; // button, user bubble, textarea border, active elements
+  accentDark:       string; // darker shade for disabled/hover
+  textareaBg:       string; // input area background
+  shadowColor:      string; // rgba string for textarea glow
+}
+
+const DEFAULT_THEME: AskTheme = {
+  accent:      '#1C80BC',
+  accentDark:  '#155F8E',
+  textareaBg:  '#1E3047',
+  shadowColor: 'rgba(28,128,188,0.12)',
+};
+
+export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: { sourceSummary?: string; reviewerName?: string | null; theme?: Partial<AskTheme> }) {
+  const theme: AskTheme = { ...DEFAULT_THEME, ...themeProp };
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState('');
   const [sectionsOpen, setSectionsOpen] = useState<Record<number, boolean>>({});
@@ -642,7 +657,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
     } : t));
 
     // Save feedback in background
-    fetch('/api/feedback', {
+    fetch('/codex/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -654,6 +669,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
         feedback_type:    type,
         correction_note:  correctionNote,
         category:         (turn.answer as any).category ?? 'social-security',
+        reviewer_name:    reviewerName ?? undefined,
       }),
     }).then(r => r.json()).then(data => {
       if (data.analysis) setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
@@ -662,7 +678,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
     // Auto-rewrite immediately on suggestion
     if (type === 'correct' && correctionNote.trim().length > 0) {
       try {
-        const res = await fetch('/api/ask/rewrite', {
+        const res = await fetch('/codex/api/ask/rewrite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question, original_answer: originalAnswer, correction_note: correctionNote, primary_sources: primarySources }),
@@ -686,7 +702,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
     if (!turn?.question) return;
     setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, rerunLoading: true, rerunAnswer: null } : t));
     try {
-      const res = await fetch('/api/ask', {
+      const res = await fetch('/codex/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: turn.question, history: [] }),
@@ -713,7 +729,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
       } : t));
 
       // Save approved answer to verified corpus
-      fetch('/api/feedback', {
+      fetch('/codex/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -724,6 +740,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
           primary_sources: turn.rerunAnswer.primary_sources ?? turn.answer?.primary_sources ?? [],
           sections_used:   turn.rerunAnswer.sections_used   ?? turn.answer?.sections_used   ?? [],
           correction_note: 'Reviewer confirmed fix via verify-fix flow',
+          reviewer_name:   reviewerName ?? undefined,
         }),
       }).catch(() => null);
     } else {
@@ -741,7 +758,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
     setTurns(prev => [...prev, { question, answer: null, loading: true }]);
 
     try {
-      const res = await fetch('/api/ask', {
+      const res = await fetch('/codex/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, history: buildHistory() }),
@@ -800,14 +817,15 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
                   padding: '16px 20px',
                   fontSize: 16,
                   lineHeight: 1.55,
-                  background: '#1E3047',
-                  border: `2px solid ${ACCENT}`,
+                  background: theme.textareaBg,
+                  border: `2px solid ${theme.accent}`,
                   borderRadius: 14,
                   outline: 'none',
                   resize: 'none',
                   fontFamily: 'inherit',
                   color: TEXT,
-                  boxShadow: '0 0 0 4px rgba(28,128,188,0.12)',
+                  boxShadow: `0 0 0 4px ${theme.shadowColor}`,
+
                 }}
               />
               <button
@@ -817,7 +835,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
                   padding: '14px 22px',
                   borderRadius: 10,
                   border: 'none',
-                  background: !input.trim() ? '#1A2535' : ACCENT,
+                  background: !input.trim() ? '#1A2535' : theme.accent,
                   color: !input.trim() ? DIM : '#fff',
                   fontWeight: 700,
                   fontSize: 15,
@@ -849,7 +867,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
           <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-end' }}>
             <div style={{
               maxWidth: '85%',
-              background: ACCENT,
+              background: theme.accent,
               color: '#fff',
               borderRadius: '16px 4px 16px 16px',
               padding: '12px 18px',
@@ -917,7 +935,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
                     color: TEXT,
                     transition: 'border-color .15s',
                   }}
-                  onFocus={e => { e.currentTarget.style.borderColor = ACCENT; }}
+                  onFocus={e => { e.currentTarget.style.borderColor = theme.accent; }}
                   onBlur={e => { e.currentTarget.style.borderColor = BORDER; }}
                 />
                 <button
@@ -927,7 +945,7 @@ export function AskInterface({ sourceSummary }: { sourceSummary?: string }) {
                     padding: '10px 16px',
                     borderRadius: 8,
                     border: 'none',
-                    background: !input.trim() ? '#1A2535' : ACCENT,
+                    background: !input.trim() ? '#1A2535' : theme.accent,
                     color: !input.trim() ? DIM : '#fff',
                     fontWeight: 700,
                     fontSize: 14,

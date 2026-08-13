@@ -52,6 +52,7 @@ async function getSessionReviewer() {
 
 /** Save edits as draft (stay on page). */
 export async function saveDraft(pageId: string, fields: EditableFields): Promise<void> {
+  try {
   await getSessionReviewer();
   const service = createServiceClient();
   const today = new Date().toISOString().split('T')[0];
@@ -74,9 +75,14 @@ export async function saveDraft(pageId: string, fields: EditableFields): Promise
     })
     .eq('id', pageId);
 
-  if (error) throw new Error(error.message);
-  revalidatePath(`/admin/kb-review/${pageId}`);
-  revalidatePath('/admin/kb-review');
+  if (error) throw new Error('Supabase update failed: ' + error.message);
+  } catch (e) {
+    console.error('[saveDraft] error:', e);
+    throw e;
+  }
+  // No revalidatePath needed for draft saves — the user stays on the page
+  // and the client state is already current. Revalidation causes a server
+  // component re-render that can fail; the data is safely in Supabase.
 }
 
 /** Save edits + approve in one shot — redirects to queue. */
@@ -183,13 +189,51 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     );
   }
 
-  revalidatePath('/admin/kb-review');
+  revalidatePath('/codex/admin/kb-review', 'page');
   // NOTE: do NOT call redirect() here — this action is called from a client component
   // with try/catch. redirect() throws NEXT_REDIRECT which gets caught as an error,
   // showing a spurious alert. The client (ReviewEditor) handles navigation after this returns.
 }
 
+/** Permanently delete a page — only allowed for draft/in_review pages. */
+export async function deletePage(pageId: string): Promise<void> {
+  const { email } = await getSessionReviewer();
+  const service = createServiceClient();
+
+  // Only admin can delete; reviewers cannot
+  if (email !== ADMIN_EMAIL) throw new Error('Only admins can delete pages.');
+
+  // Safety: only allow deletion of non-published pages
+  const { data: page } = await service
+    .from('reference_pages')
+    .select('status')
+    .eq('id', pageId)
+    .single();
+
+  if (!page) throw new Error('Page not found.');
+  if (page.status === 'published') throw new Error('Cannot delete a published page. Mark it superseded instead.');
+
+  const { error } = await service
+    .from('reference_pages')
+    .delete()
+    .eq('id', pageId);
+
+  if (error) throw new Error('Delete failed: ' + error.message);
+  revalidatePath('/codex/admin/kb-review', 'page');
+}
+
 /** Mark a page as superseded with a public deprecation note. */
+export async function sendBackToReview(pageId: string): Promise<void> {
+  await getSessionReviewer(); // auth check
+  const service = createServiceClient();
+  const { error } = await service
+    .from('reference_pages')
+    .update({ status: 'in_review', source_last_verified: null })
+    .eq('id', pageId);
+  if (error) throw new Error(error.message);
+  revalidatePath('/codex/admin/kb-review', 'page');
+}
+
 export async function supersedePageAction(
   pageId: string,
   deprecationNote: string,
@@ -210,6 +254,6 @@ export async function supersedePageAction(
     .eq('id', pageId);
 
   if (error) throw new Error(error.message);
-  revalidatePath('/admin/kb-review');
+  revalidatePath('/codex/admin/kb-review', 'page');
   // NOTE: client handles navigation after this returns (same reason as saveAndApprove above).
 }

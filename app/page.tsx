@@ -1,43 +1,41 @@
 /**
- * NSSA Knowledge Base homepage — knowledge.nssapros.com/
- *
- * Full-page search + category entry points.
- * Static shell; search form submits to /search?q=
+ * NSSA Knowledge Base homepage — www.nssapros.com/codex/
  */
 import { createPublicClient } from '@/lib/supabase';
+import NavBar from '@/components/NavBar';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
   title: 'NSSA Knowledge Base — Social Security & IRMAA Reference',
   description:
-    'Authoritative Social Security and IRMAA rules for financial advisors and retirees — verified against SSA POMS. Search claiming rules, spousal benefits, WEP, GPO, IRMAA, and more.',
+    'Authoritative Social Security and IRMAA rules for financial advisors and retirees — verified against SSA POMS, CFR, CMS, and Medicare.gov. Search claiming rules, spousal benefits, WEP, GPO, IRMAA, and more.',
+  alternates: {
+    canonical: 'https://www.nssapros.com/codex',
+  },
 };
 
-const NAVY  = '#0D3B5C';
-const SOFT  = '#4A5560';
-const RULE  = '#E4E0D7';
-const PAPER = '#FBFAF7';
-const CITE  = '#8A5A00';
-const CITE_BG = '#F6EEDD';
+const NAVY      = '#0D3B5C';
+const SOFT      = '#4A5560';
+const RULE      = '#E4E0D7';
+const PAPER     = '#FBFAF7';
+const CITE      = '#8A5A00';
+const CITE_BG   = '#F6EEDD';
 const IRMAA_RED = '#9B1C1C';
 
 const css = `
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:${PAPER};color:#16202B}
-body{font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55}
+body{margin:0;background:${PAPER};color:#16202B;font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55}
 .wrap{max-width:800px;margin:0 auto;padding:0 24px}
-header.masthead{border-bottom:1px solid ${RULE};padding:18px 0}
-.masthead .inner{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.kb-mark{font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:${NAVY};text-decoration:none}
-.kb-mark span{color:${SOFT};font-weight:500}
-.home-link{font-size:13px;color:${SOFT};text-decoration:none}
-.home-link:hover{color:${NAVY}}
 
 /* Hero */
 .hero{padding:56px 0 48px;text-align:center}
 .hero h1{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;font-size:38px;line-height:1.15;margin:0 0 14px;color:${NAVY};font-weight:600;letter-spacing:-0.01em}
-.hero p{font-size:17px;color:${SOFT};margin:0 auto 36px;max-width:560px;line-height:1.6}
+.hero p{font-size:17px;color:${SOFT};margin:0 auto 36px;max-width:580px;line-height:1.6}
+
+/* Source badges */
+.source-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:-16px 0 36px}
+.source-badge{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:99px;border:1px solid ${RULE};background:#fff;color:${SOFT}}
 
 /* Search */
 .search-form{display:flex;gap:0;max-width:560px;margin:0 auto;border-radius:8px;box-shadow:0 2px 12px rgba(13,59,92,.12);overflow:hidden;border:1.5px solid ${RULE}}
@@ -76,10 +74,12 @@ header.masthead{border-bottom:1px solid ${RULE};padding:18px 0}
 
 footer.foot{border-top:1px solid ${RULE};padding:24px 0 60px;font-size:13px;color:${SOFT};margin-top:8px}
 footer.foot a{color:${NAVY};text-decoration:none}
+
 @media(max-width:600px){
   .hero h1{font-size:28px}
   .cats{grid-template-columns:1fr}
   .search-btn{padding:0 16px;font-size:14px}
+  .source-badges{gap:6px}
 }
 `;
 
@@ -96,101 +96,91 @@ export default async function HomePage() {
   const pages = recent ?? [];
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>NSSA Knowledge Base — Social Security &amp; IRMAA Reference</title>
-        <meta name="description" content={metadata.description} />
-        <link rel="canonical" href="https://knowledge.nssapros.com" />
-        <style dangerouslySetInnerHTML={{ __html: css }} />
-      </head>
-      <body>
-        <header className="masthead">
-          <div className="wrap inner">
-            <a className="kb-mark" href="https://knowledge.nssapros.com">
-              NSSA <span>Knowledge Base</span>
-            </a>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <a className="home-link" href="/ask" style={{ fontWeight: 600 }}>Ask a question &rsaquo;</a>
-              <a className="home-link" href="https://www.nssapros.com">nssapros.com &rsaquo;</a>
-            </div>
-          </div>
-        </header>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <NavBar />
 
-        <div className="wrap">
-          <section className="hero">
-            <h1>Social Security &amp; IRMAA Rules, Explained</h1>
-            <p>
-              Authoritative reference pages for retirees and financial professionals &mdash;
-              every claim verified against the SSA Program Operations Manual System (POMS).
-            </p>
-            <form className="search-form" action="/search" method="GET" role="search">
-              <input
-                className="search-input"
-                type="search"
-                name="q"
-                placeholder="Search — e.g. spousal benefits, IRMAA appeal, earnings test…"
-                autoComplete="off"
-                aria-label="Search the knowledge base"
-              />
-              <button className="search-btn" type="submit">Search</button>
-            </form>
-          </section>
+      <div className="wrap">
+        <section className="hero">
+          <h1>Social Security &amp; IRMAA Rules,<br />Verified and Explained by NSSA</h1>
+          <p>
+            Authoritative reference pages for retirees and financial professionals —
+            every claim verified against SSA POMS, CFR Title 20, the SSA Handbook,
+            CMS regulations, and Medicare.gov guidance.
+          </p>
 
-          {/* Category cards */}
-          <div className="cats">
-            <a className="cat-card cat-ss" href="/social-security">
-              <p className="cat-eyebrow">Reference</p>
-              <h2>Social Security</h2>
-              <p>Claiming rules, spousal and survivor benefits, WEP, GPO, earnings test, and benefit calculation — verified against SSA POMS.</p>
-              <span className="cat-link">Browse Social Security rules &rsaquo;</span>
-            </a>
-            <a className="cat-card cat-irmaa irmaa" href="/irmaa">
-              <p className="cat-eyebrow">Reference</p>
-              <h2>IRMAA &amp; Medicare</h2>
-              <p>Income-related Medicare surcharges, the two-year look-back rule, life-changing event appeals, and Part B and D enrollment.</p>
-              <span className="cat-link">Browse IRMAA &amp; Medicare rules &rsaquo;</span>
-            </a>
+          {/* Source badges */}
+          <div className="source-badges">
+            {['SSA POMS', 'CFR Title 20', 'SSA Handbook', 'CMS', 'Medicare.gov'].map(s => (
+              <span key={s} className="source-badge">{s}</span>
+            ))}
           </div>
 
-          {/* Recently published */}
-          {pages.length > 0 && (
-            <>
-              <div className="section-head">
-                <div className="section-head-line" />
-                <span className="section-head-label">Recently published</span>
-                <div className="section-head-line" />
-              </div>
-              <div className="page-list">
-                {pages.map(page => (
-                  <a
-                    key={page.id}
-                    href={`/${page.category}/${page.slug}`}
-                    className="page-row"
-                  >
-                    <span className="page-row-title">{page.h1 || page.title}</span>
-                    {page.eyebrow && (
-                      <span className={`page-row-eyebrow${page.category === 'irmaa' ? ' irmaa' : ''}`}>
-                        {page.eyebrow}
-                      </span>
-                    )}
-                  </a>
-                ))}
-              </div>
-            </>
-          )}
+          <form className="search-form" action="/codex/search" method="GET" role="search">
+            <input
+              className="search-input"
+              type="search"
+              name="q"
+              placeholder="Search — e.g. spousal benefits, IRMAA appeal, earnings test…"
+              autoComplete="off"
+              aria-label="Search the knowledge base"
+            />
+            <button className="search-btn" type="submit">Search</button>
+          </form>
+        </section>
+
+        {/* Category cards */}
+        <div className="cats">
+          <a className="cat-card cat-ss" href="/codex/social-security">
+            <p className="cat-eyebrow">Reference</p>
+            <h2>Social Security</h2>
+            <p>Claiming rules, spousal and survivor benefits, WEP, GPO, earnings test, and benefit calculation — verified against SSA POMS and CFR.</p>
+            <span className="cat-link">Browse Social Security rules &rsaquo;</span>
+          </a>
+          <a className="cat-card cat-irmaa irmaa" href="/codex/irmaa">
+            <p className="cat-eyebrow">Reference</p>
+            <h2>IRMAA &amp; Medicare</h2>
+            <p>Income-related Medicare surcharges, the two-year look-back rule, life-changing event appeals, and Part B and D enrollment.</p>
+            <span className="cat-link">Browse IRMAA &amp; Medicare rules &rsaquo;</span>
+          </a>
         </div>
 
-        <footer className="foot">
-          <div className="wrap">
-            A reference resource from{' '}
-            <a href="https://www.nssapros.com">National Social Security Advisors (NSSA&reg;)</a>
-            , the nation&apos;s first Social Security certification program for financial professionals, founded 2013.
-            &nbsp;These pages explain the rules; they are not individualized advice.
-          </div>
-        </footer>
-      </body>
-    </html>
+        {/* Recently published */}
+        {pages.length > 0 && (
+          <>
+            <div className="section-head">
+              <div className="section-head-line" />
+              <span className="section-head-label">Recently published</span>
+              <div className="section-head-line" />
+            </div>
+            <div className="page-list">
+              {pages.map(page => (
+                <a
+                  key={page.id}
+                  href={`/codex/${page.category}/${page.slug}`}
+                  className="page-row"
+                >
+                  <span className="page-row-title">{page.h1 || page.title}</span>
+                  {page.eyebrow && (
+                    <span className={`page-row-eyebrow${page.category === 'irmaa' ? ' irmaa' : ''}`}>
+                      {page.eyebrow}
+                    </span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <footer className="foot">
+        <div className="wrap">
+          A reference resource from{' '}
+          <a href="https://www.nssapros.com">National Social Security Advisors (NSSA&reg;)</a>
+          , the nation&apos;s first Social Security certification program for financial professionals, founded 2013.
+          &nbsp;These pages explain the rules; they are not individualized advice.
+        </div>
+      </footer>
+    </>
   );
 }

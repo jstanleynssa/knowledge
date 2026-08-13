@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const maxDuration = 60; // Vercel Pro max for serverless functions
 import OpenAI from 'openai';
-import { hybridRetrieve, type RetrievedSection } from '@/scripts/retrieval/hybrid';
+import { hybridRetrieve, ALL_SOURCES, type RetrievedSection } from '@/scripts/retrieval/hybrid';
 import { verifyClaims } from '@/scripts/draft/verify';
 import { createServiceClient } from '@/lib/supabase';
 import type { PrimarySource } from '@/lib/types';
@@ -82,7 +82,7 @@ Return JSON only.`,
 async function multiQueryRetrieve(queries: string[], topKPerQuery = 8): Promise<RetrievedSection[]> {
   // Run all queries in parallel
   const results = await Promise.all(
-    queries.map(q => hybridRetrieve(q, { topK: topKPerQuery }).catch(() => ({ sections: [], trace: {} as any })))
+    queries.map(q => hybridRetrieve(q, { topK: topKPerQuery, sourcesFilter: ALL_SOURCES }).catch(() => ({ sections: [], trace: {} as any })))
   );
 
   // Merge + deduplicate: keep highest score per section
@@ -270,6 +270,18 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // [3b] Log the query (fire-and-forget — never block the response)
+  const supabaseLogger = createServiceClient();
+  supabaseLogger.from('axiom_queries').insert({
+    raw_question:   question,
+    clean_question: interpreted.clean_question,
+    benefit_types:  interpreted.benefit_types,
+    category:       interpreted.category,
+    parties:        interpreted.parties,
+  }).then(({ error }) => {
+    if (error) console.warn('[axiom_queries] log failed:', error.message);
+  });
+
   // [4] Generate grounded answer
   const result = await generateAnswer(
     interpreted.clean_question,
@@ -289,7 +301,7 @@ export async function POST(req: NextRequest) {
     primary_sources: citedInRetrieved.map(s => ({ section_number: s.section_number, url: s.url })),
   };
   const verification = citedInRetrieved.length > 0
-    ? verifyClaims(draftForVerify, sections)
+    ? verifyClaims(draftForVerify, sections, verifiedContext)
     : { passed: true, verified_count: 0, unverified: [], all_specifics: [] };
 
   return NextResponse.json({

@@ -114,13 +114,17 @@ function normalise(text: string): string {
 /**
  * Verify every extracted specific against cited sources.
  *
- * @param draft          The parsed draft JSON
- * @param allSections    ALL sections that were retrieved (including non-cited) —
- *                       used to diagnose whether a value appeared in an uncited section.
+ * @param draft           The parsed draft JSON
+ * @param allSections     ALL sections that were retrieved (including non-cited) —
+ *                        used to diagnose whether a value appeared in an uncited section.
+ * @param trustedContext  Optional additional text that is already human-verified
+ *                        (e.g. verified_answers injected context). Values found here
+ *                        are treated as verified without requiring a POMS section match.
  */
 export function verifyClaims(
   draft: DraftFields,
   allSections: Array<{ section_number: string; full_text: string }>,
+  trustedContext?: string,
 ): VerificationResult {
   const citedNumbers = new Set(draft.primary_sources.map(s => s.section_number));
 
@@ -153,9 +157,12 @@ export function verifyClaims(
   const specifics = extractSpecifics(draftText);
   const unverified: UnverifiedClaim[] = [];
 
+  const normTrusted = trustedContext ? normalise(trustedContext) : '';
+
   for (const value of specifics) {
     const normValue = normalise(value);
-    if (citedNormalised.includes(normValue)) continue; // ✓ verified
+    if (citedNormalised.includes(normValue)) continue; // ✓ verified in POMS
+    if (normTrusted && normTrusted.includes(normValue)) continue; // ✓ verified via human-reviewed context
 
     // Not in cited sources — check uncited sections
     const uncitedSection = normalisedSections.find(

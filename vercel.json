@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/codex/axiom",
+      "permanent": false,
+      "has": [{ "type": "host", "value": "axiom.nssapros.com" }]
+    }
+  ]
+}

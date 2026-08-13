@@ -330,14 +330,16 @@ function DisclaimerModal({ onClose }: { onClose: () => void }) {
 }
 
 // ── Exported component ─────────────────────────────────────────────────────────
-export function DisclaimerFooter() {
+export function DisclaimerFooter({ accent: accentProp = ACCENT, rule: ruleProp = RULE }: { accent?: string; rule?: string } = {}) {
+  const accentColor = accentProp;
+  const ruleColor   = ruleProp;
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
   return (
     <>
       {/* Short always-visible line */}
-      <div style={{ fontSize: 11, color: SOFT, borderTop: `1px solid ${RULE}`, paddingTop: 8 }}>
+      <div style={{ fontSize: 11, color: SOFT, borderTop: `1px solid ${ruleColor}`, paddingTop: 8 }}>
         AXIOM is an AI-assisted research tool for licensed and credentialed professionals. It provides
         educational reference material drawn from SSA and CMS source documents. It is not legal, tax,
         financial, or benefits advice, and it does not replace your own verification or your firm&rsquo;s
@@ -349,7 +351,7 @@ export function DisclaimerFooter() {
             background: 'none',
             border: 'none',
             padding: 0,
-            color: ACCENT,
+            color: accentColor,
             fontSize: 11,
             cursor: 'pointer',
             textDecoration: 'underline',

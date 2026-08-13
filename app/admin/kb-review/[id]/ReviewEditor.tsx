@@ -4,7 +4,7 @@ import { useState, useTransition, useCallback, useEffect, useRef, CSSProperties 
 import { useRouter } from 'next/navigation';
 import type { ReferencePage, BodySection, FaqItem, WorkedExample } from '@/lib/types';
 import { ReferencePageComponent } from '@/components/ReferencePage';
-import { saveDraft, saveAndApprove, supersedePageAction, type EditableFields } from '../actions';
+import { saveDraft, saveAndApprove, supersedePageAction, deletePage, sendBackToReview, type EditableFields } from '../actions';
 import { RichTextEditor } from '@/components/RichTextEditor';
 
 // ─── Design tokens (match members app) ───────────────────────────────────────
@@ -32,6 +32,159 @@ function toEditState(page: ReferencePage): EditableFields {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
+// ─── FaqCrossRef ────────────────────────────────────────────────────────────
+
+function FaqCrossRef({ item, onChange }: {
+  item: FaqItem;
+  onChange: (updates: Partial<FaqItem>) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; title: string; slug: string; category: string; eyebrow: string | null }>>([]);
+  const [searching, setSearching] = useState(false);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const G2 = { border: '#e5e7eb', text: '#6b7280' };
+
+  useEffect(() => {
+    if (!query.trim() || query.length < 2) { setResults([]); return; }
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/codex/api/admin/page-search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setResults(data.pages ?? []);
+      } catch { setResults([]); }
+      finally { setSearching(false); }
+    }, 300);
+  }, [query]);
+
+  if (item.ref_page_id) {
+    return (
+      <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6, padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: '#1E40AF' }}>🔗 {item.ref_page_title}</div>
+        <button
+          onClick={() => onChange({ ref_page_id: undefined, ref_page_slug: undefined, ref_page_title: undefined, ref_page_category: undefined })}
+          style={{ fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+        >✕ Remove</button>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="Search for a related page…"
+        style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${G2.border}`, fontSize: 13, color: '#111', background: '#fff', boxSizing: 'border-box', fontFamily: 'inherit' }}
+      />
+      {searching && <span style={{ position: 'absolute', right: 10, top: 8, fontSize: 11, color: G2.text }}>Searching…</span>}
+      {results.length > 0 && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: `1px solid ${G2.border}`, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 50, maxHeight: 200, overflowY: 'auto', marginTop: 2 }}>
+          {results.map(p => (
+            <button
+              key={p.id}
+              onClick={() => { onChange({ ref_page_id: p.id, ref_page_slug: p.slug, ref_page_title: p.title, ref_page_category: p.category }); setQuery(''); setResults([]); }}
+              style={{ display: 'block', width: '100%', textAlign: 'left', padding: '8px 12px', background: 'none', border: 'none', borderBottom: `1px solid ${G2.border}`, cursor: 'pointer', fontFamily: 'inherit' }}
+            >
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{p.title}</div>
+              <div style={{ fontSize: 11, color: G2.text, marginTop: 1 }}>{p.eyebrow ?? p.category}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── CrossRefEditor ─────────────────────────────────────────────────────────
+
+function CrossRefEditor({ section, onChange }: {
+  section: BodySection;
+  onChange: (updates: Partial<BodySection>) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; title: string; slug: string; category: string; eyebrow: string | null }>>([]);
+  const [searching, setSearching] = useState(false);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!query.trim() || query.length < 2) { setResults([]); return; }
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/codex/api/admin/page-search?q=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        setResults(data.pages ?? []);
+      } catch { setResults([]); }
+      finally { setSearching(false); }
+    }, 300);
+  }, [query]);
+
+  const G2 = { border: '#e5e7eb', bg: '#f9fafb', text: '#6b7280' };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <FormRow label="Section heading">
+        <FInput value={section.heading} onChange={v => onChange({ heading: v })} placeholder="e.g. Related: IRMAA Income Thresholds" />
+      </FormRow>
+      <FormRow label="Context note (shown to reader)">
+        <FInput
+          value={section.ref_context ?? ''}
+          onChange={v => onChange({ ref_context: v })}
+          placeholder="e.g. For the full threshold tables, see our dedicated reference page."
+        />
+      </FormRow>
+
+      {section.ref_page_id ? (
+        <div style={{ background: '#EFF6FF', border: '1px solid #BFDBFE', borderRadius: 6, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: '#1E40AF' }}>{section.ref_page_title}</div>
+            <div style={{ fontSize: 11, color: G2.text, marginTop: 2 }}>{section.ref_page_category}/{section.ref_page_slug}</div>
+          </div>
+          <button
+            onClick={() => onChange({ ref_page_id: undefined, ref_page_slug: undefined, ref_page_title: undefined, ref_page_category: undefined })}
+            style={{ fontSize: 12, color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+          >✕ Remove</button>
+        </div>
+      ) : (
+        <FormRow label="Search for a page to reference">
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Type a page title or topic…"
+              style={{ width: '100%', padding: '7px 10px', borderRadius: 6, border: `1px solid ${G2.border}`, fontSize: 13, color: '#111', background: '#fff', boxSizing: 'border-box', fontFamily: 'inherit' }}
+            />
+            {searching && <span style={{ position: 'absolute', right: 10, top: 8, fontSize: 11, color: G2.text }}>Searching…</span>}
+            {results.length > 0 && (
+              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: `1px solid ${G2.border}`, borderRadius: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.1)', zIndex: 50, maxHeight: 220, overflowY: 'auto', marginTop: 2 }}>
+                {results.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => {
+                      onChange({ ref_page_id: p.id, ref_page_slug: p.slug, ref_page_title: p.title, ref_page_category: p.category });
+                      setQuery('');
+                      setResults([]);
+                    }}
+                    style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 14px', background: 'none', border: 'none', borderBottom: `1px solid ${G2.border}`, cursor: 'pointer', fontFamily: 'inherit' }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{p.title}</div>
+                    <div style={{ fontSize: 11, color: G2.text, marginTop: 1 }}>{p.eyebrow ?? p.category} · /{p.slug}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </FormRow>
+      )}
+    </div>
+  );
+}
+
 export function ReviewEditor({
   page,
   reviewerName,
@@ -51,6 +204,7 @@ export function ReviewEditor({
   const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstRender = useRef(true);
   const isSaving = useRef(false);
+  const isDirty = useRef(false);
   const [showSuperseded, setShowSuperseded] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({});
   const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({}); 
@@ -81,10 +235,23 @@ export function ReviewEditor({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page.id]);
 
+  // ── Warn before unload if there are unsaved changes ──────────────────
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isDirty.current) return;
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
+
   // ── Autosave: debounce 3s after any field change ─────────────────────
   useEffect(() => {
-    // Skip the initial mount — don’t save when the page first loads
+    // Skip the initial mount — don't save when the page first loads
     if (isFirstRender.current) { isFirstRender.current = false; return; }
+    // Mark dirty whenever fields change
+    isDirty.current = true;
     // Don’t queue an autosave while a manual save or approve is in progress
     if (isSaving.current || isPending) return;
 
@@ -97,6 +264,7 @@ export function ReviewEditor({
       setAutoSaveStatus('saving');
       try {
         await saveDraft(page.id, fields);
+        isDirty.current = false;
         setAutoSaveStatus('saved');
         // Fade back to idle after 2s
         setTimeout(() => setAutoSaveStatus('idle'), 2000);
@@ -113,7 +281,7 @@ export function ReviewEditor({
 
   function persistFeedback(sectionType: 'body' | 'faq', index: number, type: 'verified' | 'flag', note?: string) {
     const section = sectionType === 'body' ? fields.body_sections[index] : null;
-    fetch('/api/admin/section-feedback', {
+    fetch('/codex/api/admin/section-feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -145,7 +313,7 @@ export function ReviewEditor({
 
       setRewritingSection(prev => ({ ...prev, [index]: true }));
       try {
-        const res = await fetch('/api/admin/rewrite-section', {
+        const res = await fetch('/codex/api/admin/rewrite-section', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -188,7 +356,7 @@ export function ReviewEditor({
       if (!faqItem) return;
       setRewritingFaq(prev => ({ ...prev, [index]: true }));
       try {
-        const res = await fetch('/api/admin/rewrite-section', {
+        const res = await fetch('/codex/api/admin/rewrite-section', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -268,6 +436,7 @@ export function ReviewEditor({
     startTransition(async () => {
       try {
         await saveDraft(page.id, fields);
+        isDirty.current = false;
         setSaveStatus('saved');
         setAutoSaveStatus('idle');
         setTimeout(() => setSaveStatus('idle'), 2500);
@@ -284,9 +453,36 @@ export function ReviewEditor({
     startTransition(async () => {
       try {
         await saveAndApprove(page.id, fields);
+        isDirty.current = false;
         router.push('/admin/kb-review');
       } catch (e) {
         alert('Approve failed: ' + (e as Error).message);
+      }
+    });
+  }
+
+  function handleDelete() {
+    if (!confirm(`Permanently delete "${page.title}"? This cannot be undone.`)) return;
+    startTransition(async () => {
+      try {
+        await deletePage(page.id);
+        isDirty.current = false;
+        router.push('/admin/kb-review');
+      } catch (e) {
+        alert('Delete failed: ' + (e as Error).message);
+      }
+    });
+  }
+
+  function handleSendBackToReview() {
+    if (!confirm('Send this page back to review? It will be unpublished and appear in the Needs Review queue.')) return;
+    startTransition(async () => {
+      try {
+        await sendBackToReview(page.id);
+        isDirty.current = false;
+        router.push('/admin/kb-review');
+      } catch (e) {
+        alert('Failed: ' + (e as Error).message);
       }
     });
   }
@@ -295,6 +491,7 @@ export function ReviewEditor({
     startTransition(async () => {
       try {
         await supersedePageAction(page.id, supersededNote);
+        isDirty.current = false;
         router.push('/admin/kb-review');
       } catch (e) {
         alert('Failed: ' + (e as Error).message);
@@ -303,8 +500,12 @@ export function ReviewEditor({
   }
 
   // ─── Body section helpers ──────────────────────────────────────────────────
-  const updateSection = (i: number, key: keyof BodySection, val: string) =>
-    set('body_sections', fields.body_sections.map((s, idx) => idx === i ? { ...s, [key]: val } : s));
+  const updateSection = (i: number, keyOrUpdates: keyof BodySection | Partial<BodySection>, val?: string) =>
+    set('body_sections', fields.body_sections.map((s, idx) =>
+      idx === i
+        ? (typeof keyOrUpdates === 'object' ? { ...s, ...keyOrUpdates } : { ...s, [keyOrUpdates]: val })
+        : s
+    ));
   const insertSection = (afterIndex: number) => {
     const next = [...fields.body_sections];
     next.splice(afterIndex + 1, 0, { type: 'prose' as const, heading: '', prose: '', citation_ref: '' });
@@ -323,8 +524,14 @@ export function ReviewEditor({
     set('body_sections', next);
   };
   // Keep addSection/addTable for the bottom "first add" buttons
-  const addSection = () => insertSection(fields.body_sections.length - 1);
-  const addTable   = () => insertTable(fields.body_sections.length - 1);
+  const addSection   = () => insertSection(fields.body_sections.length - 1);
+  const addTable     = () => insertTable(fields.body_sections.length - 1);
+  function insertCrossRef(afterIndex: number) {
+    const next = [...fields.body_sections];
+    next.splice(afterIndex + 1, 0, { type: 'crossref' as const, heading: 'Related Page', prose: '' });
+    set('body_sections', next);
+  }
+  const addCrossRef  = () => insertCrossRef(fields.body_sections.length - 1);
   const removeSection = (i: number) =>
     set('body_sections', fields.body_sections.filter((_, idx) => idx !== i));
 
@@ -475,13 +682,35 @@ export function ReviewEditor({
 
           {page.status === 'published' && (
             <a
-              href={`https://knowledge.nssapros.com/${page.category}/${page.slug}`}
+              href={`https://www.nssapros.com/codex/${page.category}/${page.slug}`}
               target="_blank"
               rel="noopener"
               style={{ color: '#86efac', fontSize: 13, textDecoration: 'none', fontWeight: 600 }}
             >
               View live ↗
             </a>
+          )}
+
+          {page.status !== 'published' && (
+            <button
+              onClick={handleDelete}
+              disabled={isPending}
+              style={{ background: 'transparent', border: '1px solid #F87171', color: '#F87171', borderRadius: 6, padding: '7px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+              title="Delete this page permanently"
+            >
+              🗑 Delete
+            </button>
+          )}
+
+          {page.status === 'published' && (
+            <button
+              onClick={handleSendBackToReview}
+              disabled={isPending}
+              style={{ background: 'transparent', border: '1px solid #D97706', color: '#D97706', borderRadius: 6, padding: '7px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+              title="Unpublish and return to review queue"
+            >
+              ↩ Needs Review
+            </button>
           )}
 
           <button
@@ -553,7 +782,7 @@ export function ReviewEditor({
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <span style={chipLabel}>
-                        {section.type === 'table' ? '📊 Table' : `Section ${i + 1}`}
+                        {section.type === 'table' ? '📊 Table' : section.type === 'crossref' ? '🔗 Cross-Reference' : `Section ${i + 1}`}
                       </span>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <button onClick={() => moveSection(i, -1)} disabled={i === 0} style={{ ...removeBtnStyle, color: '#6b7280', fontSize: 15, opacity: i === 0 ? 0.3 : 1 }} title="Move up">↑</button>
@@ -571,6 +800,9 @@ export function ReviewEditor({
                       <button
                         onClick={() => insertTable(i)}
                         style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}>📊 table below</button>
+                      <button
+                        onClick={() => insertCrossRef(i)}
+                        style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}>🔗 ref below</button>
                     </div>
 
                     {section.type === 'table' ? (
@@ -632,14 +864,25 @@ export function ReviewEditor({
                           <FInput value={section.citation_ref ?? ''} onChange={v => updateSection(i, 'citation_ref', v)} placeholder="e.g. HI 01101.020" mono />
                         </FormRow>
                       </>
+                    ) : section.type === 'crossref' ? (
+                      /* ── Cross-reference section ── */
+                      <CrossRefEditor
+                        section={section}
+                        onChange={(updates) => updateSection(i, updates)}
+                      />
                     ) : (
                       /* ── Prose section ── */
                       <>
                         <FormRow label="Heading">
                           <FInput value={section.heading} onChange={v => updateSection(i, 'heading', v)} />
                         </FormRow>
-                        <FormRow label="Prose (HTML OK)">
-                          <FTextarea value={section.prose} onChange={v => updateSection(i, 'prose', v)} rows={4} />
+                        <FormRow label="Prose">
+                          <RichTextEditor
+                            value={section.prose}
+                            onChange={v => updateSection(i, 'prose', v)}
+                            placeholder="Write or paste prose here…"
+                            minHeight={120}
+                          />
                         </FormRow>
                         <FormRow label="Citation ref (POMS/CFR section number)">
                           <FInput
@@ -655,8 +898,9 @@ export function ReviewEditor({
                 ))}
               {/* Bottom insert buttons - always visible even with 0 sections */}
               <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <button onClick={addSection} style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
-                <button onClick={addTable}   style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
+                <button onClick={addSection}   style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
+                <button onClick={addTable}     style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
+                <button onClick={addCrossRef}  style={{ ...addBtnStyle, flex: 1 }}>🔗 Add Cross-Reference</button>
               </div>
             </FieldGroup>
 
@@ -672,6 +916,12 @@ export function ReviewEditor({
                   </FormRow>
                   <FormRow label="Answer">
                     <FTextarea value={item.a} onChange={v => updateFaq(i, 'a', v)} rows={3} />
+                  </FormRow>
+                  <FormRow label="Cross-reference (optional)">
+                    <FaqCrossRef
+                      item={item}
+                      onChange={updates => set('faq', fields.faq.map((f, idx) => idx === i ? { ...f, ...updates } : f))}
+                    />
                   </FormRow>
                 </div>
               ))}

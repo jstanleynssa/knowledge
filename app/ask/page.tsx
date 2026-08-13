@@ -552,7 +552,7 @@ export default function AskPage() {
     } : t));
 
     // Save feedback (fire and forget — don't block the rewrite)
-    fetch('/api/feedback', {
+    fetch('/codex/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -575,7 +575,7 @@ export default function AskPage() {
     // For suggestions: call rewrite API immediately in parallel
     if (type === 'correct' && correctionNote.trim().length > 0) {
       try {
-        const rewriteRes = await fetch('/api/ask/rewrite', {
+        const rewriteRes = await fetch('/codex/api/ask/rewrite', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -605,7 +605,7 @@ export default function AskPage() {
     setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, rewriteFeedback: type } : t));
 
     // Save to verified_answers if approved
-    const res = await fetch('/api/feedback', {
+    const res = await fetch('/codex/api/feedback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -637,7 +637,7 @@ export default function AskPage() {
     setTurns(prev => [...prev, { question, answer: null, loading: true }]);
 
     try {
-      const res = await fetch('/api/ask', {
+      const res = await fetch('/codex/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, history: buildHistory() }),
@@ -833,7 +833,7 @@ export default function AskPage() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 16px', marginBottom: 8 }}>
               <a href="https://www.nssapros.com/social-security-training" target="_blank" rel="noopener" style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>Social Security Certification &rsaquo;</a>
               <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener" style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>IRMAA Certification &rsaquo;</a>
-              <a href="https://directory.nssapros.com" target="_blank" rel="noopener" style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>Find an Advisor &rsaquo;</a>
+              <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener" style={{ color: NAVY, textDecoration: 'none', fontWeight: 600 }}>Find an Advisor &rsaquo;</a>
             </div>
             <div style={{ color: '#cdc4ad', fontSize: 11, borderTop: `1px solid ${RULE}`, paddingTop: 8 }}>
               NSSA Knowledge Base provides educational reference material based on SSA POMS. Not individualized legal, financial, or benefits advice. Verify current rules with SSA before making filing decisions.

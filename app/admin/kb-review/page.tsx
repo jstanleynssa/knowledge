@@ -1,9 +1,9 @@
 /**
  * /admin/kb-review — Knowledge Base review queue + annual review tracker.
  *
- * Status tabs: Needs Review | Drafts | Published | Review Due | Superseded
- * "Review Due" surfaces published pages where source_last_verified is null
- * or older than 9 months — the annual review work list.
+ * Status tabs: Needs Review | Published | Superseded
+ * "Needs Review" covers drafts, in-review, approved, and published pages past
+ * their 9-month verification window — anything that needs human attention.
  */
 
 import Link from 'next/link';
@@ -12,6 +12,8 @@ import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import type { Category, KbReviewer, PageStatus, ReferencePage } from '@/lib/types';
 import { TOPIC_QUEUE } from '@/lib/topic-queue';
 import { GenerateButton } from './GenerateButton';
+import { getCoverageStats } from '@/lib/coverage-stats';
+import { ExternalLink } from './ExternalLink';
 
 const ADMIN_EMAIL = 'jstanley@nssapros.com';
 
@@ -28,12 +30,9 @@ const STATUS_META: Record<string, { label: string; bg: string; color: string }> 
   retired:    { label: 'Retired',       bg: '#F3F4F6', color: '#6B7280' },
 };
 
-// "review_due" is a virtual tab — not a real status value
 const STATUS_TABS = [
   { key: 'in_review',   label: 'Needs Review' },
-  { key: 'draft',       label: 'Drafts' },
   { key: 'published',   label: 'Published' },
-  { key: 'review_due',  label: 'Review Due' },
   { key: 'superseded',  label: 'Superseded' },
 ] as const;
 
@@ -53,7 +52,7 @@ export default async function KbReviewPage({
   searchParams: Promise<{ status?: string; category?: string }>;
 }) {
   const { status: statusParam, category: categoryParam } = await searchParams;
-  const activeTab      = (statusParam || 'review_due') as TabKey;
+  const activeTab      = (statusParam || 'in_review') as TabKey;
   const categoryFilter = categoryParam || 'all';
 
   const session = await createSessionClient();
@@ -87,11 +86,11 @@ export default async function KbReviewPage({
     .select('id, slug, category, title, h1, eyebrow, status, reviewer, approved_by, approved_at, updated_at, source_last_verified, primary_sources')
     .order('updated_at', { ascending: false });
 
-  if (activeTab === 'review_due') {
-    // Published pages with stale/missing verification + all drafts (never verified)
-    query = query
-      .in('status', ['published', 'draft', 'in_review'])
-      .or(`source_last_verified.is.null,source_last_verified.lt.${threshold}`);
+  if (activeTab === 'in_review') {
+    // Drafts + in-review + approved + published pages past 9-month verification window
+    query = query.or(
+      `status.eq.draft,status.eq.in_review,status.eq.approved,and(status.eq.published,or(source_last_verified.is.null,source_last_verified.lt.${threshold}))`
+    );
   } else {
     query = query.eq('status', activeTab as PageStatus);
   }
@@ -108,6 +107,28 @@ export default async function KbReviewPage({
   const { data: pages, error } = await query.returns<PageRow[]>();
   if (error) throw new Error(error.message);
 
+  // Tab counts — apply same category filter so counts match what the reviewer sees
+  function addCatFilter(q: any) {
+    if (categoryFilter !== 'all') q = q.eq('category', categoryFilter);
+    if (categories)               q = q.in('category', categories);
+    return q;
+  }
+
+  const [needsReviewCountRes, publishedCountRes, supersededCountRes] = await Promise.all([
+    addCatFilter(service.from('reference_pages').select('id', { count: 'exact', head: true }))
+      .or(`status.eq.draft,status.eq.in_review,status.eq.approved,and(status.eq.published,or(source_last_verified.is.null,source_last_verified.lt.${threshold}))`),
+    addCatFilter(service.from('reference_pages').select('id', { count: 'exact', head: true }))
+      .eq('status', 'published'),
+    addCatFilter(service.from('reference_pages').select('id', { count: 'exact', head: true }))
+      .eq('status', 'superseded'),
+  ]);
+
+  const TAB_COUNTS: Record<string, number> = {
+    in_review:  needsReviewCountRes.count ?? 0,
+    published:  publishedCountRes.count   ?? 0,
+    superseded: supersededCountRes.count  ?? 0,
+  };
+
   // Coverage metrics
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const [{ data: publishedRows }, { data: weekRows }, { data: allSlugs }] = await Promise.all([
@@ -120,6 +141,15 @@ export default async function KbReviewPage({
   const existingSlugSet  = new Set((allSlugs ?? []).map(r => r.slug));
   const remainingTopics  = TOPIC_QUEUE.filter(t => !existingSlugSet.has(t.slug));
   const remaining        = remainingTopics.length;
+
+  // ── Source corpus stats for the Generate picker (shared source of truth) ──────────
+  const coverageData = await getCoverageStats();
+  const SOURCE_STATS = Object.fromEntries(
+    Object.entries(coverageData.sources).map(([k, v]) => [
+      k,
+      { cited: v.cited_total, relevant: v.relevant, total: v.total_docs },
+    ])
+  ) as Record<'poms'|'cfr'|'handbook'|'cms'|'medicare', { cited: number; relevant: number; total: number }>;
 
   function tabHref(overrides: Record<string, string>) {
     const p = new URLSearchParams({ status: activeTab, category: categoryFilter, ...overrides });
@@ -145,23 +175,16 @@ export default async function KbReviewPage({
       {/* Header */}
       <div style={{ background: NSSA.dark, color: '#fff', padding: '14px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {isAdmin && (
-            <><a href="/admin/members" style={{ color: NSSA.light, textDecoration: 'none', fontSize: 14 }}>← Admin</a><span style={{ color: '#4a7fa0' }}>/</span></>
-          )}
-          <span style={{ fontWeight: 700, fontSize: 18 }}>Knowledge Base</span>
-          <a href="/admin/coverage" style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Coverage ↗</a>
-          <a href="/admin/leaderboard" style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Leaderboard ↗</a>
+          <span style={{ fontWeight: 700, fontSize: 18 }}>CODEX</span>
+          <Link href="/admin/coverage"    style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Coverage ↗</Link>
+          <Link href="/admin/leaderboard" style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Leaderboard ↗</Link>
+          <a href="/codex/corpus-cluster.html" style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Corpus Matrix ↗</a>
+          <Link href="/admin/roadmap"     style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Roadmap ↗</Link>
+          <Link href="/admin/topics"     style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>180 Topics ↗</Link>
+          <Link href="/axiom"             style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>AXIOM ↗</Link>
+          <GenerateButton topics={remainingTopics} sourceStats={SOURCE_STATS} />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          {/* Coverage metrics */}
-          <div style={{ display: 'flex', gap: 16, fontSize: 12, color: NSSA.light }}>
-            <span><strong style={{ color: '#fff' }}>{publishedCount}</strong> published</span>
-            {approvedThisWeek > 0 && (
-              <span><strong style={{ color: '#6EE7B7' }}>+{approvedThisWeek}</strong> this week</span>
-            )}
-            <span><strong style={{ color: '#fff' }}>{remaining}</strong> topics queued</span>
-          </div>
-          <GenerateButton topics={remainingTopics} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 13, color: NSSA.light }}>
             Reviewing as <strong style={{ color: '#fff' }}>{reviewerName}</strong>
           </span>
@@ -174,19 +197,23 @@ export default async function KbReviewPage({
         <div style={{ display: 'flex', gap: 4, borderBottom: `2px solid ${G.border}`, marginBottom: 16 }}>
           {STATUS_TABS.map(tab => {
             const active = activeTab === tab.key;
-            const isDue  = tab.key === 'review_due';
             return (
               <Link key={tab.key} href={tabHref({ status: tab.key })} style={{
                 padding: '10px 18px',
                 fontWeight: active ? 700 : 500,
                 fontSize: 14,
-                color: active ? (isDue ? '#DC2626' : NSSA.dark) : G.text,
+                color: active ? NSSA.dark : G.text,
                 textDecoration: 'none',
-                borderBottom: active ? `2px solid ${isDue ? '#DC2626' : NSSA.dark}` : '2px solid transparent',
+                borderBottom: active ? `2px solid ${NSSA.dark}` : '2px solid transparent',
                 marginBottom: -2,
                 whiteSpace: 'nowrap',
               }}>
-                {isDue && <span style={{ marginRight: 5 }}>⚑</span>}{tab.label}
+                {tab.label}
+                {TAB_COUNTS[tab.key] > 0 && (
+                  <span style={{ marginLeft: 6, fontSize: 12, fontWeight: 600, color: active ? NSSA.dark : G.text }}>
+                    ({TAB_COUNTS[tab.key]})
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -216,12 +243,10 @@ export default async function KbReviewPage({
           <div style={{ textAlign: 'center', padding: '60px 0', color: G.text }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>✓</div>
             <div style={{ fontWeight: 600, fontSize: 18, marginBottom: 4 }}>
-              {activeTab === 'review_due' ? 'All pages are current' : 'Queue is clear'}
+              Queue is clear
             </div>
             <div style={{ fontSize: 14 }}>
-              {activeTab === 'review_due'
-                ? 'No published pages are past their annual review date.'
-                : `No ${categoryFilter !== 'all' ? categoryFilter + ' ' : ''}pages with this status.`}
+              {`No ${categoryFilter !== 'all' ? categoryFilter + ' ' : ''}pages need attention right now.`}
             </div>
           </div>
         )}
@@ -264,14 +289,12 @@ export default async function KbReviewPage({
                     {page.eyebrow && <span style={{ marginRight: 8, color: '#8A5A00', fontWeight: 500 }}>{page.eyebrow}</span>}
                     <code style={{ background: G.bg, padding: '1px 6px', borderRadius: 3, marginRight: 8 }}>{page.slug}</code>
                     {page.status === 'published' && (
-                      <a
-                        href={`https://knowledge.nssapros.com/${page.category}/${page.slug}`}
-                        target="_blank" rel="noopener"
-                        onClick={e => e.stopPropagation()}
+                      <ExternalLink
+                        href={`https://www.nssapros.com/codex/${page.category}/${page.slug}`}
                         style={{ marginRight: 8, color: NSSA.medium, fontWeight: 600, textDecoration: 'none', fontSize: 12 }}
                       >
                         View live ↗
-                      </a>
+                      </ExternalLink>
                     )}
                     {citations} citation{citations !== 1 ? 's' : ''}
                     {page.approved_by
@@ -292,7 +315,7 @@ export default async function KbReviewPage({
                     <div style={{ fontSize: 12, fontWeight: 700, color: due.color }}>{due.label}</div>
                   )}
                   <div style={{ fontSize: 12, color: G.text }}>
-                    {activeTab === 'review_due' || activeTab === 'published'
+                    {activeTab === 'published'
                       ? `Verified ${fmtDate(page.source_last_verified)}`
                       : fmtDate(page.approved_at ?? page.updated_at)}
                   </div>

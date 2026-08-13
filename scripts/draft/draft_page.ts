@@ -193,7 +193,17 @@ async function main() {
     process.exit(1);
   }
 
-  // 5. Check for slug conflicts
+  // 5. Enforce URL length limit (Moz flags full URLs > 75 chars)
+  // Base lengths: /codex/social-security/ = 48 chars, /codex/irmaa/ = 38 chars
+  const MAX_SLUG: Record<string, number> = { 'social-security': 25, irmaa: 35 };
+  const maxSlugLen = MAX_SLUG[category] ?? 25;
+  if (slug.length > maxSlugLen) {
+    console.error(`Slug "${slug}" is ${slug.length} chars — exceeds the ${maxSlugLen}-char max for /${category}/ pages.`);
+    console.error(`Full URL would be ${48 + slug.length} chars (limit 75). Shorten the slug and retry.`);
+    process.exit(1);
+  }
+
+  // 5b. Check for slug conflicts
   const { data: existing } = await supabase
     .from('reference_pages')
     .select('id, status')

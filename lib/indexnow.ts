@@ -2,7 +2,7 @@
  * IndexNow — real-time URL submission to Bing, Yandex, and AI search crawlers.
  *
  * How it works:
- *   1. We host a key file at https://knowledge.nssapros.com/{key}.txt
+ *   1. We host a key file at https://www.nssapros.com/codex/{key}.txt
  *   2. On publish, we POST the new URL(s) to api.indexnow.org
  *   3. Bing, Yandex, and connected AI engines (Copilot, etc.) index within minutes
  *
@@ -12,7 +12,7 @@
  * Docs: https://www.indexnow.org/documentation
  */
 
-const HOST    = 'https://knowledge.nssapros.com';
+const HOST    = 'https://www.nssapros.com/codex';
 const API_URL = 'https://api.indexnow.org/indexnow';
 
 /**
@@ -39,7 +39,7 @@ export async function pingIndexNow(slugs: { slug: string; category: string }[]):
 
   try {
     const body = {
-      host:    'knowledge.nssapros.com',
+      host:    'www.nssapros.com',
       key,
       keyLocation: `${HOST}/${key}.txt`,
       urlList: [...new Set(urls)], // dedupe

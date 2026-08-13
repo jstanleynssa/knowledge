@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     correction_tags, // string[]
     correction_note, // string
     category,        // 'social-security' | 'irmaa'
+    reviewer_name,   // string — from axiom_reviewer cookie via client
   } = body;
 
   if (!question || !original_answer || !feedback_type) {
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
     correction_note:   correction_note ?? null,
     category:          category ?? 'social-security',
     saved_to_verified: feedback_type === 'reject' ? false : true,
+    reviewer_name:     reviewer_name ?? null,
   });
   if (fbErr) console.error('feedback insert error:', fbErr.message);
 

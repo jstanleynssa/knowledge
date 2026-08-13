@@ -36,11 +36,11 @@ const SOURCE_META: Record<string, {
   // Whether direct citation is the primary value or retrieval depth is
   citationMode: 'primary' | 'retrieval';
 }> = {
-  poms:     { label: 'POMS',         color: '#1E40AF', description: 'SSA Program Operations Manual System — the authoritative SS rules', relevancePct: 33, targetNote: 'Cover all Tier 1 topic clusters (~40 areas)', citationMode: 'primary' },
+  poms:     { label: 'POMS',         color: '#1E40AF', description: 'SSA Program Operations Manual System — the authoritative SS rules', relevancePct: 46, targetNote: 'Cover all Tier 1 topic clusters (~40 areas)', citationMode: 'primary' },
   cfr:      { label: 'CFR',          color: '#065F46', description: 'Code of Federal Regulations Title 20 — SS & Medicare law', relevancePct: 90, targetNote: 'Cite key SS/IRMAA regulatory sections', citationMode: 'primary' },
   handbook: { label: 'SSA Handbook', color: '#7C3AED', description: 'Social Security Handbook — plain-language rules', relevancePct: 100, targetNote: 'Cover all major SS benefit topics', citationMode: 'primary' },
-  cms:      { label: 'CMS',          color: '#B45309', description: 'CMS.gov — Medicare programs, coverage, enrollment, IRMAA', relevancePct: 8, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
-  medicare: { label: 'Medicare.gov', color: '#9D174D', description: 'Medicare.gov — beneficiary plans, apps, enrollment tools', relevancePct: 25, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
+  cms:      { label: 'CMS',          color: '#B45309', description: 'CMS.gov — Medicare programs, coverage, enrollment, IRMAA', relevancePct: 4, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
+  medicare: { label: 'Medicare.gov', color: '#9D174D', description: 'Medicare.gov — beneficiary plans, apps, enrollment tools', relevancePct: 60, targetNote: 'Drives Medicare retrieval depth; direct citation grows as Medicare pages are drafted', citationMode: 'retrieval' },
 };
 
 function ProgressBar({ pct, color }: { pct: number; color?: string }) {
@@ -90,19 +90,34 @@ export default async function CoveragePage() {
     service.from('reference_pages').select('*', { count: 'exact', head: true }).eq('status', 'draft'),
   ]);
 
-  // Count citations per source type from published pages
+  // Count UNIQUE sections cited per source type from published pages
   const { data: pages } = await service.from('reference_pages').select('primary_sources').eq('status', 'published');
   const allSources = (pages ?? []).flatMap(p => (p.primary_sources as any[] | null) ?? []);
-  const citationsBySource: Record<string, number> = { poms: 0, cfr: 0, handbook: 0, cms: 0, medicare: 0, other: 0 };
-  for (const s of allSources) {
-    const sec: string = s.section_number ?? '';
-    if (/^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sec))    citationsBySource.poms++;
-    else if (/^20\s+CFR/i.test(sec))                                  citationsBySource.cfr++;
-    else if (/^HBK/i.test(sec))                                       citationsBySource.handbook++;
-    else if (/cms\.gov/i.test(sec) || /^CMS/i.test(sec))             citationsBySource.cms++;
-    else if (/medicare\.gov/i.test(sec))                               citationsBySource.medicare++;
-    else                                                               citationsBySource.other++;
+
+  // Classify each citation by source type
+  function classifySource(sec: string): string {
+    if (/^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sec)) return 'poms';
+    if (/^20\s+CFR/i.test(sec))                                   return 'cfr';
+    if (/^HBK/i.test(sec))                                        return 'handbook';
+    if (/cms\.gov/i.test(sec) || /^CMS/i.test(sec))              return 'cms';
+    if (/medicare\.gov/i.test(sec))                                return 'medicare';
+    return 'other';
   }
+
+  // Unique section numbers per source (deduplicated)
+  const uniqueSectionsBySource: Record<string, Set<string>> = {
+    poms: new Set(), cfr: new Set(), handbook: new Set(), cms: new Set(), medicare: new Set(), other: new Set()
+  };
+  for (const s of allSources) {
+    const sec: string = (s.section_number ?? '').trim();
+    if (!sec) continue;
+    const sourceType = classifySource(sec);
+    uniqueSectionsBySource[sourceType].add(sec);
+  }
+  const uniqueCountBySource: Record<string, number> = Object.fromEntries(
+    Object.entries(uniqueSectionsBySource).map(([k, v]) => [k, v.size])
+  );
+  const totalUniqueSections = Object.values(uniqueCountBySource).reduce((s, v) => s + v, 0);
   const totalCitations = allSources.length;
 
   // ── 3. POMS coverage.json ────────────────────────────────────────────────────
@@ -132,17 +147,32 @@ export default async function CoveragePage() {
           <span style={{ color: '#4a7fa0' }}>/</span>
           <span style={{ fontWeight: 700, fontSize: 18 }}>Corpus Coverage</span>
         </div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <a href="/admin/leaderboard"   style={{ color: '#8ECAEE', textDecoration: 'none', fontSize: 13 }}>Leaderboard ↗</a>
+          <a href="/codex/corpus-cluster.html" style={{ color: '#8ECAEE', textDecoration: 'none', fontSize: 13 }}>Corpus Matrix ↗</a>
+        </div>
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 24px' }}>
 
         {/* ── Top stats ── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
-          <StatCard label="Total Source Documents" value={totalDocs.toLocaleString()} sub="across all corpora" />
-          <StatCard label="Published Pages" value={publishedCount ?? 0} sub={`${inReviewCount ?? 0} in review · ${draftCount ?? 0} drafts`} color="#059669" />
-          <StatCard label="Total Citations" value={totalCitations} sub="in published pages" />
-          <StatCard label="POMS Coverage" value={pomsCoverage ? `${pomsCoverage.totals.coverage_pct}%` : '—'} sub="of advisor-relevant sections" />
-        </div>
+        {(() => {
+          const totalRelevant = sourceTypes.reduce((sum, t) => {
+            const relevant = (t === 'poms' && pomsCoverage)
+              ? pomsCoverage.totals.advisor_relevant
+              : Math.round((docCounts[t] ?? 0) * SOURCE_META[t].relevancePct / 100);
+            return sum + relevant;
+          }, 0);
+          const overallCoveragePct = totalRelevant > 0 ? Math.round(totalUniqueSections / totalRelevant * 100) : 0;
+          return (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 32 }}>
+              <StatCard label="Total Source Documents" value={totalDocs.toLocaleString()} sub="across all corpora" />
+              <StatCard label="Published Pages" value={publishedCount ?? 0} sub={`${inReviewCount ?? 0} in review · ${draftCount ?? 0} drafts`} color="#059669" />
+              <StatCard label="Unique Rules Cited" value={totalUniqueSections.toLocaleString()} sub={`of ~${totalRelevant.toLocaleString()} relevant rules`} color="#1E40AF" />
+              <StatCard label="Overall Rule Coverage" value={`${overallCoveragePct}%`} sub="cited / est. relevant" color={overallCoveragePct < 10 ? '#DC2626' : overallCoveragePct < 40 ? '#D97706' : '#059669'} />
+            </div>
+          );
+        })()}
 
         {/* ── Corpus breakdown ── */}
         <h2 style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Corpus Breakdown</h2>
@@ -155,7 +185,7 @@ export default async function CoveragePage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ background: G.bg, borderBottom: `1px solid ${G.border}` }}>
-                {['Source', 'Description', 'Docs Ingested', 'Est. Relevant', 'Pages Citing', 'Coverage Goal'].map(h => (
+                {['Source', 'Description', 'Docs Ingested', 'Est. Relevant Rules', 'Unique Rules Cited', 'Coverage %'].map(h => (
                   <th key={h} style={{ padding: '9px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: G.text }}>{h}</th>
                 ))}
               </tr>
@@ -164,20 +194,12 @@ export default async function CoveragePage() {
               {sourceTypes.map(t => {
                 const meta = SOURCE_META[t];
                 const docs = docCounts[t] ?? 0;
-                const cites = citationsBySource[t] ?? 0;
-                const relevant = Math.round(docs * meta.relevancePct / 100);
-                // Pages citing this source = pages with at least one citation from this source
-                const pagesCiting = (pages ?? []).filter(p =>
-                  ((p.primary_sources as any[]) ?? []).some((s: any) => {
-                    const sec: string = s.section_number ?? '';
-                    if (t === 'poms')     return /^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sec);
-                    if (t === 'cfr')      return /^20\s+CFR/i.test(sec);
-                    if (t === 'handbook') return /^HBK/i.test(sec);
-                    if (t === 'cms')      return /cms\.gov/i.test(sec) || /^CMS/i.test(sec);
-                    if (t === 'medicare') return /medicare\.gov/i.test(sec);
-                    return false;
-                  })
-                ).length;
+                // For POMS, use the real advisor_relevant count from coverage.json if available
+                const relevant = (t === 'poms' && pomsCoverage)
+                  ? pomsCoverage.totals.advisor_relevant
+                  : Math.round(docs * meta.relevancePct / 100);
+                const uniqueCited = uniqueCountBySource[t] ?? 0;
+                const coveragePct = relevant > 0 ? Math.round(uniqueCited / relevant * 100) : 0;
                 const isPrimary = meta.citationMode === 'primary';
                 return (
                   <tr key={t} style={{ borderBottom: `1px solid ${G.border}` }}>
@@ -187,14 +209,25 @@ export default async function CoveragePage() {
                     <td style={{ padding: '12px 14px', color: '#374151', fontSize: 12, maxWidth: 240 }}>{meta.description}</td>
                     <td style={{ padding: '12px 14px', fontWeight: 600, color: NSSA_DARK }}>{docs.toLocaleString()}</td>
                     <td style={{ padding: '12px 14px', color: G.text }}>
-                      {isPrimary ? `~${relevant.toLocaleString()}` : <span style={{ fontSize: 11, color: G.text, fontStyle: 'italic' }}>retrieval depth</span>}
+                      ~{relevant.toLocaleString()}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
-                      <span style={{ fontWeight: 600, color: pagesCiting > 0 ? '#059669' : G.text }}>
-                        {pagesCiting > 0 ? `${pagesCiting} page${pagesCiting !== 1 ? 's' : ''}` : '—'}
+                      <span style={{ fontWeight: 600, color: uniqueCited > 0 ? '#059669' : G.text }}>
+                        {uniqueCited > 0 ? uniqueCited.toLocaleString() : '—'}
                       </span>
                     </td>
-                    <td style={{ padding: '12px 14px', fontSize: 12, color: G.text, maxWidth: 220 }}>{meta.targetNote}</td>
+                    <td style={{ padding: '12px 14px', minWidth: 140 }}>
+                      {isPrimary ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1 }}><ProgressBar pct={coveragePct} /></div>
+                          <span style={{ fontSize: 11, fontWeight: 700, minWidth: 36, textAlign: 'right',
+                            color: coveragePct === 0 ? '#9CA3AF' : coveragePct < 10 ? '#DC2626' : coveragePct < 40 ? '#D97706' : '#059669'
+                          }}>{coveragePct}%</span>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 11, color: G.text, fontStyle: 'italic' }}>n/a</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

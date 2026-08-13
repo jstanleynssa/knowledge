@@ -1,7 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import type { QueuedTopic } from '@/lib/topic-queue';
+
+export type SourceStats = Record<
+  'poms' | 'cfr' | 'handbook' | 'cms' | 'medicare',
+  { cited: number; relevant: number; total: number }
+>;
 
 const NSSA_DARK  = '#13405E';
 const NSSA_MED   = '#1C80BC';
@@ -12,11 +18,29 @@ type Mode = 'queue' | 'custom';
 interface Props {
   /** Ungenerated topics from the queue, filtered to what this reviewer can see. */
   topics: QueuedTopic[];
+  /** Citation + corpus stats per source, from the page server component. */
+  sourceStats?: SourceStats;
 }
 
-export function GenerateButton({ topics }: Props) {
+const PROGRESS_STEPS = [
+  'Retrieving relevant source sections…',
+  'Retrieving relevant source sections…',
+  'Grounding draft in federal law…',
+  'Grounding draft in federal law…',
+  'Running self-verification…',
+  'Saving to review queue…',
+];
+
+export function GenerateButton({ topics, sourceStats }: Props) {
+  const router = useRouter();
   const [open, setOpen]         = useState(false);
   const [mode, setMode]         = useState<Mode>('queue');
+  const [progressStep, setProgressStep] = useState(0);
+  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (progressTimer.current) clearInterval(progressTimer.current); };
+  }, []);
   const [catFilter, setCatFilter] = useState<'all' | 'social-security' | 'irmaa'>('all');
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
@@ -24,6 +48,13 @@ export function GenerateButton({ topics }: Props) {
   const [customTitle,    setCustomTitle]    = useState('');
   const [customTopic,    setCustomTopic]    = useState('');
   const [customCategory, setCustomCategory] = useState<'social-security' | 'irmaa'>('social-security');
+  const [customSources,  setCustomSources]  = useState<string[]>([]);
+
+  function toggleSource(src: string) {
+    setCustomSources(prev =>
+      prev.includes(src) ? prev.filter(s => s !== src) : [...prev, src]
+    );
+  }
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -49,6 +80,11 @@ export function GenerateButton({ topics }: Props) {
   async function submit() {
     setStatus('loading');
     setMessage('');
+    setProgressStep(0);
+    // Cycle through progress messages every 20s
+    progressTimer.current = setInterval(() => {
+      setProgressStep(s => Math.min(s + 1, PROGRESS_STEPS.length - 1));
+    }, 20000);
     try {
       let body: Record<string, unknown>;
       if (mode === 'custom') {
@@ -58,10 +94,11 @@ export function GenerateButton({ topics }: Props) {
           return;
         }
         body = {
-          custom: true,
+          custom:   true,
           title:    customTitle.trim(),
           topic:    customTopic.trim(),
           category: customCategory,
+          ...(customSources.length > 0 ? { sources: customSources } : {}),
         };
       } else {
         const slugs = [...selected];
@@ -73,17 +110,26 @@ export function GenerateButton({ topics }: Props) {
         body = { slugs };
       }
 
-      const res  = await fetch('/api/admin/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res  = await fetch('/codex/api/admin/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.error ?? 'Generation failed');
 
+      if (progressTimer.current) clearInterval(progressTimer.current);
       setStatus('done');
-      setMessage(data.message ?? `Queued ${data.queued?.length ?? 1} page(s). Check the Needs Review tab shortly.`);
       setSelected(new Set());
       setCustomTitle('');
       setCustomTopic('');
+
+      // Navigate directly to the generated page if we have its ID
+      if (data.pageId) {
+        setOpen(false);
+        router.push(`/admin/kb-review/${data.pageId}`);
+      } else {
+        setMessage(data.message ?? `Page generated. Check the Needs Review queue.`);
+      }
     } catch (e: any) {
+      if (progressTimer.current) clearInterval(progressTimer.current);
       setStatus('error');
       setMessage(e.message ?? 'Something went wrong.');
     }
@@ -104,11 +150,11 @@ export function GenerateButton({ topics }: Props) {
         onClick={() => { setOpen(o => !o); setStatus('idle'); setMessage(''); }}
         style={{
           fontSize: 13, fontWeight: 700, padding: '6px 14px', borderRadius: 6,
-          border: 'none', background: NSSA_DARK, color: '#fff',
+          border: '1px solid #8ECAEE', background: 'transparent', color: '#8ECAEE',
           cursor: 'pointer', whiteSpace: 'nowrap',
         }}
       >
-        + Generate pages
+        + Generate Pages
       </button>
 
       {open && (
@@ -242,7 +288,7 @@ export function GenerateButton({ topics }: Props) {
                       style={{
                         width: '100%', fontSize: 13, padding: '7px 10px',
                         borderRadius: 6, border: `1px solid ${G.border}`,
-                        boxSizing: 'border-box',
+                        boxSizing: 'border-box', color: '#111', background: '#fff',
                       }}
                     />
                   </div>
@@ -259,6 +305,7 @@ export function GenerateButton({ topics }: Props) {
                         width: '100%', fontSize: 13, padding: '7px 10px',
                         borderRadius: 6, border: `1px solid ${G.border}`,
                         boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit',
+                        color: '#111', background: '#fff',
                       }}
                     />
                   </div>
@@ -283,6 +330,96 @@ export function GenerateButton({ topics }: Props) {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* ── Reference Source picker ─────────────────────────── */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 2 }}>
+                      Reference source
+                    </label>
+                    <p style={{ fontSize: 11, color: G.text, marginBottom: 8, lineHeight: 1.4 }}>
+                      Restrict retrieval to specific corpora. Leave all unchecked to use the
+                      category default (POMS + CFR + Handbook for SS; all sources for IRMAA).
+                    </p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {([
+                        { key: 'poms'    , label: 'POMS'         },
+                        { key: 'cfr'    , label: 'CFR · 20'     },
+                        { key: 'handbook', label: 'SSA Handbook' },
+                        { key: 'cms'    , label: 'CMS'           },
+                        { key: 'medicare', label: 'Medicare.gov' },
+                      ] as const).map(({ key, label }) => {
+                        const active = customSources.includes(key);
+                        const stats  = sourceStats?.[key];
+                        const pct    = stats && stats.relevant > 0
+                          ? ((stats.cited / stats.relevant) * 100).toFixed(1)
+                          : '0.0';
+                        return (
+                          <button
+                            key={key}
+                            onClick={() => toggleSource(key)}
+                            style={{
+                              fontSize: 12, padding: '8px 12px', borderRadius: 6,
+                              border: `1px solid ${active ? NSSA_DARK : G.border}`,
+                              background: active ? NSSA_DARK : '#fff',
+                              color: active ? '#fff' : '#374151',
+                              cursor: 'pointer',
+                              display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+                              gap: 4, minWidth: 130, textAlign: 'left',
+                            }}
+                          >
+                            {/* Name row */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontWeight: 700 }}>
+                              {active && <span style={{ fontSize: 10 }}>✓</span>}
+                              {label}
+                              {stats && (
+                                <span style={{
+                                  fontSize: 10, fontWeight: 600,
+                                  color: active
+                                    ? (parseFloat(pct) > 0 ? '#7dd3fc' : 'rgba(255,255,255,.5)')
+                                    : (parseFloat(pct) > 0 ? NSSA_MED : G.text),
+                                  marginLeft: 2,
+                                }}>
+                                  {pct}%
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Stats row */}
+                            {stats && (
+                              <div style={{ fontSize: 10, color: active ? 'rgba(255,255,255,.75)' : G.text, lineHeight: 1.3 }}>
+                                <span style={{ color: active ? '#7dd3fc' : (stats.cited > 0 ? NSSA_MED : G.text), fontWeight: stats.cited > 0 ? 700 : 400 }}>
+                                  {stats.cited} cited
+                                </span>
+                                {' / '}
+                                <span>~{stats.relevant.toLocaleString()} relevant</span>
+                              </div>
+                            )}
+
+                            {/* Progress bar */}
+                            {stats && (
+                              <div style={{
+                                width: '100%', height: 3, borderRadius: 2,
+                                background: active ? 'rgba(255,255,255,.2)' : G.border,
+                                overflow: 'hidden',
+                              }}>
+                                <div style={{
+                                  height: '100%', borderRadius: 2,
+                                  width: `${Math.min(parseFloat(pct) * 20, 100)}%`,
+                                  background: active ? '#7dd3fc' : NSSA_MED,
+                                  transition: 'width .3s',
+                                }} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {customSources.length > 0 && (
+                      <div style={{ marginTop: 6, fontSize: 11, color: NSSA_MED, fontWeight: 600 }}>
+                        Retrieving from: {customSources.join(', ')} only
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -328,7 +465,7 @@ export function GenerateButton({ topics }: Props) {
                       cursor: (status === 'loading' || status === 'done') ? 'not-allowed' : 'pointer',
                     }}
                   >
-                    {status === 'loading' ? 'Generating…' : status === 'done' ? '✓ Queued' : 'Generate'}
+                    {status === 'loading' ? PROGRESS_STEPS[progressStep] : status === 'done' ? '✓ Done' : 'Generate'}
                   </button>
                 </div>
               </div>

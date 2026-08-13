@@ -113,7 +113,7 @@ export function IngestProgress() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchStatus = () => {
-    fetch('/api/admin/ingest-status')
+    fetch('/codex/api/admin/ingest-status')
       .then(r => r.json())
       .then((d: StatusPayload) => { setData(d); setLastUpdated(new Date()); })
       .catch(() => {});

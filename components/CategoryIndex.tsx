@@ -81,18 +81,33 @@ export function CategoryIndex({ category, categoryLabel, categoryPath, pages, ac
         <style dangerouslySetInnerHTML={{ __html: css }} />
       </head>
       <body>
-        <header className="masthead">
-          <div className="wrap inner">
-            <a className="kb-mark" href="https://knowledge.nssapros.com">
-              NSSA <span>Knowledge Base</span>
+        <header style={{borderBottom:'1px solid #e5e7eb',background:'#fff',position:'sticky',top:0,zIndex:50}}>
+          <div style={{maxWidth:1152,margin:'0 auto',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
+            <a href="https://www.nssapros.com" style={{flexShrink:0}}>
+              <img
+                src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/blog/nssa-logo.png"
+                alt="NSSA Professionals"
+                style={{height:40,width:'auto',display:'block'}}
+              />
             </a>
-            <a className="home-link" href="https://www.nssapros.com">nssapros.com &rsaquo;</a>
+            <nav style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
+              {[
+                ['About Us','https://www.nssapros.com/about'],
+                ['Social Security Training','https://www.nssapros.com/social-security-training'],
+                ['IRMAA Medicare Training','https://www.nssapros.com/irmaa-medicare-training-course'],
+                ['Find an Advisor','https://www.nssapros.com/directory'],
+                ['Contact Us','https://www.nssapros.com/contact'],
+                ['Log In','https://www.nssapros.com/login'],
+              ].map(([label,href]) => (
+                <a key={label} href={href} style={{fontSize:14,color:'#4b5563',textDecoration:'none',whiteSpace:'nowrap'}}>{label}</a>
+              ))}
+            </nav>
           </div>
         </header>
 
         <div className="wrap">
           <nav className="crumbs">
-            <a href="https://knowledge.nssapros.com">Knowledge Base</a>
+            <a href="https://www.nssapros.com/codex">Knowledge Base</a>
             <span className="sep">/</span>
             {categoryLabel}
           </nav>

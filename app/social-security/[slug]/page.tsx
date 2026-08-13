@@ -42,6 +42,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: data.seo_title,
     description: data.meta_description,
+    // Override layout's fallback canonical with the page-specific URL
+    alternates: {
+      canonical: `https://www.nssapros.com/codex/social-security/${slug}`,
+    },
     openGraph: {
       images: data.og_image_url ? [data.og_image_url] : [],
     },
@@ -66,5 +70,5 @@ export default async function SocialSecurityPage({
 
   if (!data) notFound();
 
-  return <ReferencePageComponent page={data as ReferencePage} />;
+  return <ReferencePageComponent page={data as ReferencePage} embedded />;
 }

@@ -22,7 +22,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
       },
     ],
-    sitemap: 'https://knowledge.nssapros.com/sitemap.xml',
-    host: 'https://knowledge.nssapros.com',
+    sitemap: 'https://www.nssapros.com/codex/sitemap.xml',
+    host: 'https://www.nssapros.com/codex',
   };
 }
