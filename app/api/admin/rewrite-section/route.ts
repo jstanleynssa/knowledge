@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { heading, prose, note, page_title, category, citation_ref } = body;
+  const { heading, prose, note, page_title, category, citation_ref, extra_source } = body;
 
   if (!note?.trim()) {
     return NextResponse.json({ error: 'note is required' }, { status: 400 });
@@ -70,11 +70,12 @@ ${citation_ref ? `Citation reference: ${citation_ref}` : ''}
 
 Original section text:
 ${originalProse || '(empty)'}
+${extra_source ? `\nAdditional source material provided by the reviewer:\n---\n${extra_source.section_number ? `Section ${extra_source.section_number}: ` : ''}${extra_source.text ?? ''}\n---` : ''}
 
 Reviewer correction note:
-${note}
+${note ?? '(incorporate the additional source material above)'}
 
-Rewrite the section to incorporate this feedback. Return { "heading": "...", "prose": "...", "learned": "..." }.`;
+Rewrite the section to incorporate this feedback${extra_source ? ' and the additional source material' : ''}. Return { "heading": "...", "prose": "...", "learned": "..." }.`;
 
   try {
     const completion = await openai.chat.completions.create({

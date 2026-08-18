@@ -993,6 +993,54 @@ export function ReviewEditor({
               <button onClick={addFaq} style={addBtnStyle}>+ Add FAQ item</button>
             </FieldGroup>
 
+            <FieldGroup label="Sources">
+              <SourceSearch
+                pageSources={fields.primary_sources}
+                bodySections={fields.body_sections}
+                pageTitle={page.title}
+                category={page.category}
+                onAddSource={src => {
+                  // Append to primary_sources if not already present
+                  if (!fields.primary_sources.find((s: any) => s.section_number === src.section_number)) {
+                    set('primary_sources', [...fields.primary_sources, { section_number: src.section_number, url: src.source_url, tag: 'Source' }]);
+                  }
+                }}
+                onRedraft={(sectionIndex, src) => {
+                  // Add source then re-draft the chosen body section
+                  if (!fields.primary_sources.find((s: any) => s.section_number === src.section_number)) {
+                    set('primary_sources', [...fields.primary_sources, { section_number: src.section_number, url: src.source_url, tag: 'Source' }]);
+                  }
+                  const section = fields.body_sections[sectionIndex];
+                  if (!section) return;
+                  setRewritingSection(prev => ({ ...prev, [sectionIndex]: true }));
+                  fetch('/codex/api/admin/rewrite-section', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      heading:      (section as any).heading,
+                      prose:        (section as any).prose,
+                      note:         null,
+                      page_title:   page.title,
+                      category:     page.category,
+                      citation_ref: src.section_number,
+                      extra_source: { section_number: src.section_number, text: src.full_text_excerpt },
+                    }),
+                  })
+                    .then(r => r.json())
+                    .then(data => {
+                      if (data.ok) {
+                        set('body_sections', fields.body_sections.map((s, i) =>
+                          i === sectionIndex ? { ...s, prose: data.prose, citation_ref: src.section_number } : s
+                        ));
+                        if (data.learned) setSectionLearned(prev => ({ ...prev, [sectionIndex]: data.learned }));
+                      }
+                    })
+                    .catch(e => console.error('redraft failed:', e))
+                    .finally(() => setRewritingSection(prev => ({ ...prev, [sectionIndex]: false })));
+                }}
+              />
+            </FieldGroup>
+
             <FieldGroup label="Attribution">
               <FormRow label="Reviewing as">
                 <div style={{
@@ -1183,3 +1231,209 @@ const removeBtnStyle: CSSProperties = { background: 'none', border: 'none', colo
 const addBtnStyle: CSSProperties = { background: '#fff', border: `1px dashed ${G.border}`, color: G.text, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 13, width: '100%', marginTop: 4, fontFamily: 'inherit' };
 const secondaryBtn: CSSProperties = { background: '#fff', border: `1px solid ${G.border}`, color: G.text, borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit' };
 const primaryBtn: CSSProperties = { border: 'none', color: '#fff', borderRadius: 6, padding: '8px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700, fontFamily: 'inherit', background: NSSA.dark };
+
+// ─── SourceSearch component ───────────────────────────────────────────────────
+function SourceSearch({ pageSources, bodySections, pageTitle, category, onAddSource, onRedraft }: {
+  pageSources: any[];
+  bodySections: any[];
+  pageTitle: string;
+  category: string;
+  onAddSource: (src: any) => void;
+  onRedraft: (sectionIndex: number, src: any) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedSrc, setSelectedSrc] = useState<any | null>(null);
+  const [redraftTarget, setRedraftTarget] = useState<number | ''>('');
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!query.trim() || query.length < 3) { setResults([]); return; }
+    if (debounce.current) clearTimeout(debounce.current);
+    debounce.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await fetch(`/codex/api/admin/source-search?q=${encodeURIComponent(query)}&limit=6`);
+        const data = await res.json();
+        setResults(data.results ?? []);
+      } catch { setResults([]); }
+      finally { setSearching(false); }
+    }, 400);
+  }, [query]);
+
+  const alreadyAdded = (sectionNumber: string) =>
+    pageSources.some((s: any) => s.section_number === sectionNumber);
+
+  const sourceTypeLabel: Record<string, string> = {
+    poms: 'POMS', cfr: 'CFR', handbook: 'Handbook', medicare: 'Medicare', cms: 'CMS',
+  };
+
+  const prose = bodySections.filter((s: any) => s.heading && s.prose);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {/* Search input */}
+      <div style={{ position: 'relative' }}>
+        <input
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setSelectedSrc(null); }}
+          placeholder="Section number (e.g. RS 00615.201) or keywords…"
+          style={{
+            width: '100%', padding: '8px 10px', borderRadius: 6,
+            border: `1px solid ${G.border}`, fontSize: 14,
+            fontFamily: 'inherit', boxSizing: 'border-box' as const,
+            background: searching ? '#F9FAFB' : '#fff',
+          }}
+        />
+        {searching && (
+          <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: G.text }}>
+            Searching…
+          </span>
+        )}
+      </div>
+
+      {/* Results list */}
+      {results.length > 0 && !selectedSrc && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 300, overflowY: 'auto' }}>
+          {results.map(r => (
+            <div
+              key={r.section_number}
+              onClick={() => setSelectedSrc(r)}
+              style={{
+                padding: '9px 12px',
+                border: `1px solid ${G.border}`,
+                borderRadius: 6,
+                cursor: 'pointer',
+                background: '#fff',
+                transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = NSSA.medium)}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = G.border)}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: NSSA.dark, background: '#EBF5FB', padding: '1px 6px', borderRadius: 4 }}>
+                  {r.section_number}
+                </span>
+                <span style={{ fontSize: 11, color: G.text }}>{sourceTypeLabel[r.source_type] ?? r.source_type}</span>
+                {alreadyAdded(r.section_number) && (
+                  <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 600 }}>✓ Already cited</span>
+                )}
+              </div>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: '#111827' }}>{r.title}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: G.text, lineHeight: 1.4 }}>{r.snippet}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {results.length === 0 && query.length >= 3 && !searching && (
+        <p style={{ fontSize: 13, color: G.text, margin: 0 }}>No matching sources found.</p>
+      )}
+
+      {/* Selected source — action panel */}
+      {selectedSrc && (
+        <div style={{ border: `1px solid ${NSSA.light}`, borderRadius: 8, padding: 12, background: '#EBF5FB' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: NSSA.dark, background: '#D6EAF8', padding: '2px 8px', borderRadius: 4 }}>
+                {selectedSrc.section_number}
+              </span>
+              <p style={{ margin: '4px 0 0', fontSize: 13, fontWeight: 600, color: '#111827' }}>{selectedSrc.title}</p>
+              {selectedSrc.source_url && (
+                <a href={selectedSrc.source_url} target="_blank" rel="noopener noreferrer"
+                  style={{ fontSize: 12, color: NSSA.medium }}>
+                  View source ↗
+                </a>
+              )}
+            </div>
+            <button onClick={() => setSelectedSrc(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: G.text, fontSize: 18, lineHeight: 1, padding: 0 }}>
+              ✕
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {/* Action 1: Citation only */}
+            <button
+              onClick={() => { onAddSource(selectedSrc); setSelectedSrc(null); setQuery(''); setResults([]); }}
+              disabled={alreadyAdded(selectedSrc.section_number)}
+              style={{
+                padding: '8px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+                border: 'none', cursor: alreadyAdded(selectedSrc.section_number) ? 'not-allowed' : 'pointer',
+                background: alreadyAdded(selectedSrc.section_number) ? '#E5E7EB' : NSSA.dark,
+                color: alreadyAdded(selectedSrc.section_number) ? G.text : '#fff',
+                fontFamily: 'inherit', textAlign: 'left' as const,
+              }}
+            >
+              {alreadyAdded(selectedSrc.section_number) ? '✓ Already in citations' : '+ Add as citation'}
+            </button>
+
+            {/* Action 2: Citation + Re-draft a section */}
+            {prose.length > 0 && (
+              <div style={{ borderTop: `1px solid ${NSSA.light}`, paddingTop: 8 }}>
+                <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 600, color: NSSA.dark }}>
+                  Add citation + re-draft a section using this source:
+                </p>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <select
+                    value={redraftTarget}
+                    onChange={e => setRedraftTarget(e.target.value === '' ? '' : Number(e.target.value))}
+                    style={{
+                      flex: 1, padding: '7px 10px', borderRadius: 6, fontSize: 13,
+                      border: `1px solid ${G.border}`, fontFamily: 'inherit', background: '#fff',
+                    }}
+                  >
+                    <option value="">Choose a section to re-draft…</option>
+                    {bodySections.map((s: any, i: number) =>
+                      s.heading && s.prose ? (
+                        <option key={i} value={i}>{s.heading}</option>
+                      ) : null
+                    )}
+                  </select>
+                  <button
+                    disabled={redraftTarget === ''}
+                    onClick={() => {
+                      if (redraftTarget === '') return;
+                      onRedraft(redraftTarget as number, selectedSrc);
+                      setSelectedSrc(null);
+                      setQuery('');
+                      setResults([]);
+                      setRedraftTarget('');
+                    }}
+                    style={{
+                      padding: '7px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+                      border: 'none', cursor: redraftTarget === '' ? 'not-allowed' : 'pointer',
+                      background: redraftTarget === '' ? '#E5E7EB' : '#EA580C',
+                      color: redraftTarget === '' ? G.text : '#fff',
+                      fontFamily: 'inherit', whiteSpace: 'nowrap' as const,
+                    }}
+                  >
+                    Re-draft ↻
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Current citations */}
+      {pageSources.length > 0 && (
+        <div>
+          <p style={{ fontSize: 12, fontWeight: 600, color: G.text, margin: '4px 0 4px', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
+            Current citations ({pageSources.length})
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
+            {pageSources.map((s: any, i: number) => (
+              <span key={i} style={{ fontSize: 12, background: '#F3F4F6', border: `1px solid ${G.border}`, borderRadius: 4, padding: '2px 8px', color: '#374151', fontWeight: 500 }}>
+                {s.section_number}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
