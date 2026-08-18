@@ -6,7 +6,7 @@ import type { Category, BodySection, FaqItem, WorkedExample, PrimarySource } fro
 import OpenAI from 'openai';
 import { pingIndexNow } from '@/lib/indexnow';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 
 const ADMIN_EMAIL = 'jstanley@nssapros.com';
 
@@ -128,6 +128,7 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
       .single();
 
     if (page?.quick_answer) {
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const question = page.h1 || page.title;
       const embRes = await openai.embeddings.create({
         model: 'text-embedding-3-small',
@@ -166,18 +167,22 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     console.error('verified_answers seed error (non-fatal):', e);
   }
 
-  // Fetch the page's category so we can ping IndexNow with the right URL
+  // Sync codex_topics status → published (non-fatal)
   try {
-    const { data: published } = await createServiceClient()
+    const { data: pubPage } = await createServiceClient()
       .from('reference_pages')
       .select('slug, category')
       .eq('id', pageId)
       .single();
-    if (published) {
-      pingIndexNow([{ slug: published.slug, category: published.category }]);
+    if (pubPage) {
+      await createServiceClient()
+        .from('codex_topics')
+        .update({ status: 'published' })
+        .eq('slug', pubPage.slug);
+      pingIndexNow([{ slug: pubPage.slug, category: pubPage.category }]);
     }
   } catch (e) {
-    console.error('IndexNow ping error (non-fatal):', e);
+    console.error('codex_topics sync / IndexNow ping error (non-fatal):', e);
   }
 
   // Trigger Vercel rebuild so the newly-published page goes live immediately.
@@ -189,7 +194,7 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     );
   }
 
-  revalidatePath('/codex/admin/kb-review', 'page');
+  revalidatePath('/admin/kb-review', 'page');
   // NOTE: do NOT call redirect() here — this action is called from a client component
   // with try/catch. redirect() throws NEXT_REDIRECT which gets caught as an error,
   // showing a spurious alert. The client (ReviewEditor) handles navigation after this returns.
@@ -219,19 +224,32 @@ export async function deletePage(pageId: string): Promise<void> {
     .eq('id', pageId);
 
   if (error) throw new Error('Delete failed: ' + error.message);
-  revalidatePath('/codex/admin/kb-review', 'page');
+  revalidatePath('/admin/kb-review', 'page');
 }
 
 /** Mark a page as superseded with a public deprecation note. */
 export async function sendBackToReview(pageId: string): Promise<void> {
   await getSessionReviewer(); // auth check
   const service = createServiceClient();
+  const { data: page } = await service
+    .from('reference_pages')
+    .select('slug')
+    .eq('id', pageId)
+    .single();
   const { error } = await service
     .from('reference_pages')
     .update({ status: 'in_review', source_last_verified: null })
     .eq('id', pageId);
   if (error) throw new Error(error.message);
-  revalidatePath('/codex/admin/kb-review', 'page');
+  // Sync codex_topics back to in_review (non-fatal)
+  if (page?.slug) {
+    try {
+      await service.from('codex_topics').update({ status: 'in_review' }).eq('slug', page.slug);
+    } catch (e) {
+      console.error('codex_topics sync error (non-fatal):', e);
+    }
+  }
+  revalidatePath('/admin/kb-review', 'page');
 }
 
 export async function supersedePageAction(
@@ -254,6 +272,6 @@ export async function supersedePageAction(
     .eq('id', pageId);
 
   if (error) throw new Error(error.message);
-  revalidatePath('/codex/admin/kb-review', 'page');
+  revalidatePath('/admin/kb-review', 'page');
   // NOTE: client handles navigation after this returns (same reason as saveAndApprove above).
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useTransition, useCallback, useEffect, useRef, CSSProperties } from 'react';
-import { useRouter } from 'next/navigation';
 import type { ReferencePage, BodySection, FaqItem, WorkedExample } from '@/lib/types';
 import { ReferencePageComponent } from '@/components/ReferencePage';
 import { saveDraft, saveAndApprove, supersedePageAction, deletePage, sendBackToReview, type EditableFields } from '../actions';
@@ -192,7 +191,6 @@ export function ReviewEditor({
   page: ReferencePage;
   reviewerName: string;
 }) {
-  const router = useRouter();
   const [fields, setFields] = useState<EditableFields>(() => ({
     ...toEditState(page),
     // Always credit the logged-in reviewer - not a manual entry
@@ -214,6 +212,10 @@ export function ReviewEditor({
   const [rewritingFaq, setRewritingFaq]       = useState<Record<number, boolean>>({});
   const [faqLearned, setFaqLearned]           = useState<Record<number, string>>({});
   const [faqExistingFeedback, setFaqExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
+  // Related-FAQ suggestion state
+  const [relatedFaqs, setRelatedFaqs] = useState<Array<{ index: number; q: string; a: string; reason: string }>>([]);
+  const [relatedFaqNote, setRelatedFaqNote] = useState<string>('');
+  const [applyingRelated, setApplyingRelated] = useState<Record<number, boolean>>({});
 
   // ── Load existing section feedback on mount ────────────────────
   useEffect(() => {
@@ -355,30 +357,91 @@ export function ReviewEditor({
       const faqItem = fields.faq[index];
       if (!faqItem) return;
       setRewritingFaq(prev => ({ ...prev, [index]: true }));
+      // Clear any previous related-FAQ suggestion
+      setRelatedFaqs([]);
+      setRelatedFaqNote(note);
       try {
-        const res = await fetch('/codex/api/admin/rewrite-section', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            heading:     faqItem.q,
-            prose:       faqItem.a,
-            note,
-            page_title:  page.title,
-            category:    page.category,
+        const [rewriteRes, relatedRes] = await Promise.all([
+          fetch('/codex/api/admin/rewrite-section', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              heading:    faqItem.q,
+              prose:      faqItem.a,
+              note,
+              page_title: page.title,
+              category:   page.category,
+            }),
           }),
-        });
-        const data = await res.json();
-        if (data.ok) {
+          fetch('/codex/api/admin/find-related-faqs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              flagged_index:    index,
+              flagged_question: faqItem.q,
+              flagged_answer:   faqItem.a,
+              note,
+              page_title:       page.title,
+              all_faqs:         fields.faq.map((f, i) => ({ index: i, q: f.q, a: f.a })),
+            }),
+          }),
+        ]);
+
+        const rewriteData = await rewriteRes.json();
+        if (rewriteData.ok) {
           set('faq', fields.faq.map((f, i) =>
-            i === index ? { ...f, a: data.prose } : f
+            i === index ? { ...f, a: rewriteData.prose } : f
           ));
-          if (data.learned) setFaqLearned(prev => ({ ...prev, [index]: data.learned }));
+          if (rewriteData.learned) setFaqLearned(prev => ({ ...prev, [index]: rewriteData.learned }));
+        }
+
+        const relatedData = await relatedRes.json();
+        if (Array.isArray(relatedData.related) && relatedData.related.length > 0) {
+          setRelatedFaqs(relatedData.related);
         }
       } catch (e) {
         console.error('faq rewrite failed:', e);
       } finally {
         setRewritingFaq(prev => ({ ...prev, [index]: false }));
       }
+    }
+  }
+
+  // Apply the same feedback note + rewrite to a related FAQ
+  async function applyFeedbackToRelated(related: { index: number; q: string; a: string; reason: string }) {
+    setApplyingRelated(prev => ({ ...prev, [related.index]: true }));
+    try {
+      persistFeedback('faq', related.index, 'flag', relatedFaqNote);
+      setFaqFeedback(prev => ({ ...prev, [related.index]: { type: 'flag', note: relatedFaqNote } }));
+      setFaqExistingFeedback(prev => ({
+        ...prev,
+        [related.index]: { type: 'flag', reviewer_name: reviewerName, created_at: new Date().toISOString() },
+      }));
+
+      const res = await fetch('/codex/api/admin/rewrite-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          heading:    related.q,
+          prose:      related.a,
+          note:       relatedFaqNote,
+          page_title: page.title,
+          category:   page.category,
+        }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        set('faq', fields.faq.map((f, i) =>
+          i === related.index ? { ...f, a: data.prose } : f
+        ));
+        if (data.learned) setFaqLearned(prev => ({ ...prev, [related.index]: data.learned }));
+      }
+      // Remove from the suggestion list once applied
+      setRelatedFaqs(prev => prev.filter(r => r.index !== related.index));
+    } catch (e) {
+      console.error('apply-related failed:', e);
+    } finally {
+      setApplyingRelated(prev => ({ ...prev, [related.index]: false }));
     }
   }
   const [supersededNote, setSupersededNote] = useState(page.deprecation_note ?? '');
@@ -454,7 +517,9 @@ export function ReviewEditor({
       try {
         await saveAndApprove(page.id, fields);
         isDirty.current = false;
-        router.push('/admin/kb-review');
+        // Use full navigation (not router.push) to bypass App Router client-side cache,
+        // which can otherwise serve a stale queue after approval.
+        window.location.href = '/codex/admin/kb-review';
       } catch (e) {
         alert('Approve failed: ' + (e as Error).message);
       }
@@ -467,7 +532,7 @@ export function ReviewEditor({
       try {
         await deletePage(page.id);
         isDirty.current = false;
-        router.push('/admin/kb-review');
+        window.location.href = '/codex/admin/kb-review';
       } catch (e) {
         alert('Delete failed: ' + (e as Error).message);
       }
@@ -480,7 +545,7 @@ export function ReviewEditor({
       try {
         await sendBackToReview(page.id);
         isDirty.current = false;
-        router.push('/admin/kb-review');
+        window.location.href = '/codex/admin/kb-review';
       } catch (e) {
         alert('Failed: ' + (e as Error).message);
       }
@@ -492,7 +557,7 @@ export function ReviewEditor({
       try {
         await supersedePageAction(page.id, supersededNote);
         isDirty.current = false;
-        router.push('/admin/kb-review');
+        window.location.href = '/codex/admin/kb-review';
       } catch (e) {
         alert('Failed: ' + (e as Error).message);
       }
@@ -983,6 +1048,66 @@ export function ReviewEditor({
             }}>
               <span>⚠</span>
               <span>{verificationFlags.length} value{verificationFlags.length !== 1 ? 's' : ''} flagged for review - see red blocks inline below</span>
+            </div>
+          )}
+
+          {/* Related FAQ suggestion banner */}
+          {relatedFaqs.length > 0 && (
+            <div style={{
+              margin: '12px 0',
+              padding: '12px 16px',
+              background: '#FFF7ED',
+              border: '1px solid #FED7AA',
+              borderRadius: 8,
+              fontSize: 13,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontWeight: 600, color: '#92400E' }}>
+                  📎 Same feedback may apply to {relatedFaqs.length} other question{relatedFaqs.length > 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={() => setRelatedFaqs([])}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9CA3AF', fontSize: 16, lineHeight: 1 }}
+                >✕</button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {relatedFaqs.map(r => (
+                  <div key={r.index} style={{
+                    background: '#fff',
+                    border: '1px solid #FED7AA',
+                    borderRadius: 6,
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontWeight: 500, color: '#111827', fontSize: 13 }}>{r.q}</p>
+                      <p style={{ margin: '2px 0 0', color: '#6B7280', fontSize: 12 }}>{r.reason}</p>
+                    </div>
+                    <button
+                      onClick={() => applyFeedbackToRelated(r)}
+                      disabled={applyingRelated[r.index]}
+                      style={{
+                        flexShrink: 0,
+                        padding: '5px 12px',
+                        background: applyingRelated[r.index] ? '#E5E7EB' : '#EA580C',
+                        color: applyingRelated[r.index] ? '#9CA3AF' : '#fff',
+                        border: 'none',
+                        borderRadius: 5,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: applyingRelated[r.index] ? 'not-allowed' : 'pointer',
+                        fontFamily: 'inherit',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {applyingRelated[r.index] ? 'Applying…' : 'Apply feedback'}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

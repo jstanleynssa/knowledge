@@ -17,7 +17,8 @@ import { verifyClaims } from '@/scripts/draft/verify';
 import { createServiceClient } from '@/lib/supabase';
 import type { PrimarySource } from '@/lib/types';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Lazy singleton — avoids module-level instantiation during build
+function getOpenAI() { return new OpenAI({ apiKey: process.env.OPENAI_API_KEY }); }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ async function interpretQuery(question: string, history: HistoryMessage[]): Prom
     ? `\n\nCONVERSATION HISTORY:\n${history.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content.slice(0, 300)}`).join('\n')}`
     : '';
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     temperature: 0,
     max_tokens: 500,
@@ -107,7 +108,7 @@ async function multiQueryRetrieve(queries: string[], topKPerQuery = 8): Promise<
 async function getVerifiedContext(question: string, category: string, embedding?: number[]): Promise<string> {
   try {
     // Use pre-computed embedding when available — avoids a redundant OpenAI round-trip
-    const emb = embedding ?? (await openai.embeddings.create({ model: 'text-embedding-3-small', input: question })).data[0].embedding;
+    const emb = embedding ?? (await getOpenAI().embeddings.create({ model: 'text-embedding-3-small', input: question })).data[0].embedding;
 
     const supabase = createServiceClient();
 
@@ -214,7 +215,7 @@ ${verifiedContext}
 SOURCE SECTIONS:
 ${sourceBlock}`;
 
-  const res = await openai.chat.completions.create({
+  const res = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     max_tokens: 4000,
     temperature: 0,
@@ -250,7 +251,7 @@ export async function POST(req: NextRequest) {
   const interpreted = await interpretQuery(question, history);
 
   // Embed clean_question once — reused by verified-context lookup (saves one OpenAI round-trip)
-  const questionEmbedding = await openai.embeddings.create({
+  const questionEmbedding = await getOpenAI().embeddings.create({
     model: 'text-embedding-3-small',
     input: interpreted.clean_question,
   }).then(r => r.data[0].embedding);

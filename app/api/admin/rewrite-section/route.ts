@@ -12,8 +12,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createSessionClient } from '@/lib/supabase';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
 /** Strip all HTML tags and normalize whitespace to plain text. */
 function stripHtml(html: string): string {
   return html
@@ -29,6 +27,7 @@ function stripHtml(html: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   // Auth — must be a logged-in reviewer
   const supabase = await createSessionClient();
   const { data: { user } } = await supabase.auth.getUser();
