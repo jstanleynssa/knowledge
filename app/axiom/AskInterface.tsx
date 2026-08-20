@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 
 // ── Design system ─────────────────────────────────────────────────────────────
@@ -14,6 +14,58 @@ const MUTED    = '#8EA3B8';
 const DIM      = '#4A6070';
 const CITE     = '#5BA3D0';
 const CITE_BG  = '#0D2033';
+
+// ── Feedback localStorage cache ──────────────────────────────────────────────
+// Persists reviewer feedback across page loads so "Verified" / "Suggestion saved"
+// badges reappear when the same question is asked again.
+const CACHE_KEY    = 'axiom_feedback_cache_v1';
+const CACHE_MAX    = 300; // max entries before evicting oldest
+
+interface CacheEntry {
+  type:     'approve' | 'correct' | 'reject';
+  analysis: string;
+  ts:       number;
+}
+
+function normalizeQuestion(q: string): string {
+  return q.toLowerCase().trim().replace(/\s+/g, ' ').slice(0, 500);
+}
+
+function readFeedbackCache(): Record<string, CacheEntry> {
+  try {
+    return JSON.parse(localStorage.getItem(CACHE_KEY) ?? '{}');
+  } catch {
+    return {};
+  }
+}
+
+function writeFeedbackCache(question: string, type: CacheEntry['type'], analysis: string) {
+  try {
+    const cache = readFeedbackCache();
+    const key   = normalizeQuestion(question);
+    cache[key]  = { type, analysis, ts: Date.now() };
+    // Evict oldest entries if over cap
+    const entries = Object.entries(cache);
+    if (entries.length > CACHE_MAX) {
+      entries.sort((a, b) => a[1].ts - b[1].ts);
+      const trimmed = Object.fromEntries(entries.slice(entries.length - CACHE_MAX));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(trimmed));
+    } else {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    }
+  } catch {
+    // localStorage unavailable — no-op
+  }
+}
+
+function lookupFeedbackCache(question: string): CacheEntry | null {
+  try {
+    const cache = readFeedbackCache();
+    return cache[normalizeQuestion(question)] ?? null;
+  } catch {
+    return null;
+  }
+}
 
 // ── Word-level diff (dark theme) ──────────────────────────────────────────
 function stripHtml(html: string): string {
@@ -656,6 +708,9 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
       rerunAnswer:  null,
     } : t));
 
+    // Persist feedback to localStorage so badge survives page reload
+    writeFeedbackCache(question, type, '');
+
     // Save feedback in background
     fetch('/codex/api/feedback', {
       method: 'POST',
@@ -672,7 +727,11 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
         reviewer_name:    reviewerName ?? undefined,
       }),
     }).then(r => r.json()).then(data => {
-      if (data.analysis) setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
+      if (data.analysis) {
+        setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, feedbackAnalysis: data.analysis } : t));
+        // Update cache entry with the analysis text once we have it
+        writeFeedbackCache(question, type, data.analysis);
+      }
     }).catch(() => {});
 
     // Auto-rewrite immediately on suggestion
@@ -728,6 +787,9 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
         rerunFeedback: 'approve',
       } : t));
 
+      // Persist approval to localStorage
+      writeFeedbackCache(turn.question, 'approve', 'Reviewer confirmed fix via verify-fix flow');
+
       // Save approved answer to verified corpus
       fetch('/codex/api/feedback', {
         method: 'POST',
@@ -765,7 +827,15 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data) throw new Error(data?.error ?? 'The request timed out. Please try again.');
-      setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, answer: data, loading: false } : t));
+      // Check localStorage for prior feedback on this question
+      const cached = lookupFeedbackCache(question);
+      setTurns(prev => prev.map((t, i) => i === turnIndex ? {
+        ...t,
+        answer:          data,
+        loading:         false,
+        feedback:        cached?.type ?? null,
+        feedbackAnalysis: cached?.analysis ?? undefined,
+      } : t));
     } catch (e) {
       setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, error: (e as Error).message, loading: false } : t));
     }

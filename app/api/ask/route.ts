@@ -206,9 +206,13 @@ async function generateAnswer(
     : '';
   const partyContext = parties.length > 0 ? `PARTIES IN THIS SCENARIO:\n${parties.map(p => `• ${p}`).join('\n')}\n\n` : '';
 
+  const evaluationNote = isEvaluatingAdvice
+    ? 'NOTE: The advisor is asking whether specific advice is correct. Evaluate it and set verdict to "correct", "incorrect", "partial", or "uncertain".\n\n'
+    : 'NOTE: This is a genuine question seeking information — the advisor is not presenting advice to be evaluated. Set verdict to "no_advice_to_evaluate" and answer the question directly and helpfully. Do NOT frame the response as a verdict on advice.\n\n';
+
   const userPrompt = `${priorContext}${partyContext}QUESTION: ${cleanQuestion}
 
-${isEvaluatingAdvice ? 'NOTE: Evaluate whether the described advice is correct.\n\n' : ''}AVAILABLE SECTION NUMBERS (only cite these exact IDs in primary_sources):
+${evaluationNote}AVAILABLE SECTION NUMBERS (only cite these exact IDs in primary_sources):
 ${availableSections}
 ${verifiedContext}
 
