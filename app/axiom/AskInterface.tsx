@@ -67,6 +67,41 @@ function lookupFeedbackCache(question: string): CacheEntry | null {
   }
 }
 
+// ── Conversation localStorage persistence ──────────────────────────────────────────
+// Saves the full conversation so it survives page refresh. Expires after 7 days.
+const CONV_KEY    = 'axiom_conv_v1';
+const CONV_MAX    = 30;                      // max turns kept
+const CONV_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface ConvStore { turns: Turn[]; ts: number; }
+
+function loadConversation(): Turn[] {
+  try {
+    const raw = localStorage.getItem(CONV_KEY);
+    if (!raw) return [];
+    const store: ConvStore = JSON.parse(raw);
+    if (Date.now() - store.ts > CONV_TTL_MS) {
+      localStorage.removeItem(CONV_KEY);
+      return [];
+    }
+    // Strip in-flight state — meaningless after reload
+    return store.turns.map(t => ({ ...t, loading: false, rerunLoading: false }));
+  } catch {
+    return [];
+  }
+}
+
+function saveConversation(turns: Turn[]) {
+  try {
+    const store: ConvStore = { turns: turns.slice(-CONV_MAX), ts: Date.now() };
+    localStorage.setItem(CONV_KEY, JSON.stringify(store));
+  } catch { /* localStorage full — no-op */ }
+}
+
+function clearConversation() {
+  try { localStorage.removeItem(CONV_KEY); } catch { /* no-op */ }
+}
+
 // ── Word-level diff (dark theme) ──────────────────────────────────────────
 function stripHtml(html: string): string {
   return html.replace(/<br\s*\/?>/gi,' ').replace(/<\/p>/gi,' ').replace(/<\/li>/gi,' ').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
@@ -658,7 +693,11 @@ const DEFAULT_THEME: AskTheme = {
 
 export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: { sourceSummary?: string; reviewerName?: string | null; theme?: Partial<AskTheme> }) {
   const theme: AskTheme = { ...DEFAULT_THEME, ...themeProp };
-  const [turns, setTurns] = useState<Turn[]>([]);
+  const [turns, setTurns] = useState<Turn[]>(() => {
+    // Lazy init: restore conversation from localStorage on first render
+    if (typeof window === 'undefined') return [];
+    return loadConversation();
+  });
   const [input, setInput] = useState('');
   const [sectionsOpen, setSectionsOpen] = useState<Record<number, boolean>>({});
   const [headerEl, setHeaderEl] = useState<Element | null>(null);
@@ -671,11 +710,17 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
   }, []);
 
   const handleReset = useCallback(() => {
+    clearConversation();
     setTurns([]);
     setInput('');
     setSectionsOpen({});
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
+
+  // Persist conversation to localStorage whenever turns change
+  useEffect(() => {
+    if (turns.length > 0) saveConversation(turns);
+  }, [turns]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -827,14 +872,10 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data) throw new Error(data?.error ?? 'The request timed out. Please try again.');
-      // Check localStorage for prior feedback on this question
-      const cached = lookupFeedbackCache(question);
       setTurns(prev => prev.map((t, i) => i === turnIndex ? {
         ...t,
-        answer:          data,
-        loading:         false,
-        feedback:        cached?.type ?? null,
-        feedbackAnalysis: cached?.analysis ?? undefined,
+        answer:  data,
+        loading: false,
       } : t));
     } catch (e) {
       setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, error: (e as Error).message, loading: false } : t));
