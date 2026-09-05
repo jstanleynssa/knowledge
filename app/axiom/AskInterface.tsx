@@ -501,6 +501,177 @@ function FeedbackBar({
   );
 }
 
+// ── Subscriber thumbs (beta feedback) ────────────────────────────────────────
+function SubscriberThumbs({
+  question,
+  answerExcerpt,
+  userEmail,
+}: {
+  question:      string;
+  answerExcerpt: string;
+  userEmail:     string;
+}) {
+  const [state,   setState]   = useState<'idle' | 'negative_comment' | 'done'>('idle');
+  const [rating,  setRating]  = useState<'positive' | 'negative' | null>(null);
+  const [comment, setComment] = useState('');
+  const [saving,  setSaving]  = useState(false);
+
+  async function submit(r: 'positive' | 'negative', c?: string) {
+    setSaving(true);
+    try {
+      await fetch('/codex/api/axiom/feedback', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question,
+          answer_excerpt: answerExcerpt,
+          rating:         r,
+          comment:        c ?? undefined,
+        }),
+      });
+    } catch { /* ignore network errors */ }
+    setSaving(false);
+    setState('done');
+  }
+
+  if (state === 'done') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10 }}>
+        {rating === 'positive' ? (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+        ) : (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={MUTED} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/>
+            <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+          </svg>
+        )}
+        <span style={{ fontSize: 13, color: rating === 'positive' ? '#34D399' : MUTED }}>
+          {rating === 'positive' ? 'Thanks for the feedback!' : 'Thanks — noted.'}
+        </span>
+      </div>
+    );
+  }
+
+  if (state === 'negative_comment') {
+    return (
+      <div style={{ marginTop: 10 }}>
+        <p style={{ fontSize: 12, color: MUTED, margin: '0 0 6px' }}>What was wrong? (optional)</p>
+        <textarea
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          placeholder="e.g. The age threshold is wrong, answer missed the WEP rule…"
+          rows={2}
+          style={{
+            width: '100%', boxSizing: 'border-box',
+            padding: '8px 10px', background: '#1E3047',
+            border: `1px solid ${BORDER}`, borderRadius: 6,
+            color: TEXT, fontSize: 13, resize: 'vertical', outline: 'none',
+          }}
+        />
+        <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+          <button
+            onClick={() => submit('negative', comment || undefined)}
+            disabled={saving}
+            style={{
+              fontSize: 12, fontWeight: 600, padding: '5px 14px', borderRadius: 6,
+              border: 'none', background: ACCENT, color: '#fff', cursor: 'pointer',
+            }}
+          >
+            {saving ? 'Sending…' : 'Send'}
+          </button>
+          <button
+            onClick={() => submit('negative')}
+            disabled={saving}
+            style={{
+              fontSize: 12, color: DIM, background: 'none',
+              border: 'none', cursor: 'pointer', textDecoration: 'underline',
+            }}
+          >
+            Skip
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      marginTop: 16,
+      padding: '12px 16px',
+      background: 'rgba(28,128,188,0.06)',
+      border: `1px solid rgba(28,128,188,0.2)`,
+      borderRadius: 10,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    }}>
+      {/* Left: label */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <span style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: ACCENT,
+          }}>Beta Feedback</span>
+        </div>
+        <p style={{ margin: 0, fontSize: 13, color: TEXT, fontWeight: 500 }}>
+          Was this answer helpful?
+        </p>
+        <p style={{ margin: '2px 0 0', fontSize: 11, color: MUTED, lineHeight: 1.4 }}>
+          Your ratings help us improve AXIOM during the beta.
+        </p>
+      </div>
+
+      {/* Right: buttons */}
+      <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+        <button
+          onClick={() => { setRating('positive'); submit('positive'); }}
+          title="Yes, helpful"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(52,211,153,0.08)',
+            border: '1px solid rgba(52,211,153,0.3)',
+            borderRadius: 7, padding: '7px 14px', cursor: 'pointer',
+            color: '#34D399', fontSize: 12, fontWeight: 600,
+            transition: 'background 0.15s, border-color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.15)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.6)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(52,211,153,0.08)'; e.currentTarget.style.borderColor = 'rgba(52,211,153,0.3)'; }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+          </svg>
+          Helpful
+        </button>
+        <button
+          onClick={() => { setRating('negative'); setState('negative_comment'); }}
+          title="No, not helpful"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            background: 'rgba(248,113,113,0.08)',
+            border: '1px solid rgba(248,113,113,0.3)',
+            borderRadius: 7, padding: '7px 14px', cursor: 'pointer',
+            color: '#F87171', fontSize: 12, fontWeight: 600,
+            transition: 'background 0.15s, border-color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.15)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.6)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.3)'; }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3H10z"/>
+            <path d="M17 2h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/>
+          </svg>
+          Not helpful
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Answer bubble ─────────────────────────────────────────────────────────────
 function AnswerBubble({
   turn,
@@ -509,6 +680,8 @@ function AnswerBubble({
   onFeedback,
   onRerun,
   onRerunFeedback,
+  showFeedback,
+  userEmail,
 }: {
   turn: Turn;
   onToggle: () => void;
@@ -516,6 +689,8 @@ function AnswerBubble({
   onFeedback: (type: 'approve' | 'correct' | 'reject', note?: string) => void;
   onRerun: () => void;
   onRerunFeedback: (type: 'approve' | 'reject') => void;
+  showFeedback?: boolean;
+  userEmail?: string;
 }) {
   const a = turn.answer;
   if (!a) return null;
@@ -628,8 +803,19 @@ function AnswerBubble({
           </div>
         )}
 
-        {/* Feedback */}
-        <FeedbackBar turn={turn} onFeedback={onFeedback} onRerun={onRerun} onRerunFeedback={onRerunFeedback} />
+        {/* Staff training bar */}
+        {showFeedback && (
+          <FeedbackBar turn={turn} onFeedback={onFeedback} onRerun={onRerun} onRerunFeedback={onRerunFeedback} />
+        )}
+
+        {/* Subscriber thumbs (beta feedback) — shown to non-staff only */}
+        {!showFeedback && userEmail && turn.answer && (
+          <SubscriberThumbs
+            question={turn.question}
+            answerExcerpt={(turn.answer.answer ?? '').slice(0, 300)}
+            userEmail={userEmail}
+          />
+        )}
 
         {/* Retrieved sections toggle */}
         <button onClick={onToggle} style={{
@@ -691,7 +877,7 @@ const DEFAULT_THEME: AskTheme = {
   shadowColor: 'rgba(28,128,188,0.12)',
 };
 
-export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: { sourceSummary?: string; reviewerName?: string | null; theme?: Partial<AskTheme> }) {
+export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: themeProp }: { sourceSummary?: string; reviewerName?: string | null; userEmail?: string; theme?: Partial<AskTheme> }) {
   const theme: AskTheme = { ...DEFAULT_THEME, ...themeProp };
   const [turns, setTurns] = useState<Turn[]>(() => {
     // Lazy init: restore conversation from localStorage on first render
@@ -887,7 +1073,7 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
   const isEmpty = turns.length === 0;
 
   return (
-    <div style={{ maxWidth: 760, width: '100%', margin: '0 auto', padding: '0 24px' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* Portal: "New question" button into the header when conversation is active */}
       {headerEl && turns.length > 0 && createPortal(
@@ -910,69 +1096,130 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
         headerEl
       )}
 
-      {/* ── Empty state ────────────────────────────────────────────────────── */}
-      {isEmpty && (
-        <div style={{ paddingTop: 8, paddingBottom: 48 }}>
+      {/* ── Scrollable conversation area ─────────────────────────────────── */}
+      <div style={{
+        flex: 1,
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch' as 'touch',
+      }}>
+        <div style={{ maxWidth: 760, margin: '0 auto', padding: '0 24px' }}>
 
-          {/* Main input */}
-          <div style={{ marginBottom: 36 }}>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-              <textarea
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-                placeholder="Describe the situation or ask your question…"
-                rows={3}
-                style={{
-                  flex: 1,
-                  padding: '16px 20px',
-                  fontSize: 16,
-                  lineHeight: 1.55,
-                  background: theme.textareaBg,
-                  border: `2px solid ${theme.accent}`,
-                  borderRadius: 14,
-                  outline: 'none',
-                  resize: 'none',
-                  fontFamily: 'inherit',
-                  color: TEXT,
-                  boxShadow: `0 0 0 4px ${theme.shadowColor}`,
-
-                }}
+          {/* Empty state welcome ─────────────────────────────────────────── */}
+          {isEmpty && (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              justifyContent: 'center', textAlign: 'center',
+              minHeight: '55vh', paddingBottom: 32,
+            }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-icon.png"
+                alt=""
+                aria-hidden="true"
+                style={{ height: 56, width: 'auto', marginBottom: 20, opacity: 0.9 }}
               />
-              <button
-                onClick={() => handleSubmit()}
-                disabled={!input.trim()}
-                style={{
-                  padding: '14px 22px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: !input.trim() ? '#1A2535' : theme.accent,
-                  color: !input.trim() ? DIM : '#fff',
-                  fontWeight: 700,
-                  fontSize: 15,
-                  cursor: !input.trim() ? 'default' : 'pointer',
-                  fontFamily: 'inherit',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0,
-                  transition: 'background .15s',
-                }}
-              >
-                Ask &rarr;
-              </button>
+              <h2 style={{
+                fontFamily: '"Iowan Old Style","Palatino Linotype",Georgia,serif',
+                fontSize: 22, fontWeight: 600, color: TEXT,
+                margin: '0 0 8px', lineHeight: 1.3,
+              }}>
+                What would you like to research?
+              </h2>
+              <p style={{ fontSize: 13, color: MUTED, margin: '0 0 24px', lineHeight: 1.6 }}>
+                {sourceSummary
+                  ? `Grounded in ${sourceSummary}`
+                  : 'Grounded in SSA POMS, 20 CFR, CMS, and Medicare.gov'}
+              </p>
+              {/* Input */}
+              <div style={{ width: '100%', maxWidth: 580, marginTop: 8 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
+                    placeholder="Describe the situation or ask your question…"
+                    rows={3}
+                    autoFocus
+                    style={{
+                      flex: 1,
+                      padding: '14px 18px',
+                      fontSize: 16,
+                      lineHeight: 1.55,
+                      background: theme.textareaBg,
+                      border: `2px solid ${theme.accent}`,
+                      borderRadius: 14,
+                      outline: 'none',
+                      resize: 'none',
+                      fontFamily: 'inherit',
+                      color: TEXT,
+                      boxShadow: `0 0 0 4px ${theme.shadowColor}`,
+                    }}
+                  />
+                  <button
+                    onClick={() => handleSubmit()}
+                    disabled={!input.trim()}
+                    style={{
+                      padding: '14px 22px',
+                      borderRadius: 10,
+                      border: 'none',
+                      background: !input.trim() ? '#1A2535' : theme.accent,
+                      color: !input.trim() ? DIM : '#fff',
+                      fontWeight: 700,
+                      fontSize: 15,
+                      cursor: !input.trim() ? 'default' : 'pointer',
+                      fontFamily: 'inherit',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0,
+                      transition: 'background .15s',
+                    }}
+                  >
+                    Ask &rarr;
+                  </button>
+                </div>
+                <p style={{ margin: '7px 0 0', fontSize: 11, color: DIM, textAlign: 'left' }}>
+                  Enter to send &nbsp;·&nbsp; Not individualized advice
+                </p>
+              </div>
+
+              {/* Example prompts */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 560, marginTop: 20 }}>
+                {[
+                  'When should my client claim Social Security?',
+                  'How does WEP affect pension recipients?',
+                  'What is the IRMAA surcharge threshold for 2026?',
+                  'Can a divorced spouse collect on an ex-spouse’s record?',
+                ].map(q => (
+                  <button
+                    key={q}
+                    onClick={() => { setInput(q); setTimeout(() => handleSubmit(q), 50); }}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: 20,
+                      border: `1px solid ${BORDER}`,
+                      background: SURFACE,
+                      color: MUTED,
+                      fontSize: 12,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      textAlign: 'left',
+                      lineHeight: 1.4,
+                      transition: 'border-color 0.15s, color 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = TEXT; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = MUTED; }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
-            {sourceSummary ? (
-              <p style={{ margin: '8px 0 0', fontSize: 11, color: DIM }}>{sourceSummary}</p>
-            ) : (
-              <p style={{ margin: '8px 0 0', fontSize: 11, color: DIM }}>Enter to send &nbsp;·&nbsp; Grounded in federal regulations &nbsp;·&nbsp; Not individualized advice</p>
-            )}
-          </div>
+          )}
 
-        </div>
-      )}
 
-      {/* ── Conversation turns ──────────────────────────────────────────────── */}
-      {turns.map((turn, i) => (
-        <div key={i} style={{ marginTop: i === 0 ? 28 : 0 }}>
+          {/* ── Conversation turns ─────────────────────────────────────────── */}
+          {turns.map((turn, i) => (
+            <div key={i} style={{ marginTop: i === 0 ? 28 : 0 }}>
 
           {/* User message */}
           <div style={{ display: 'flex', gap: 12, marginBottom: 16, justifyContent: 'flex-end' }}>
@@ -1018,62 +1265,78 @@ export function AskInterface({ sourceSummary, reviewerName, theme: themeProp }: 
               onFeedback={(type, note) => handleFeedback(i, type, note)}
               onRerun={() => handleRerun(i)}
               onRerunFeedback={(type) => handleRerunFeedback(i, type)}
+              showFeedback={!!reviewerName}
+              userEmail={userEmail}
             />
           )}
 
-          {/* Inline follow-up input — only after last completed turn */}
-          {i === turns.length - 1 && (turn.answer || turn.error) && (
-            <div style={{ marginLeft: 44, marginTop: 20, marginBottom: 8 }}>
-              <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+          {/* ── Inline follow-up input — appears after last answer ──────────────── */}
+          {turns.length > 0 && (turns[turns.length - 1].answer || turns[turns.length - 1].error) && (
+            <div style={{ marginTop: 24, marginBottom: 32, paddingTop: 20, borderTop: `1px solid ${BORDER}` }}>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
                 <textarea
                   ref={inputRef}
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSubmit(); } }}
-                  placeholder="Ask a follow-up question…"
+                  placeholder="Ask a follow-up…"
                   rows={2}
                   style={{
                     flex: 1,
-                    padding: '10px 14px',
+                    padding: '12px 16px',
                     fontSize: 15,
-                    lineHeight: 1.5,
-                    background: SURFACE,
+                    lineHeight: 1.55,
+                    background: theme.textareaBg,
                     border: `1.5px solid ${BORDER}`,
-                    borderRadius: 10,
+                    borderRadius: 12,
                     outline: 'none',
                     resize: 'none',
                     fontFamily: 'inherit',
                     color: TEXT,
-                    transition: 'border-color .15s',
+                    transition: 'border-color .15s, box-shadow .15s',
                   }}
-                  onFocus={e => { e.currentTarget.style.borderColor = theme.accent; }}
-                  onBlur={e => { e.currentTarget.style.borderColor = BORDER; }}
+                  onFocus={e => {
+                    e.currentTarget.style.borderColor = theme.accent;
+                    e.currentTarget.style.boxShadow = `0 0 0 3px ${theme.shadowColor}`;
+                  }}
+                  onBlur={e => {
+                    e.currentTarget.style.borderColor = BORDER;
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
                 />
                 <button
                   onClick={() => handleSubmit()}
                   disabled={!input.trim()}
                   style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
+                    padding: '12px 20px',
+                    borderRadius: 10,
                     border: 'none',
                     background: !input.trim() ? '#1A2535' : theme.accent,
                     color: !input.trim() ? DIM : '#fff',
                     fontWeight: 700,
-                    fontSize: 14,
+                    fontSize: 15,
                     cursor: !input.trim() ? 'default' : 'pointer',
                     fontFamily: 'inherit',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
+                    transition: 'background .15s',
                   }}
-                >Ask &rarr;</button>
+                >
+                  Ask &rarr;
+                </button>
               </div>
-              <p style={{ margin: '5px 0 0', fontSize: 11, color: DIM }}>Enter to send &nbsp;&middot;&nbsp; Shift+Enter for new line</p>
+              <p style={{ margin: '5px 0 0', fontSize: 11, color: DIM }}>
+                Enter to send &nbsp;·&nbsp; Shift+Enter for new line &nbsp;·&nbsp; Not individualized advice
+              </p>
             </div>
           )}
-        </div>
-      ))}
+            </div>
+          ))}
 
-      <div ref={bottomRef} />
+          <div ref={bottomRef} />
+        </div>{/* end maxWidth wrapper */}
+      </div>{/* end scrollable area */}
+
     </div>
   );
 }

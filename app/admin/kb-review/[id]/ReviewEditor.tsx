@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useCallback, useEffect, useRef, CSSProperties } from 'react';
-import type { ReferencePage, BodySection, FaqItem, WorkedExample } from '@/lib/types';
+import type { ReferencePage, BodySection, FaqItem, WorkedExample, ReferenceComponent } from '@/lib/types';
 import { ReferencePageComponent } from '@/components/ReferencePage';
 import { saveDraft, saveAndApprove, supersedePageAction, deletePage, sendBackToReview, type EditableFields } from '../actions';
 import { RichTextEditor } from '@/components/RichTextEditor';
@@ -97,6 +97,91 @@ function FaqCrossRef({ item, onChange }: {
   );
 }
 
+// ─── ComponentEditor ────────────────────────────────────────────────────────
+
+function ComponentEditor({ section, onChange }: {
+  section: BodySection;
+  onChange: (updates: Partial<BodySection>) => void;
+}) {
+  const [components, setComponents] = useState<ReferenceComponent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const G2 = { border: '#e5e7eb', bg: '#f9fafb', text: '#6b7280' };
+
+  useEffect(() => {
+    fetch('/codex/api/admin/components')
+      .then(r => r.json())
+      .then(d => setComponents(d.components ?? []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const selected = components.find(c => c.key === section.component_key);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div>
+        <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: G2.text, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Reusable Component</label>
+        {loading ? (
+          <div style={{ fontSize: 13, color: G2.text }}>Loading components…</div>
+        ) : (
+          <select
+            value={section.component_key ?? ''}
+            onChange={e => onChange({ component_key: e.target.value || undefined })}
+            style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: `1px solid ${G2.border}`, fontSize: 14, color: '#111', background: '#fff', fontFamily: 'inherit', cursor: 'pointer' }}
+          >
+            <option value=''>— Select a component —</option>
+            {components.map(c => (
+              <option key={c.key} value={c.key}>{c.label}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {selected && (() => {
+        const content = selected.content as unknown as Record<string, unknown>;
+        const isTable = content.type === 'table';
+        return (
+          <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 8, padding: '12px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#166534' }}>📦 Preview</span>
+              <code style={{ fontSize: 11, background: '#DCFCE7', padding: '1px 6px', borderRadius: 3, color: '#166534' }}>{selected.key}</code>
+            </div>
+            {selected.description && (
+              <div style={{ fontSize: 12, color: '#166534', marginBottom: 8 }}>{selected.description}</div>
+            )}
+            {isTable && Array.isArray(content.headers) && Array.isArray(content.rows) && (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                  <thead>
+                    <tr style={{ background: '#DCFCE7' }}>
+                      {(content.headers as string[]).map((h, i) => (
+                        <th key={i} style={{ padding: '5px 10px', textAlign: 'left', borderBottom: '2px solid #BBF7D0', fontWeight: 700, color: '#166534', whiteSpace: 'nowrap' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(content.rows as string[][]).map((row, ri) => (
+                      <tr key={ri} style={{ borderBottom: '1px solid #DCFCE7' }}>
+                        {row.map((cell, ci) => (
+                          <td key={ci} style={{ padding: '4px 10px', color: '#1F2937' }}>{cell}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {!selected && section.component_key && (
+        <div style={{ fontSize: 13, color: '#DC2626' }}>⚠️ Component &ldquo;{section.component_key}&rdquo; not found.</div>
+      )}
+    </div>
+  );
+}
+
 // ─── CrossRefEditor ─────────────────────────────────────────────────────────
 
 function CrossRefEditor({ section, onChange }: {
@@ -187,15 +272,19 @@ function CrossRefEditor({ section, onChange }: {
 export function ReviewEditor({
   page,
   reviewerName,
+  initialComponents = {},
 }: {
   page: ReferencePage;
   reviewerName: string;
+  initialComponents?: Record<string, ReferenceComponent>;
 }) {
   const [fields, setFields] = useState<EditableFields>(() => ({
     ...toEditState(page),
     // Always credit the logged-in reviewer - not a manual entry
     reviewer: reviewerName,
   }));
+  // Components map passed from server — no client fetch needed
+  const resolvedComponents = initialComponents;
   const [isPending, startTransition] = useTransition();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
@@ -208,10 +297,10 @@ export function ReviewEditor({
   const [faqFeedback, setFaqFeedback] = useState<Record<number, { type: 'verified' | 'flag'; note?: string }>>({}); 
   const [rewritingSection, setRewritingSection] = useState<Record<number, boolean>>({});
   const [sectionLearned, setSectionLearned] = useState<Record<number, string>>({});
-  const [sectionExistingFeedback, setSectionExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
+  const [sectionExistingFeedback, setSectionExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }>>({}); 
   const [rewritingFaq, setRewritingFaq]       = useState<Record<number, boolean>>({});
   const [faqLearned, setFaqLearned]           = useState<Record<number, string>>({});
-  const [faqExistingFeedback, setFaqExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>>({}); 
+  const [faqExistingFeedback, setFaqExistingFeedback] = useState<Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }>>({}); 
   // Related-FAQ suggestion state
   const [relatedFaqs, setRelatedFaqs] = useState<Array<{ index: number; q: string; a: string; reason: string }>>([]);
   const [relatedFaqNote, setRelatedFaqNote] = useState<string>('');
@@ -223,10 +312,10 @@ export function ReviewEditor({
       .then(r => r.json())
       .then(data => {
         if (!data.ok) return;
-        const bodyMap: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
-        const faqMap:  Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }> = {};
+        const bodyMap: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }> = {};
+        const faqMap:  Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }> = {};
         for (const row of data.feedback ?? []) {
-          const entry = { type: row.feedback_type, reviewer_name: row.reviewer_name, created_at: row.created_at };
+          const entry = { type: row.feedback_type, reviewer_name: row.reviewer_name, created_at: row.created_at, note: row.note ?? null };
           if (row.section_type === 'body') bodyMap[row.section_index] = entry;
           if (row.section_type === 'faq')  faqMap[row.section_index]  = entry;
         }
@@ -304,7 +393,7 @@ export function ReviewEditor({
     // Update existing feedback display immediately so the "verified by" line shows without reload
     setSectionExistingFeedback(prev => ({
       ...prev,
-      [index]: { type, reviewer_name: reviewerName, created_at: new Date().toISOString() },
+      [index]: { type, reviewer_name: reviewerName, created_at: new Date().toISOString(), note: note ?? null },
     }));
     persistFeedback('body', index, type, note);
 
@@ -455,12 +544,17 @@ export function ReviewEditor({
   const verificationFlags: Array<{ value: string; context: string; found_in_uncited?: string }> =
     (page as any).draft_metadata?.verification?.unverified ?? [];
 
+  // Track which flagged values were actually matched in current text so the banner
+  // can fall back to listing them directly when they've been edited out of the prose.
+  const matchedFlagValues = new Set<string>();
+
   const bodySectionsWithFlags = fields.body_sections.map(section => {
     if (verificationFlags.length === 0) return section;
     const hits = verificationFlags.filter(u =>
       section.prose.toLowerCase().includes(u.value.toLowerCase().replace(/,\s*$/, ''))
     );
     if (hits.length === 0) return section;
+    hits.forEach(u => matchedFlagValues.add(u.value));
     const gapNote = hits.map(u => `\u201c${u.value}\u201d not verified against cited source`).join('; ');
     return { ...section, prose: section.prose + ` [SOURCE GAP: ${gapNote}]` };
   });
@@ -472,9 +566,13 @@ export function ReviewEditor({
       fields.quick_answer.toLowerCase().includes(u.value.toLowerCase().replace(/,\s*$/, ''))
     );
     if (hits.length === 0) return fields.quick_answer;
+    hits.forEach(u => matchedFlagValues.add(u.value));
     const gapNote = hits.map(u => `\u201c${u.value}\u201d not verified against cited source`).join('; ');
     return fields.quick_answer + ` [SOURCE GAP: ${gapNote}]`;
   })();
+
+  // Flags that didn't match anywhere in the current text (e.g. edited out after verification ran)
+  const unmatchedFlags = verificationFlags.filter(u => !matchedFlagValues.has(u.value));
 
   const previewPage: ReferencePage = {
     ...page,
@@ -517,9 +615,14 @@ export function ReviewEditor({
       try {
         await saveAndApprove(page.id, fields);
         isDirty.current = false;
-        // Use full navigation (not router.push) to bypass App Router client-side cache,
-        // which can otherwise serve a stale queue after approval.
-        window.location.href = '/codex/admin/kb-review';
+        if (page.status === 'published') {
+          // Already published — re-publishing an update. Stay on the page so the
+          // editor can keep working. Full reload to get fresh server data.
+          window.location.reload();
+        } else {
+          // First-time approval: go to queue so the next page can be reviewed.
+          window.location.href = '/codex/admin/kb-review';
+        }
       } catch (e) {
         alert('Approve failed: ' + (e as Error).message);
       }
@@ -597,6 +700,12 @@ export function ReviewEditor({
     set('body_sections', next);
   }
   const addCrossRef  = () => insertCrossRef(fields.body_sections.length - 1);
+  function insertComponent(afterIndex: number) {
+    const next = [...fields.body_sections];
+    next.splice(afterIndex + 1, 0, { type: 'component' as const, heading: '', prose: '', component_key: '' });
+    set('body_sections', next);
+  }
+  const addComponent = () => insertComponent(fields.body_sections.length - 1);
   const removeSection = (i: number) =>
     set('body_sections', fields.body_sections.filter((_, idx) => idx !== i));
 
@@ -716,6 +825,7 @@ export function ReviewEditor({
         {/* Left: breadcrumb + title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <a href="/admin/kb-review" style={{ color: NSSA.light, textDecoration: 'none', fontSize: 14, flexShrink: 0 }}>← Queue</a>
+          <a href="/admin/my-feedback" style={{ color: NSSA.light, textDecoration: 'none', fontSize: 13, flexShrink: 0, opacity: 0.8 }}>My Feedback</a>
           <span style={{ color: '#4a7fa0' }}>·</span>
           <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 15 }}>
             {fields.title || page.title}
@@ -756,16 +866,7 @@ export function ReviewEditor({
             </a>
           )}
 
-          {page.status !== 'published' && (
-            <button
-              onClick={handleDelete}
-              disabled={isPending}
-              style={{ background: 'transparent', border: '1px solid #F87171', color: '#F87171', borderRadius: 6, padding: '7px 14px', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
-              title="Delete this page permanently"
-            >
-              🗑 Delete
-            </button>
-          )}
+          {/* Delete button removed — use Supabase dashboard if a page must be deleted */}
 
           {page.status === 'published' && (
             <button
@@ -847,7 +948,7 @@ export function ReviewEditor({
                     )}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                       <span style={chipLabel}>
-                        {section.type === 'table' ? '📊 Table' : section.type === 'crossref' ? '🔗 Cross-Reference' : `Section ${i + 1}`}
+                        {section.type === 'table' ? '📊 Table' : section.type === 'crossref' ? '🔗 Cross-Reference' : section.type === 'component' ? '📦 Component' : `Section ${i + 1}`}
                       </span>
                       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <button onClick={() => moveSection(i, -1)} disabled={i === 0} style={{ ...removeBtnStyle, color: '#6b7280', fontSize: 15, opacity: i === 0 ? 0.3 : 1 }} title="Move up">↑</button>
@@ -868,6 +969,9 @@ export function ReviewEditor({
                       <button
                         onClick={() => insertCrossRef(i)}
                         style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}>🔗 ref below</button>
+                      <button
+                        onClick={() => insertComponent(i)}
+                        style={{ fontSize: 11, padding: '3px 10px', borderRadius: 4, background: '#fff', border: `1px dashed ${G.border}`, color: G.text, cursor: 'pointer', fontFamily: 'inherit' }}>📦 component below</button>
                     </div>
 
                     {section.type === 'table' ? (
@@ -925,13 +1029,17 @@ export function ReviewEditor({
                           <button onClick={() => addTableRow(i)} style={{ ...addBtnStyle, marginTop: 6, fontSize: 12 }}>+ Add Row</button>
                         </div>
 
-                        <FormRow label="Citation ref (POMS/CFR section number)">
-                          <FInput value={section.citation_ref ?? ''} onChange={v => updateSection(i, 'citation_ref', v)} placeholder="e.g. HI 01101.020" mono />
-                        </FormRow>
+                        <CitationRefsEditor section={section} sectionIndex={i} onUpdate={(idx, updates) => updateSection(idx, updates)} />
                       </>
                     ) : section.type === 'crossref' ? (
                       /* ── Cross-reference section ── */
                       <CrossRefEditor
+                        section={section}
+                        onChange={(updates) => updateSection(i, updates)}
+                      />
+                    ) : section.type === 'component' ? (
+                      /* ── Component picker ── */
+                      <ComponentEditor
                         section={section}
                         onChange={(updates) => updateSection(i, updates)}
                       />
@@ -949,14 +1057,7 @@ export function ReviewEditor({
                             minHeight={120}
                           />
                         </FormRow>
-                        <FormRow label="Citation ref (POMS/CFR section number)">
-                          <FInput
-                            value={section.citation_ref ?? ''}
-                            onChange={v => updateSection(i, 'citation_ref', v)}
-                            placeholder="e.g. GN 00204.020"
-                            mono
-                          />
-                        </FormRow>
+                        <CitationRefsEditor section={section} sectionIndex={i} onUpdate={(idx, updates) => updateSection(idx, updates)} />
                       </>
                     )}
                   </div>
@@ -966,6 +1067,7 @@ export function ReviewEditor({
                 <button onClick={addSection}   style={{ ...addBtnStyle, flex: 1 }}>+ Add Prose Section</button>
                 <button onClick={addTable}     style={{ ...addBtnStyle, flex: 1 }}>📊 Add Table</button>
                 <button onClick={addCrossRef}  style={{ ...addBtnStyle, flex: 1 }}>🔗 Add Cross-Reference</button>
+                <button onClick={addComponent} style={{ ...addBtnStyle, flex: 1 }}>📦 Add Component</button>
               </div>
             </FieldGroup>
 
@@ -1092,10 +1194,26 @@ export function ReviewEditor({
               background: '#FEF2F2', border: '1px solid #FECACA',
               borderRadius: 6, padding: '8px 14px',
               fontSize: 12, fontWeight: 600, color: '#991B1B',
-              display: 'flex', alignItems: 'center', gap: 6,
             }}>
-              <span>⚠</span>
-              <span>{verificationFlags.length} value{verificationFlags.length !== 1 ? 's' : ''} flagged for review - see red blocks inline below</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span>⚠</span>
+                {unmatchedFlags.length === verificationFlags.length ? (
+                  // None matched current text — list them directly rather than pointing to nonexistent blocks
+                  <span>{verificationFlags.length} value{verificationFlags.length !== 1 ? 's' : ''} flagged at draft time but not found in current text (may have been edited out):</span>
+                ) : (
+                  <span>{verificationFlags.length - unmatchedFlags.length} value{verificationFlags.length - unmatchedFlags.length !== 1 ? 's' : ''} flagged for review — see red blocks inline below{unmatchedFlags.length > 0 ? `; ${unmatchedFlags.length} additional not found in current text` : ''}</span>
+                )}
+              </div>
+              {unmatchedFlags.length > 0 && (
+                <ul style={{ margin: '6px 0 0', paddingLeft: 18, fontWeight: 400, fontSize: 11 }}>
+                  {unmatchedFlags.map((f, i) => (
+                    <li key={i} style={{ marginBottom: 2 }}>
+                      <code style={{ background: '#FEE2E2', padding: '1px 4px', borderRadius: 3 }}>{f.value}</code>
+                      {' '}<span style={{ color: '#7F1D1D' }}>{f.context.slice(0, 100)}{f.context.length > 100 ? '…' : ''}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
 
@@ -1160,7 +1278,7 @@ export function ReviewEditor({
           )}
 
           {/* Rendered page */}
-          <ReferencePageComponent page={previewPage} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} sectionExistingFeedback={sectionExistingFeedback} faqLearned={faqLearned} rewritingFaq={rewritingFaq} faqExistingFeedback={faqExistingFeedback} />
+          <ReferencePageComponent page={previewPage} components={resolvedComponents} previewMode embedded onSectionFeedback={handleSectionFeedback} onFaqFeedback={handleFaqFeedback} sectionLearned={sectionLearned} rewritingSection={rewritingSection} sectionExistingFeedback={sectionExistingFeedback} faqLearned={faqLearned} rewritingFaq={rewritingFaq} faqExistingFeedback={faqExistingFeedback} />
         </div>
 
       </div>
@@ -1222,6 +1340,99 @@ function FTextarea({ value, onChange, rows, placeholder }: { value: string; onCh
         fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box',
       } as CSSProperties}
     />
+  );
+}
+
+// ─── Multi-citation editor ────────────────────────────────────────────────────
+function CitationRefsEditor({ section, sectionIndex, onUpdate }: {
+  section: BodySection;
+  sectionIndex: number;
+  onUpdate: (i: number, updates: Partial<BodySection>) => void;
+}) {
+  const monoStyle: CSSProperties = {
+    width: '100%', padding: '8px 10px', borderRadius: 6,
+    border: `1px solid ${G.border}`, fontSize: 13, boxSizing: 'border-box',
+    fontFamily: 'ui-monospace, "SF Mono", Menlo, monospace',
+  };
+  const allRefs: string[] = [
+    ...(section.citation_ref ? [section.citation_ref] : []),
+    ...(section.citation_refs ?? []),
+  ];
+
+  const handleChange = (idx: number, val: string) => {
+    if (idx === 0) {
+      // Primary ref
+      onUpdate(sectionIndex, { citation_ref: val });
+    } else {
+      const extras = [...(section.citation_refs ?? [])];
+      extras[idx - 1] = val;
+      onUpdate(sectionIndex, { citation_refs: extras });
+    }
+  };
+
+  const handleRemove = (idx: number) => {
+    if (idx === 0) {
+      // Promote first extra to primary, or clear
+      const extras = [...(section.citation_refs ?? [])];
+      const newPrimary = extras.shift() ?? '';
+      onUpdate(sectionIndex, { citation_ref: newPrimary, citation_refs: extras.length ? extras : undefined });
+    } else {
+      const extras = [...(section.citation_refs ?? [])];
+      extras.splice(idx - 1, 1);
+      onUpdate(sectionIndex, { citation_refs: extras.length ? extras : undefined });
+    }
+  };
+
+  const handleAdd = () => {
+    if (!section.citation_ref) {
+      onUpdate(sectionIndex, { citation_ref: '' });
+    } else {
+      const extras = [...(section.citation_refs ?? []), ''];
+      onUpdate(sectionIndex, { citation_refs: extras });
+    }
+  };
+
+  return (
+    <div>
+      <p style={{ margin: '0 0 4px', fontSize: 12, fontWeight: 600, color: G.text }}>
+        Citation refs (POMS/CFR section numbers)
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {allRefs.length === 0 && (
+          <input
+            value=""
+            onChange={e => onUpdate(sectionIndex, { citation_ref: e.target.value })}
+            placeholder="e.g. GN 00204.020"
+            style={monoStyle}
+          />
+        )}
+        {allRefs.map((ref, idx) => (
+          <div key={idx} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <input
+              value={ref}
+              onChange={e => handleChange(idx, e.target.value)}
+              placeholder="e.g. RS 00605.021"
+              style={{ ...monoStyle, flex: 1 }}
+            />
+            {allRefs.length > 1 && (
+              <button
+                onClick={() => handleRemove(idx)}
+                title="Remove this citation"
+                style={{ background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: 16, padding: '0 4px', lineHeight: 1 }}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          onClick={handleAdd}
+          style={{ background: '#fff', border: `1px dashed ${G.border}`, color: NSSA.dark, borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', textAlign: 'left' as const, marginTop: 2 }}
+        >
+          + Add another citation ref
+        </button>
+      </div>
+    </div>
   );
 }
 

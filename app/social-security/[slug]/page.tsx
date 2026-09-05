@@ -9,6 +9,7 @@
 import { notFound } from 'next/navigation';
 import { createPublicClient } from '@/lib/supabase';
 import { ReferencePageComponent } from '@/components/ReferencePage';
+import { resolvePageComponents } from '@/lib/components';
 import type { ReferencePage } from '@/lib/types';
 
 // Instruct Next.js: only the slugs we generate statically are valid.
@@ -70,5 +71,8 @@ export default async function SocialSecurityPage({
 
   if (!data) notFound();
 
-  return <ReferencePageComponent page={data as ReferencePage} embedded />;
+  const page = data as ReferencePage;
+  const components = await resolvePageComponents(page.body_sections);
+
+  return <ReferencePageComponent page={page} components={components} embedded />;
 }

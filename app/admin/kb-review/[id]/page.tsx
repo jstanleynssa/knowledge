@@ -7,7 +7,7 @@
 
 import { notFound, redirect } from 'next/navigation';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
-import type { Category, KbReviewer, ReferencePage } from '@/lib/types';
+import type { Category, KbReviewer, ReferencePage, ReferenceComponent } from '@/lib/types';
 import { ReviewEditor } from './ReviewEditor';
 
 const ADMIN_EMAIL = 'jstanley@nssapros.com';
@@ -59,5 +59,13 @@ export default async function ReviewDetailPage({
     reviewerName = reviewer.display_name;
   }
 
-  return <ReviewEditor page={page} reviewerName={reviewerName} />;
+  // Fetch all components so the preview can render component sections without a client-side fetch race
+  const { data: componentsData } = await service
+    .from('reference_components')
+    .select('*')
+    .order('label');
+  const componentsMap: Record<string, ReferenceComponent> = {};
+  for (const c of (componentsData ?? [])) componentsMap[c.key] = c as ReferenceComponent;
+
+  return <ReviewEditor page={page} reviewerName={reviewerName} initialComponents={componentsMap} />;
 }

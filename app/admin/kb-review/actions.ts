@@ -26,6 +26,34 @@ export type EditableFields = {
   deprecation_note: string;
 };
 
+// ─── Snapshot helper ────────────────────────────────────────────────────────
+
+/** Write a full content snapshot to reference_pages_history. Non-fatal — never blocks the primary action. */
+async function snapshotPage(
+  pageId: string,
+  action: 'save_draft' | 'approve' | 'send_back' | 'delete',
+  actor: string,
+) {
+  try {
+    const service = createServiceClient();
+    const { data: page } = await service
+      .from('reference_pages')
+      .select('*')
+      .eq('id', pageId)
+      .single();
+    if (!page) return;
+    await service.from('reference_pages_history').insert({
+      page_id:   pageId,
+      page_slug: page.slug,
+      action,
+      actor,
+      snapshot:  page,
+    });
+  } catch (e) {
+    console.error('[snapshotPage] non-fatal error:', e);
+  }
+}
+
 // ─── Auth helper ─────────────────────────────────────────────────────────────
 
 async function getSessionReviewer() {
@@ -53,9 +81,10 @@ async function getSessionReviewer() {
 /** Save edits as draft (stay on page). */
 export async function saveDraft(pageId: string, fields: EditableFields): Promise<void> {
   try {
-  await getSessionReviewer();
+  const { displayName } = await getSessionReviewer();
   const service = createServiceClient();
   const today = new Date().toISOString().split('T')[0];
+  await snapshotPage(pageId, 'save_draft', displayName);
 
   const { error } = await service
     .from('reference_pages')
@@ -88,6 +117,7 @@ export async function saveDraft(pageId: string, fields: EditableFields): Promise
 /** Save edits + approve in one shot — redirects to queue. */
 export async function saveAndApprove(pageId: string, fields: EditableFields): Promise<void> {
   const { displayName } = await getSessionReviewer();
+  await snapshotPage(pageId, 'approve', displayName);
   const service = createServiceClient();
   const today = new Date().toISOString().split('T')[0];
 
@@ -167,18 +197,55 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     console.error('verified_answers seed error (non-fatal):', e);
   }
 
-  // Sync codex_topics status → published (non-fatal)
+  // Sync codex_topics status → published (non-fatal).
+  // Uses a two-step slug resolution: page slug first, then falls back to the
+  // original generation_jobs slug (which matches codex_topics) in case the
+  // page was drafted with a different slug than the topic record.
   try {
-    const { data: pubPage } = await createServiceClient()
+    const service = createServiceClient();
+    const { data: pubPage } = await service
       .from('reference_pages')
       .select('slug, category')
       .eq('id', pageId)
       .single();
+
     if (pubPage) {
-      await createServiceClient()
+      // Primary: match by page slug
+      const { count } = await service
         .from('codex_topics')
-        .update({ status: 'published' })
+        .update({ status: 'published' }, { count: 'exact' })
         .eq('slug', pubPage.slug);
+
+      if (!count || count === 0) {
+        // Fallback: look up the original job slug — generation_jobs.slug is
+        // always the codex_topics slug, even when the page ends up with a
+        // different slug (e.g. regenerated from a different draft).
+        const { data: job } = await service
+          .from('generation_jobs')
+          .select('slug')
+          .eq('page_id', pageId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (job?.slug && job.slug !== pubPage.slug) {
+          console.warn(
+            `[saveAndApprove] slug mismatch — page slug="${pubPage.slug}" ` +
+            `job slug="${job.slug}". Syncing codex_topics via job slug.`
+          );
+          await service
+            .from('codex_topics')
+            .update({ status: 'published' })
+            .eq('slug', job.slug);
+        } else {
+          console.warn(
+            `[saveAndApprove] codex_topics sync: no row matched slug="${pubPage.slug}" ` +
+            `and no generation_jobs record found for page_id="${pageId}". ` +
+            `Manual codex_topics update may be needed.`
+          );
+        }
+      }
+
       pingIndexNow([{ slug: pubPage.slug, category: pubPage.category }]);
     }
   } catch (e) {
@@ -200,9 +267,9 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
   // showing a spurious alert. The client (ReviewEditor) handles navigation after this returns.
 }
 
-/** Permanently delete a page — only allowed for draft/in_review pages. */
+/** Soft-delete a page — marks as 'deleted' instead of removing the row. Snapshots first. */
 export async function deletePage(pageId: string): Promise<void> {
-  const { email } = await getSessionReviewer();
+  const { email, displayName } = await getSessionReviewer();
   const service = createServiceClient();
 
   // Only admin can delete; reviewers cannot
@@ -218,9 +285,13 @@ export async function deletePage(pageId: string): Promise<void> {
   if (!page) throw new Error('Page not found.');
   if (page.status === 'published') throw new Error('Cannot delete a published page. Mark it superseded instead.');
 
+  // Snapshot before soft-delete so content is always recoverable
+  await snapshotPage(pageId, 'delete', displayName);
+
+  // Soft-delete: mark as deleted rather than removing the row
   const { error } = await service
     .from('reference_pages')
-    .delete()
+    .update({ status: 'deleted' })
     .eq('id', pageId);
 
   if (error) throw new Error('Delete failed: ' + error.message);
@@ -229,7 +300,8 @@ export async function deletePage(pageId: string): Promise<void> {
 
 /** Mark a page as superseded with a public deprecation note. */
 export async function sendBackToReview(pageId: string): Promise<void> {
-  await getSessionReviewer(); // auth check
+  const { displayName } = await getSessionReviewer();
+  await snapshotPage(pageId, 'send_back', displayName);
   const service = createServiceClient();
   const { data: page } = await service
     .from('reference_pages')

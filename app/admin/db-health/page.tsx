@@ -329,9 +329,10 @@ export default async function DbHealthPage() {
       {/* Footer nav */}
       <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid #E5E7EB', display: 'flex', gap: 24, fontSize: 13 }}>
         {[
-          { href: '/admin/kb-review',  label: '← Review Queue' },
-          { href: '/admin/coverage',   label: 'Coverage Report' },
-          { href: '/admin/leaderboard',label: 'Leaderboard' },
+          { href: '/admin/kb-review',   label: '← Review Queue' },
+          { href: '/admin/coverage',    label: 'Coverage Report' },
+          { href: '/admin/leaderboard', label: 'Leaderboard' },
+          { href: '/admin/components',  label: 'Components' },
         ].map(({ href, label }) => (
           <a key={href} href={href} style={{ color: NSSA_MED, textDecoration: 'none', fontWeight: 500 }}>{label}</a>
         ))}

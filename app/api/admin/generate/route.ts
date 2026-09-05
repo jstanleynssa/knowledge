@@ -57,8 +57,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'title and topic are required for custom generation.' }, { status: 400 });
     }
 
-    // Derive a slug from the title
-    const slug = title
+    // Prefer the slug passed from the topic list (codex_topics.slug).
+    // Fall back to deriving from title only when no slug is supplied.
+    const providedSlug = (body.slug as string | undefined)?.trim();
+    const slug = providedSlug || title
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, '')
       .trim()
@@ -66,20 +68,24 @@ export async function POST(req: NextRequest) {
       .replace(/-+/g, '-')
       .slice(0, 80);
 
-    const sources = Array.isArray(body.sources) ? body.sources as string[] : undefined;
+    // Enqueue job — the local queue worker picks it up and runs the full pipeline.
+    // This avoids the Cloudflare Worker proxy timeout on long-running generation.
+    const { data: job, error: jobErr } = await service
+      .from('generation_jobs')
+      .insert({ title, slug, topic, category, requested_by: user.email })
+      .select('id')
+      .single();
 
-    try {
-      const result = await spawnDraft({ slug, title, topic, category }, sources);
-      return NextResponse.json({
-        queued:  [slug],
-        pageId:  result?.id,
-        remaining: 0,
-        message: `"${title}" has been generated and is ready to review.`,
-      });
-    } catch (e) {
-      console.error('Draft generation error:', e);
-      return NextResponse.json({ error: 'Generation failed: ' + (e as Error).message }, { status: 500 });
+    if (jobErr || !job) {
+      return NextResponse.json({ error: 'Failed to enqueue generation job' }, { status: 500 });
     }
+
+    return NextResponse.json({
+      queued:  [slug],
+      jobId:   job.id,
+      async:   true,
+      message: `"${title}" queued for generation. It will be ready to review in about a minute.`,
+    });
   }
 
   // ── Queue mode: specific slugs selected by reviewer ──────────────────────

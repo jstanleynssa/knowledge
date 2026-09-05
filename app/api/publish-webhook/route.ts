@@ -61,6 +61,16 @@ export async function POST(req: NextRequest) {
   const slugs = approved.map((r) => r.slug);
   console.log(`Published ${slugs.length} pages: ${slugs.join(', ')}`);
 
+  // Sync codex_topics status to match — non-fatal if table missing
+  if (slugs.length > 0) {
+    const { error: topicsErr } = await supabase
+      .from('codex_topics')
+      .update({ status: 'published' })
+      .in('slug', slugs)
+      .neq('status', 'published'); // skip already-correct rows
+    if (topicsErr) console.warn('codex_topics sync warning:', topicsErr.message);
+  }
+
   // Ping IndexNow — non-fatal
   pingIndexNow(approved.map((r) => ({ slug: r.slug, category: r.category })));
 

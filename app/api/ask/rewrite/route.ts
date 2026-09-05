@@ -68,6 +68,9 @@ Rewrite the answer incorporating this feedback. Return { "answer": "...", "learn
       ok:      true,
       answer:  typeof result.answer  === 'string' ? result.answer  : original_answer,
       learned: typeof result.learned === 'string' ? result.learned : '',
+      // Pass through original sources so the UI can display citations on the rewritten answer.
+      // The rewrite doesn't do a fresh retrieval pass, so we carry forward what we had.
+      primary_sources: primary_sources ?? [],
     });
   } catch (e) {
     console.error('ask/rewrite error:', e);

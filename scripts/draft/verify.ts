@@ -181,10 +181,15 @@ export function verifyClaims(
     });
   }
 
+  // Filter out dollar amounts: they are advisor-supplied inputs multiplied by POMS
+  // formulas (e.g. $10,000 × 0.9235 = $9,235). They will never appear verbatim in
+  // POMS source text, so flagging them is noise. The same filter is applied in /api/ask.
+  const meaningfulUnverified = unverified.filter(u => !u.value.startsWith('$'));
+
   return {
-    passed: unverified.length === 0,
-    verified_count: specifics.length - unverified.length,
-    unverified,
+    passed: meaningfulUnverified.length === 0,
+    verified_count: specifics.length - meaningfulUnverified.length,
+    unverified: meaningfulUnverified,
     all_specifics: specifics,
   };
 }

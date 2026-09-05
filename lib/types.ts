@@ -39,10 +39,11 @@ export interface SourceChunk {
 // ─── Layer 2 ──────────────────────────────────────────────────────────────────
 
 export interface BodySection {
-  type?: 'prose' | 'table' | 'crossref';   // defaults to 'prose' for backward compat
+  type?: 'prose' | 'table' | 'crossref' | 'component';   // defaults to 'prose' for backward compat
   heading: string;
   prose: string;
-  citation_ref?: string;       // section_number that sourced this claim
+  citation_ref?: string;       // primary section_number that sourced this claim
+  citation_refs?: string[];    // additional section numbers (reviewer-added)
   // Table-specific fields (only used when type === 'table')
   headers?: string[];          // column header labels
   rows?: string[][];           // row data [row][col]
@@ -52,6 +53,8 @@ export interface BodySection {
   ref_page_title?: string;     // display title
   ref_page_category?: string;  // category for URL building
   ref_context?: string;        // short description of why this is referenced
+  // Component fields (only used when type === 'component')
+  component_key?: string;      // key into reference_components.key
 }
 
 export interface WorkedExample {
@@ -101,6 +104,19 @@ export interface ReferencePage {
   date_modified: string | null;          // ISO date
   approved_by: string | null;            // display name of approving reviewer
   approved_at: string | null;            // ISO timestamp
+  created_at: string;
+  updated_at: string;
+}
+
+// ─── Reusable Components ────────────────────────────────────────────────────
+
+export interface ReferenceComponent {
+  id: string;
+  key: string;
+  label: string;
+  description?: string | null;
+  /** Stored as a BodySection (minus 'component' type) — rendered by the normal section renderer */
+  content: BodySection;
   created_at: string;
   updated_at: string;
 }

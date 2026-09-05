@@ -96,11 +96,11 @@ export default async function CoveragePage() {
 
   // Classify each citation by source type
   function classifySource(sec: string): string {
-    if (/^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN)\s/i.test(sec)) return 'poms';
-    if (/^20\s+CFR/i.test(sec))                                   return 'cfr';
-    if (/^HBK/i.test(sec))                                        return 'handbook';
-    if (/cms\.gov/i.test(sec) || /^CMS/i.test(sec))              return 'cms';
-    if (/medicare\.gov/i.test(sec))                                return 'medicare';
+    if (/^(RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN|EM)\s/i.test(sec)) return 'poms';
+    if (/^20\s+CFR/i.test(sec) || /^CFR/i.test(sec))               return 'cfr';
+    if (/^HBK/i.test(sec))                                          return 'handbook';
+    if (/^MCR:/i.test(sec) || /medicare\.gov/i.test(sec))           return 'medicare';
+    if (/^CMS/i.test(sec)  || /cms\.gov/i.test(sec))               return 'cms';
     return 'other';
   }
 

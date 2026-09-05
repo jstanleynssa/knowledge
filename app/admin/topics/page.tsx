@@ -48,8 +48,17 @@ export default async function TopicsPage({
   // Load reference pages for status cross-reference + actual approver
   const { data: pages } = await supabase
     .from('reference_pages')
-    .select('slug, id, status, category, approved_by');
+    .select('slug, id, status, category, approved_by')
+    .neq('status', 'deleted');
   const pageBySlug = Object.fromEntries((pages ?? []).map(p => [p.slug, p]));
+
+  // Resolve effective status: if reference_pages says published, trust it over codex_topics
+  // This prevents display bugs when the async codex_topics sync drops silently.
+  const effectiveStatus = (t: { slug: string; status: string }) => {
+    const rp = pageBySlug[t.slug];
+    if (rp?.status === 'published' && t.status !== 'published') return 'published';
+    return t.status;
+  };
 
   // Normalise status for filtering
   const normaliseStatus = (s: string) => {
@@ -58,9 +67,10 @@ export default async function TopicsPage({
     return s;
   };
 
-  // Apply filters
+  // Apply filters (use effective status so published pages don’t show as ready)
   const filtered = (allTopics ?? []).filter(t => {
-    const statusMatch  = !filterStatus  || normaliseStatus(t.status) === filterStatus  || t.status === filterStatus;
+    const es = effectiveStatus(t);
+    const statusMatch  = !filterStatus  || normaliseStatus(es) === filterStatus  || es === filterStatus;
     const reviewerMatch = !filterReviewer || t.reviewer === filterReviewer;
     return statusMatch && reviewerMatch;
   });
@@ -89,16 +99,16 @@ export default async function TopicsPage({
   const expectedCount   = Math.min(GOAL_TOTAL, Math.round(daysElapsed * dailyPace));  // 3.3 today, 6.6 tomorrow…
   const expectedPct     = Math.min(100, Math.round((expectedCount / GOAL_TOTAL) * 100));
 
-  // Summary counts (always over all topics, not filtered)
+  // Summary counts (always over all topics, not filtered) — use effective status
   const allT = allTopics ?? [];
   const counts = {
-    published: allT.filter(t => t.status === 'published').length,
-    ready:     allT.filter(t => t.status === 'draft' || t.status === 'in_review').length,
-    generate:  allT.filter(t => t.status === 'AI' || t.status === 'SME').length,
-    TBD:       allT.filter(t => t.status === 'TBD').length,
+    published: allT.filter(t => effectiveStatus(t) === 'published').length,
+    ready:     allT.filter(t => { const es = effectiveStatus(t); return es === 'draft' || es === 'in_review'; }).length,
+    generate:  allT.filter(t => { const es = effectiveStatus(t); return es === 'AI' || es === 'SME'; }).length,
+    TBD:       allT.filter(t => effectiveStatus(t) === 'TBD').length,
   };
 
-  const publishedCount  = allT.filter(t => t.status === 'published').length;
+  const publishedCount  = allT.filter(t => effectiveStatus(t) === 'published').length;
   const goalPct         = Math.min(100, Math.round((publishedCount / GOAL_TOTAL) * 100));
   const pagesLeft       = GOAL_TOTAL - publishedCount;
   const pacePerDay      = daysLeft > 0 ? (pagesLeft / daysLeft).toFixed(1) : '—';
@@ -138,7 +148,7 @@ export default async function TopicsPage({
           <span style={{ color: '#4a7fa0' }}>/</span>
           <span style={{ fontWeight: 700, fontSize: 18 }}>180 Topics</span>
         </div>
-        <div style={{ fontSize: 12, color: NSSA.light }}>90-day plan · 3 reviewers</div>
+        <div style={{ fontSize: 12, color: NSSA.light }}>50-day plan · 3 reviewers</div>
       </div>
 
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '28px 24px' }}>
@@ -149,7 +159,7 @@ export default async function TopicsPage({
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontSize: 22 }}>{milestone.emoji}</span>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 15, color: NSSA.dark }}>90-Day Publishing Goal</div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: NSSA.dark }}>50-Day Publishing Goal</div>
                 <div style={{ fontSize: 12, color: G.text }}>{milestone.label} · {publishedCount} of {GOAL_TOTAL} pages published</div>
               </div>
             </div>
@@ -333,12 +343,13 @@ export default async function TopicsPage({
                 </thead>
                 <tbody>
                   {topics.map((topic, i) => {
-                    const s = STATUS_STYLE[topic.status] ?? STATUS_STYLE.TBD;
+                    const es = effectiveStatus(topic); // use effective status to avoid codex_topics desync
+                    const s = STATUS_STYLE[es] ?? STATUS_STYLE.TBD;
                     const page = pageBySlug[topic.slug];
                     const reviewHref    = page ? `/admin/kb-review/${page.id}` : null;
-                    const isReviewable  = topic.status === 'draft' || topic.status === 'in_review';
-                    const isGeneratable = topic.status === 'AI' || topic.status === 'SME';
-                    const isPublished   = topic.status === 'published';
+                    const isReviewable  = es === 'draft' || es === 'in_review';
+                    const isGeneratable = es === 'AI' || es === 'SME';
+                    const isPublished   = es === 'published';
                     const catSlug       = topic.category === 'IRMAA' ? 'irmaa' : 'social-security';
                     const liveHref      = isPublished ? `https://www.nssapros.com/codex/${catSlug}/${topic.slug}` : null;
                     return (
@@ -378,7 +389,7 @@ export default async function TopicsPage({
                             }}>Review →</Link>
                           )}
                           {isGeneratable && (
-                            <GenerateButton title={topic.title} category={topic.category} />
+                            <GenerateButton title={topic.title} slug={topic.slug} category={topic.category} />
                           )}
                         </td>
                       </tr>

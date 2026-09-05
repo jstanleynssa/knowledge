@@ -131,11 +131,16 @@ function buildUserPrompt(
     })
     .join('\n\n');
 
+  const validSectionNumbers = sections.map(s => `  - ${s.section_number}`).join('\n');
+
   return `Draft a reference page titled: "${pageTitle}"
 CATEGORY: ${category}
 TOPIC: ${topic}
 
-Use ONLY the following source sections. Cite section numbers exactly as shown.
+VALID SECTION NUMBERS — use these exact strings in primary_sources[].section_number. No other values are permitted:
+${validSectionNumbers}
+
+Use ONLY the following source sections. Cite section numbers exactly as shown above (full string, character-for-character).
 ${sourceBlock}
 
 Produce the JSON output per the schema. Flag any [SOURCE GAP] where operative values are missing from the sources.`;
@@ -229,11 +234,53 @@ async function main(): Promise<{ id: string; status: string }> {
     throw new Error('Failed to parse model output as JSON: ' + responseText.slice(0, 500));
   }
 
-  // ── Citation validation ───────────────────────────────────────────────────
+  // ── Citation validation (with one self-correction retry) ────────────────
   const validSNs = new Set(sections.map(s => s.section_number));
-  const invalidCitations = validateCitations(draft, validSNs);
+  let invalidCitations = validateCitations(draft, validSNs);
+
   if (invalidCitations.length > 0) {
-    console.error('\n✗ CITATION VALIDATION FAILED — invented section numbers:');
+    console.warn('\n⚠ Citation validation failed — attempting self-correction:');
+    invalidCitations.forEach(sn => console.warn(`  invalid: ${sn}`));
+
+    const validSnList = [...validSNs].map(sn => `  - ${sn}`).join('\n');
+    const correctionResponse = await client.chat.completions.create({
+      model: 'gpt-4o',
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a JSON correction assistant. Return only valid JSON — no prose, no markdown fences.',
+        },
+        {
+          role: 'user',
+          content:
+            `The following section_number values in primary_sources are invalid:\n${invalidCitations.map(s => `  - ${s}`).join('\n')}\n\n` +
+            `The ONLY valid section_number values are:\n${validSnList}\n\n` +
+            `Return a corrected JSON array for primary_sources, using only values from the valid list above. ` +
+            `Each item must have tag, section_number, and url fields. ` +
+            `Match each invalid citation to the closest valid section_number — never invent a new one.\n\n` +
+            `Current primary_sources:\n${JSON.stringify(draft.primary_sources, null, 2)}`,
+        },
+      ],
+    });
+
+    try {
+      const correctedText = (correctionResponse.choices[0]?.message?.content ?? '')
+        .replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim();
+      const correctedSources = JSON.parse(correctedText);
+      if (Array.isArray(correctedSources)) {
+        draft.primary_sources = correctedSources;
+        console.log('  Self-correction applied — re-validating…');
+      }
+    } catch {
+      console.error('  Self-correction parse failed — falling through to original error.');
+    }
+
+    invalidCitations = validateCitations(draft, validSNs);
+  }
+
+  if (invalidCitations.length > 0) {
+    console.error('\n✗ CITATION VALIDATION FAILED after self-correction:');
     invalidCitations.forEach(sn => console.error(`  ${sn}`));
     throw new Error('Citation validation failed: ' + invalidCitations.join(', '));
   }
@@ -283,16 +330,18 @@ async function main(): Promise<{ id: string; status: string }> {
     return { id: 'dry-run', status: 'dry-run' };
   }
 
-  // Check for existing slug
+  // Check for existing slug — allow overwriting drafts (re-generation), block protected statuses.
   const { data: existing } = await supabase
     .from('reference_pages')
     .select('id, status')
     .eq('slug', slug)
     .single();
 
-  if (existing) {
-    throw new Error(`Slug "${slug}" already exists (status: ${existing.status}).`);
+  if (existing && existing.status !== 'draft') {
+    throw new Error(`Slug "${slug}" already exists (status: ${existing.status}). Delete or reset it before regenerating.`);
   }
+
+  const existingPageId = existing?.id ?? null;
 
   const today = new Date().toISOString().split('T')[0];
   const draftMetadata = {
@@ -308,32 +357,46 @@ async function main(): Promise<{ id: string; status: string }> {
     source_gaps: gapMatches,
   };
 
-  const { data: inserted, error: insertErr } = await supabase
-    .from('reference_pages')
-    .insert({
-      slug,
-      category,
-      title:            (draft as any).title ?? title,  // model-generated short label, fallback to env var
-      h1:               (draft as any).h1 ?? null,
-      seo_title:        draft.seo_title,
-      meta_description: draft.meta_description,
-      eyebrow:          draft.eyebrow || null,
-      quick_answer:     draft.quick_answer,
-      body_sections:    draft.body_sections,
-      worked_example:   skipWorkedExample ? null : (draft.worked_example ?? null),
-      faq:              draft.faq ?? [],
-      primary_sources:  draft.primary_sources,
-      // Pages with unverified claims go straight to in_review so a human can check them.
-      // Fully verified pages save as draft (reviewer approves when ready to publish).
-      status:           verification.passed ? 'draft' : 'in_review',
-      date_modified:    today,
-      draft_metadata:   draftMetadata,
-    })
-    .select('id')
-    .single();
+  const pagePayload = {
+    slug,
+    category,
+    title:            (draft as any).title ?? title,  // model-generated short label, fallback to env var
+    h1:               (draft as any).h1 ?? null,
+    seo_title:        draft.seo_title,
+    meta_description: draft.meta_description,
+    eyebrow:          draft.eyebrow || null,
+    quick_answer:     draft.quick_answer,
+    body_sections:    draft.body_sections,
+    worked_example:   skipWorkedExample ? null : (draft.worked_example ?? null),
+    faq:              draft.faq ?? [],
+    primary_sources:  draft.primary_sources,
+    // Pages with unverified claims go straight to in_review so a human can check them.
+    // Fully verified pages save as draft (reviewer approves when ready to publish).
+    status:           verification.passed ? 'draft' : 'in_review',
+    date_modified:    today,
+    draft_metadata:   draftMetadata,
+  };
 
-  if (insertErr) {
-    throw new Error('Insert failed: ' + insertErr.message);
+  let inserted: { id: string };
+  if (existingPageId) {
+    // Overwrite the existing draft with fresh generated content.
+    console.log(`  Overwriting existing draft ${existingPageId}…`);
+    const { data, error: updateErr } = await supabase
+      .from('reference_pages')
+      .update(pagePayload)
+      .eq('id', existingPageId)
+      .select('id')
+      .single();
+    if (updateErr) throw new Error('Update failed: ' + updateErr.message);
+    inserted = data!;
+  } else {
+    const { data, error: insertErr } = await supabase
+      .from('reference_pages')
+      .insert(pagePayload)
+      .select('id')
+      .single();
+    if (insertErr) throw new Error('Insert failed: ' + insertErr.message);
+    inserted = data!;
   }
 
   const savedStatus = verification.passed ? 'draft' : 'in_review (flagged for human review)';

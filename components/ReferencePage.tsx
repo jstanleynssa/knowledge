@@ -6,7 +6,7 @@
  * No client JS. CSS matches deemed-filing.html exactly.
  */
 
-import type { ReferencePage, BodySection, FaqItem, PrimarySource } from '@/lib/types';
+import type { ReferencePage, BodySection, FaqItem, PrimarySource, ReferenceComponent } from '@/lib/types';
 import { SectionFeedback } from '@/components/SectionFeedback';
 
 // ─── CSS (matches deemed-filing.html exactly) ────────────────────────────────
@@ -175,21 +175,25 @@ function extractSourceGap(text: string): { clean: string; gap: string | null } {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function CitationBlock({ source, gap }: { source?: PrimarySource; gap?: string | null }) {
-  if (!source && !gap) return null;
+function CitationBlock({ source, gap, refLabel }: { source?: PrimarySource; gap?: string | null; refLabel?: string }) {
+  if (!source && !gap && !refLabel) return null;
 
   return (
     <div className="cite">
       <span className="tag">Source</span>
       <div style={{ flex: 1 }}>
-        {source && (
+        {source ? (
           <span>
             <code>{source.section_number}</code>{' '}
             <a href={source.url} target="_blank" rel="noopener">
               View source &rsaquo;
             </a>
           </span>
-        )}
+        ) : refLabel ? (
+          <span>
+            <code>{refLabel}</code>
+          </span>
+        ) : null}
         {gap && (
           <div className="cite-gap-row">
             <span className="tag-gap">⚠ Gap</span>
@@ -230,11 +234,11 @@ function IrmaaTable({ section, category }: { section: BodySection; category?: st
           </tbody>
         </table>
       </div>
-      {section.citation_ref && (
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem' }}>
-          Source: {section.citation_ref}
+      {[...(section.citation_ref ? [section.citation_ref] : []), ...(section.citation_refs ?? [])].filter(Boolean).map((ref, idx) => (
+        <p key={idx} style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: idx === 0 ? '0.5rem' : '0.2rem' }}>
+          Source: {ref}
         </p>
-      )}
+      ))}
     </div>
   );
 }
@@ -251,7 +255,7 @@ function renderProse(prose: string): string {
     .replace(/\n/g, '<br>');
 }
 
-function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback, category, learned, rewriting, existingFeedback }: {
+function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedback, category, learned, rewriting, existingFeedback, components }: {
   section: BodySection;
   sourceIndex: Map<string, PrimarySource>;
   sectionIndex?: number;
@@ -260,7 +264,31 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
   learned?: string;
   rewriting?: boolean;
   existingFeedback?: { type: 'verified' | 'flag'; reviewer_name: string; created_at: string } | null;
+  components?: Record<string, ReferenceComponent>;
 }) {
+  if (section.type === 'component') {
+    const comp = components?.[section.component_key ?? ''];
+    if (!comp) return (
+      <div style={{ border: '1px dashed #E5E7EB', borderRadius: 6, padding: '12px 16px', background: '#F9FAFB', color: '#9CA3AF', fontSize: 14 }}>
+        ⚠️ Component <code>{section.component_key}</code> not found.
+      </div>
+    );
+    // Render the resolved component content as a normal section
+    return (
+      <BodySectionBlock
+        section={comp.content}
+        sourceIndex={sourceIndex}
+        sectionIndex={sectionIndex}
+        onSectionFeedback={onSectionFeedback}
+        category={category}
+        learned={learned}
+        rewriting={rewriting}
+        existingFeedback={existingFeedback}
+        components={components}
+      />
+    );
+  }
+
   if (section.type === 'table') {
     return (
       <>
@@ -282,7 +310,12 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
       </div>
     );
   }
-  const cite = section.citation_ref ? sourceIndex.get(section.citation_ref) : null;
+  // Collect all citation refs — primary + any reviewer-added extras
+  const allCitationRefs: string[] = [
+    ...(section.citation_ref ? [section.citation_ref] : []),
+    ...(section.citation_refs ?? []),
+  ].filter(Boolean);
+  const cites = allCitationRefs.map(ref => ({ ref, source: sourceIndex.get(ref) ?? null }));
   const { clean: cleanProse, gap } = extractSourceGap(section.prose);
   return (
     <>
@@ -291,7 +324,15 @@ function BodySectionBlock({ section, sourceIndex, sectionIndex, onSectionFeedbac
         className="lead"
         dangerouslySetInnerHTML={{ __html: renderProse(cleanProse) }}
       />
-      {(cite || gap) && <CitationBlock source={cite ?? undefined} gap={gap} />}
+      {/* Render each citation as its own SOURCE block; gap only shown once on the last */}
+      {cites.map(({ ref, source }, idx) => {
+        const isLast = idx === cites.length - 1;
+        return (source || ref || (isLast && gap)) ? (
+          <CitationBlock key={idx} source={source ?? undefined} refLabel={!source ? ref : undefined} gap={isLast ? gap : null} />
+        ) : null;
+      })}
+      {/* No structured cites but there's a gap marker */}
+      {cites.length === 0 && gap && <CitationBlock gap={gap} />}
       {sectionIndex !== undefined && onSectionFeedback && (
         <SectionFeedback sectionIndex={sectionIndex} onFeedback={onSectionFeedback} learned={learned} rewriting={rewriting} existingFeedback={existingFeedback} />
       )}
@@ -347,6 +388,8 @@ function FaqBlock({ items, onFaqFeedback, faqLearned, rewritingFaq, faqExistingF
 
 interface ReferencePageProps {
   page: ReferencePage;
+  /** Resolved reusable components keyed by component_key, for body sections with type==='component' */
+  components?: Record<string, ReferenceComponent>;
   previewMode?: boolean;
   /**
    * embedded — render as a scoped <div> instead of a full HTML document.
@@ -362,10 +405,10 @@ interface ReferencePageProps {
   /** "What I learned" text per section index, set after a suggestion rewrite completes. */
   sectionLearned?: Record<number, string>;
   rewritingSection?: Record<number, boolean>;
-  sectionExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
+  sectionExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }>;
   faqLearned?: Record<number, string>;
   rewritingFaq?: Record<number, boolean>;
-  faqExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string }>;
+  faqExistingFeedback?: Record<number, { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null }>;
 }
 
 // Scoped CSS for embedded (non-iframe) preview inside the Next.js shell.
@@ -385,9 +428,20 @@ const embeddedCss = `
   .kb-embed-root .cta-head{font-size:19px}
   .kb-embed-root .cta-btn{display:block;text-align:center}
 }
+/* Review-mode: disable all nav/CTA/footer links so iPad reviewers
+   can't accidentally navigate away. Citation links (.cite a) stay active. */
+.kb-embed-root header a,
+.kb-embed-root nav.crumbs a,
+.kb-embed-root a.kb-mark,
+.kb-embed-root .cta a,
+.kb-embed-root .cta-btn,
+.kb-embed-root footer.foot a{
+  pointer-events:none !important;
+  cursor:default !important;
+}
 `;
 
-export function ReferencePageComponent({ page, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection, sectionExistingFeedback, faqLearned, rewritingFaq, faqExistingFeedback }: ReferencePageProps) {
+export function ReferencePageComponent({ page, components, previewMode, embedded, onSectionFeedback, onFaqFeedback, sectionLearned, rewritingSection, sectionExistingFeedback, faqLearned, rewritingFaq, faqExistingFeedback }: ReferencePageProps) {
   const categoryLabel = page.category === 'social-security' ? 'Social Security' : 'IRMAA & Medicare';
   const categoryPath = `/${page.category}`;
 
@@ -481,7 +535,10 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
   const action    = page.eyebrow
     ? (EYEBROW_ACTIONS[page.eyebrow] ?? (isIrmaa ? defaultIrmaaAction : defaultSsAction))
     : (isIrmaa ? defaultIrmaaAction : defaultSsAction);
-  const pick      = Math.floor(Math.random() * variants.length);
+  // Deterministic pick — same value on server and client (no hydration mismatch).
+  // Seed from slug so different pages still get different CTA variants.
+  const slugSeed = page.slug.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const pick      = slugSeed % variants.length;
   const ctaSubText = variants[pick](action, url);
 
   // JSON-LD structured data
@@ -644,7 +701,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
             })()}
           </div>
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} components={components} />
           ))}
           {page.worked_example && (() => {
             const we = page.worked_example!;
@@ -835,7 +892,7 @@ export function ReferencePageComponent({ page, previewMode, embedded, onSectionF
 
           {/* Body sections */}
           {page.body_sections.map((section, i) => (
-            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} />
+            <BodySectionBlock key={i} section={section} sourceIndex={sourceIndex} sectionIndex={onSectionFeedback ? i : undefined} onSectionFeedback={onSectionFeedback} category={page.category} learned={sectionLearned?.[i]} rewriting={rewritingSection?.[i]} existingFeedback={sectionExistingFeedback?.[i]} components={components} />
           ))}
 
           {/* Worked example — standalone HTML document */}

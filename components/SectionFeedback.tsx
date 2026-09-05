@@ -18,13 +18,17 @@ interface Props {
   onFeedback: (index: number, type: 'verified' | 'flag', note?: string) => void;
   learned?: string;
   rewriting?: boolean;
-  existingFeedback?: { type: 'verified' | 'flag'; reviewer_name: string; created_at: string } | null;
+  existingFeedback?: { type: 'verified' | 'flag'; reviewer_name: string; created_at: string; note?: string | null } | null;
 }
 
 export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, learned, rewriting, existingFeedback }: Props) {
+  // All hooks must be declared at the top — before any conditional returns.
+  // Previously viewingNote was declared after early returns, violating Rules of Hooks
+  // and causing React to throw when Verify/Make Suggestion triggered a re-render.
   const [mode, setMode] = useState<'idle' | 'suggesting'>('idle');
   const [done, setDone] = useState<'verified' | 'flag' | null>(null);
   const [note, setNote] = useState('');
+  const [viewingNote, setViewingNote] = useState(false);
 
   if (done) return (
     <div style={{ marginTop: 8 }}>
@@ -100,15 +104,40 @@ export function SectionFeedback({ sectionIndex, label = 'section', onFeedback, l
     <div style={{ marginTop: 10 }}>
       {/* Prior feedback from DB — shown until reviewer acts this session */}
       {existingFeedback && (
-        <div style={{
-          fontSize: 11, color: existingFeedback.type === 'verified' ? BLUE_MID : BROWN_MID,
-          marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4,
-        }}>
-          {existingFeedback.type === 'verified'
-            ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            : <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          }
-          {existingFeedback.type === 'verified' ? 'Verified' : 'Suggestion'} by {existingFeedback.reviewer_name} on {fmtDate(existingFeedback.created_at)}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{
+            fontSize: 11, color: existingFeedback.type === 'verified' ? BLUE_MID : BROWN_MID,
+            display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap',
+          }}>
+            {existingFeedback.type === 'verified'
+              ? <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M1.5 6L4.5 9L10.5 3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              : <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M8.5 1.5l2 2L4 10H2v-2L8.5 1.5z" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            }
+            <span>{existingFeedback.type === 'verified' ? 'Verified' : 'Suggestion'} by {existingFeedback.reviewer_name} on {fmtDate(existingFeedback.created_at)}</span>
+            {/* Show inline note toggle for suggestions */}
+            {existingFeedback.type === 'flag' && existingFeedback.note && (
+              <button
+                onClick={() => setViewingNote(v => !v)}
+                style={{
+                  fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4,
+                  border: `1px solid ${BROWN_MID}`, background: viewingNote ? BEIGE_LIGHT : 'transparent',
+                  color: BROWN_DARK, cursor: 'pointer', fontFamily: 'inherit',
+                }}
+              >
+                {viewingNote ? 'Hide' : 'View Suggestion'}
+              </button>
+            )}
+          </div>
+          {/* Inline note display */}
+          {viewingNote && existingFeedback.note && (
+            <div style={{
+              marginTop: 6, background: BEIGE_LIGHT, border: `1px solid ${BEIGE_MID}`,
+              borderRadius: 6, padding: '10px 14px', fontSize: 13, color: BROWN_DARK, lineHeight: 1.55,
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: BROWN_MID, marginBottom: 4 }}>Their note</div>
+              {existingFeedback.note}
+            </div>
+          )}
         </div>
       )}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>

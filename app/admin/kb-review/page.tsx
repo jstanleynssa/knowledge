@@ -84,6 +84,7 @@ export default async function KbReviewPage({
   let query = service
     .from('reference_pages')
     .select('id, slug, category, title, h1, eyebrow, status, reviewer, approved_by, approved_at, updated_at, source_last_verified, primary_sources')
+    .neq('status', 'deleted')  // never surface soft-deleted pages in the review queue
     .order('updated_at', { ascending: false });
 
   if (activeTab === 'in_review') {

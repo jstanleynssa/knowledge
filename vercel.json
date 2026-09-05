@@ -1,4 +1,16 @@
 {
+  "rewrites": [
+    {
+      "source": "/join",
+      "destination": "/codex/axiom/join",
+      "has": [{ "type": "host", "value": "axiom.nssapros.com" }]
+    },
+    {
+      "source": "/login",
+      "destination": "/codex/axiom/login",
+      "has": [{ "type": "host", "value": "axiom.nssapros.com" }]
+    }
+  ],
   "redirects": [
     {
       "source": "/",

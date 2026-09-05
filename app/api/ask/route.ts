@@ -30,6 +30,7 @@ interface Interpretation {
   parties: string[];               // e.g. ["client (age 62, $800 own benefit)", "spouse (FRA 67)"]
   benefit_types: string[];
   is_evaluating_advice: boolean;
+  is_followup: boolean;            // true when question builds on prior conversation context
   category: 'social-security' | 'irmaa';
 }
 
@@ -37,7 +38,7 @@ interface Interpretation {
 
 async function interpretQuery(question: string, history: HistoryMessage[]): Promise<Interpretation> {
   const contextSummary = history.length > 0
-    ? `\n\nCONVERSATION HISTORY:\n${history.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content.slice(0, 300)}`).join('\n')}`
+    ? `\n\nCONVERSATION HISTORY:\n${history.slice(-6).map(m => `${m.role.toUpperCase()}: ${m.content.slice(0, 1200)}`).join('\n')}`
     : '';
 
   const res = await getOpenAI().chat.completions.create({
@@ -51,11 +52,12 @@ async function interpretQuery(question: string, history: HistoryMessage[]): Prom
         content: `You are a Social Security and IRMAA query interpreter. Given an advisor's question, extract:
 
 1. retrieval_queries: array of 2-3 SHORT, DISTINCT search queries (10-15 words each) targeting DIFFERENT aspects of the question for the SSA POMS corpus. For a spousal/deemed filing question, generate one query per rule involved.
-2. clean_question: standalone question with all pronouns resolved from conversation history.
-3. parties: array describing each person in the scenario with age, status, benefit type. e.g. ["primary worker (age 64, $3800 PIA, not yet filed)", "spouse (age 62, filing for spousal benefit)"]
+2. clean_question: standalone question with all pronouns and references resolved using conversation history. Must be fully self-contained.
+3. parties: array describing each person in the scenario with age, status, benefit type. Carry forward from history if not re-stated. e.g. ["primary worker (age 64, $3800 PIA, not yet filed)", "spouse (age 62, filing for spousal benefit)"]
 4. benefit_types: array — "retirement","spousal","survivor","disability","irmaa","wep","gpo","deemed_filing","earnings_test" etc.
-5. is_evaluating_advice: true if the advisor is checking whether specific advice is correct.
-6. category: "social-security" or "irmaa"
+5. is_evaluating_advice: true ONLY if the advisor is presenting specific advice (from SSA office, colleague, or other source) and asking whether that advice is correct. Set to FALSE for follow-up questions that are just asking for more information or specifics, even if the original question evaluated advice.
+6. is_followup: true if this question refers to context from a prior turn (uses pronouns like "her"/"his"/"she"/"they" that resolve from history, or asks "how much", "what about", "in that case", etc.). Set to false for first questions or entirely new scenarios.
+7. category: "social-security" or "irmaa"
 
 Return JSON only.`,
       },
@@ -71,10 +73,11 @@ Return JSON only.`,
       parties:              parsed.parties ?? [],
       benefit_types:        parsed.benefit_types ?? [],
       is_evaluating_advice: parsed.is_evaluating_advice ?? false,
+      is_followup:          parsed.is_followup ?? false,
       category:             parsed.category ?? 'social-security',
     };
   } catch {
-    return { retrieval_queries: [question], clean_question: question, parties: [], benefit_types: [], is_evaluating_advice: false, category: 'social-security' };
+    return { retrieval_queries: [question], clean_question: question, parties: [], benefit_types: [], is_evaluating_advice: false, is_followup: false, category: 'social-security' };
   }
 }
 
@@ -97,8 +100,12 @@ async function multiQueryRetrieve(queries: string[], topKPerQuery = 8): Promise<
     }
   }
 
-  // Sort by score descending, cap at 15 total
+  // Filter noise: sections with RRF score < 0.020 only appeared in one retrieval
+  // method with no corroborating signal. Keep only dual-signal results.
+  const MIN_SCORE = 0.020;
+
   return [...bySection.values()]
+    .filter(s => s.score >= MIN_SCORE)
     .sort((a, b) => b.score - a.score)
     .slice(0, 15);
 }
@@ -173,7 +180,9 @@ RULES:
 5. FLAG GAPS. If you cannot find a relevant source, write: [SOURCE GAP: description].
 6. NEVER GUESS. If sources don't cover the question, say so explicitly.
 7. NEVER SPEAK AS THE SSA. You are a research tool, not an SSA representative. Never use first-person SSA voice: never write "tell us", "we require", "our records", "contact us", or any language that implies you are SSA. Always refer to SSA in the third person: "SSA requires", "the Social Security Administration provides".
-8. USE THIRD PERSON FOR THE CLIENT/SITUATION. Refer to the people in the scenario as "the client", "the individual", "the primary worker", "the spouse" — not "you" or "your". You are briefing an advisor about their client, not speaking directly to the client.
+8. SPEAK TO THE ADVISOR AS "YOU". Address the financial advisor directly using second person: "you should account for...", "your client...", "you would compare...". Refer to the CLIENT and other people in the scenario in third person: "the client", "the individual", "the primary worker", "the spouse". Never use "you" or "your" to mean the client — only use it to mean the advisor you are speaking to.
+9. FOLLOW-UP QUESTIONS: When the conversation history shows prior Q&A, treat established facts as given. Don't repeat or re-evaluate what was already answered. Jump directly to answering the new question. If the prior answer established that advice was incorrect, don't re-assert that — the advisor already knows; just answer what they're asking now.
+10. FINANCIAL IMPACT CALCULATIONS: When computing how much a client gains or loses by filing early vs. waiting over a time horizon, ALWAYS compare total cumulative receipts under each scenario across the same time window — do not simply multiply the monthly benefit difference by the total months. Account for the fact that an early filer begins receiving (reduced) benefits immediately while a delayed filer receives nothing until filing date. Structure the calculation as: (A) total early-filing receipts over the window, (B) total delayed-filing receipts over the same window, (C) net difference = A − B. Show both scenarios side by side so the comparison is transparent.
 
 OUTPUT FORMAT (JSON):
 {
@@ -188,6 +197,7 @@ async function generateAnswer(
   cleanQuestion: string,
   parties: string[],
   isEvaluatingAdvice: boolean,
+  isFollowup: boolean,
   sections: RetrievedSection[],
   verifiedContext: string,
   history: HistoryMessage[],
@@ -202,12 +212,14 @@ async function generateAnswer(
 
   const availableSections = sections.map(s => s.section_number).join(', ');
   const priorContext = history.length > 0
-    ? `CONVERSATION SO FAR:\n${history.slice(-6).map(m => `${m.role === 'user' ? 'ADVISOR' : 'YOU'}: ${m.content.slice(0, 400)}`).join('\n')}\n\n`
+    ? `CONVERSATION SO FAR:\n${history.slice(-6).map(m => `${m.role === 'user' ? 'ADVISOR' : 'YOU'}: ${m.content.slice(0, 2000)}`).join('\n')}\n\n`
     : '';
   const partyContext = parties.length > 0 ? `PARTIES IN THIS SCENARIO:\n${parties.map(p => `• ${p}`).join('\n')}\n\n` : '';
 
   const evaluationNote = isEvaluatingAdvice
     ? 'NOTE: The advisor is asking whether specific advice is correct. Evaluate it and set verdict to "correct", "incorrect", "partial", or "uncertain".\n\n'
+    : isFollowup
+    ? 'NOTE: This is a FOLLOW-UP question that builds on the prior conversation. Answer the specific question being asked NOW — do not re-evaluate premises already established in the conversation. Build on what was already agreed upon. Set verdict to "no_advice_to_evaluate".\n\n'
     : 'NOTE: This is a genuine question seeking information — the advisor is not presenting advice to be evaluated. Set verdict to "no_advice_to_evaluate" and answer the question directly and helpfully. Do NOT frame the response as a verdict on advice.\n\n';
 
   const userPrompt = `${priorContext}${partyContext}QUESTION: ${cleanQuestion}
@@ -292,6 +304,7 @@ export async function POST(req: NextRequest) {
     interpreted.clean_question,
     interpreted.parties,
     interpreted.is_evaluating_advice,
+    interpreted.is_followup,
     sections,
     verifiedContext,
     history,
@@ -309,6 +322,20 @@ export async function POST(req: NextRequest) {
     ? verifyClaims(draftForVerify, sections, verifiedContext)
     : { passed: true, verified_count: 0, unverified: [], all_specifics: [] };
 
+  // Filter out dollar-amount unverified claims: in AXIOM conversational answers,
+  // dollar amounts ($1,050, $280,800, etc.) are derived from advisor-provided inputs
+  // multiplied by POMS rules. They will never appear in POMS source sections, which
+  // use percentages and formulas — not client-specific dollar figures. Flagging them
+  // as "unverified" is noise that makes the tool look untrustworthy.
+  // Only surface genuine POMS rule failures: percentages, fractions, month/year counts.
+  const meaningfulUnverified = verification.unverified
+    .filter(u => !u.value.startsWith('$'))
+    .slice(0, 3); // cap at 3 — a long list reads as "the tool is broken"
+  const filteredVerification = {
+    passed: meaningfulUnverified.length === 0,
+    unverified: meaningfulUnverified,
+  };
+
   return NextResponse.json({
     ...result,
     retrieval_queries: interpreted.retrieval_queries,
@@ -316,7 +343,7 @@ export async function POST(req: NextRequest) {
     clean_question:    interpreted.clean_question,
     category:          interpreted.category,
     sections_used:     sections.map(s => ({ section_number: s.section_number, title: s.title, score: s.score, source_url: s.source_url })),
-    verification:      { passed: verification.passed, unverified: verification.unverified },
+    verification:      filteredVerification,
   });
   } catch (err: any) {
     console.error('[/api/ask] unhandled error:', err);

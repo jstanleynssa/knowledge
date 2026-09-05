@@ -4,6 +4,7 @@
 import { notFound } from 'next/navigation';
 import { createServiceClient } from '@/lib/supabase';
 import { ReferencePageComponent } from '@/components/ReferencePage';
+import { resolvePageComponents } from '@/lib/components';
 import type { ReferencePage } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -27,5 +28,8 @@ export default async function PreviewPage({
 
   if (error || !data) notFound();
 
-  return <ReferencePageComponent page={data as ReferencePage} previewMode={true} />;
+  const page = data as ReferencePage;
+  const components = await resolvePageComponents(page.body_sections);
+
+  return <ReferencePageComponent page={page} components={components} previewMode={true} />;
 }

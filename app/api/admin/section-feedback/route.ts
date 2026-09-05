@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   // Get the most recent feedback entry per (section_type, section_index)
   const { data, error } = await service
     .from('section_feedback')
-    .select('section_type, section_index, feedback_type, reviewer_name, created_at')
+    .select('section_type, section_index, feedback_type, reviewer_name, note, created_at')
     .eq('page_id', page_id)
     .order('created_at', { ascending: false });
 
