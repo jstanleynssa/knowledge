@@ -14,6 +14,7 @@ export type SectionFeedbackMap = Record<number, { type: 'verified' | 'flag'; not
 
 export type EditableFields = {
   title: string;
+  h1: string;
   seo_title: string;
   meta_description: string;
   eyebrow: string;
@@ -90,6 +91,7 @@ export async function saveDraft(pageId: string, fields: EditableFields): Promise
     .from('reference_pages')
     .update({
       title:            fields.title,
+      h1:               fields.h1 || null,
       seo_title:        fields.seo_title,
       meta_description: fields.meta_description,
       eyebrow:          fields.eyebrow || null,
@@ -125,6 +127,7 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
     .from('reference_pages')
     .update({
       title:                fields.title,
+      h1:                   fields.h1 || null,
       seo_title:            fields.seo_title,
       meta_description:     fields.meta_description,
       eyebrow:              fields.eyebrow || null,

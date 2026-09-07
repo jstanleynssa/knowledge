@@ -16,6 +16,7 @@ const G = { text: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb' };
 function toEditState(page: ReferencePage): EditableFields {
   return {
     title:            page.title ?? '',
+    h1:               page.h1 ?? '',
     seo_title:        page.seo_title ?? '',
     meta_description: page.meta_description ?? '',
     eyebrow:          page.eyebrow ?? '',
@@ -913,8 +914,11 @@ export function ReviewEditor({
           <div style={{ padding: '24px 28px', maxWidth: 640, margin: '0 auto' }}>
 
             <FieldGroup label="Page Identity">
-              <FormRow label="Title (H1)">
+              <FormRow label="Title (nav / breadcrumb)">
                 <FInput value={fields.title} onChange={v => set('title', v)} />
+              </FormRow>
+              <FormRow label={`H1 heading (live page)${fields.h1 ? '' : ' — falls back to Title'}`}>
+                <FInput value={fields.h1} onChange={v => set('h1', v)} placeholder={fields.title || 'Same as Title if blank'} />
               </FormRow>
               <FormRow label={`SEO Title - ${fields.seo_title.length}/60 chars`} warn={fields.seo_title.length > 60}>
                 <FInput value={fields.seo_title} onChange={v => set('seo_title', v)} />
