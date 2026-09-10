@@ -123,7 +123,7 @@ export default function JoinPage() {
                 : `Welcome to the AXIOM beta, ${name.split(' ')[0]}. Sign in with the email you just provided to get started.`}
             </p>
             <a
-              href="https://axiom.nssapros.com"
+              href="https://axiom.nssapros.com/login"
               style={{
                 display: 'block',
                 padding: '12px',
