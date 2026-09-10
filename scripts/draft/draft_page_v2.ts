@@ -23,7 +23,7 @@
 
 import OpenAI from 'openai';
 import { createServiceClient } from '@/lib/supabase';
-import { hybridRetrieve, SS_SOURCES, IRMAA_SOURCES, type RetrievedSection, type SourceType } from '../retrieval/hybrid';
+import { hybridRetrieve, SS_SOURCES, IRMAA_SOURCES, RETIREMENT_POMS_CHAPTERS, type RetrievedSection, type SourceType } from '../retrieval/hybrid';
 import { verifyClaims, type DraftFields } from './verify';
 import type { Category, BodySection, FaqItem, PrimarySource } from '@/lib/types';
 
@@ -39,6 +39,12 @@ export interface DraftTopicOptions {
   skipWorkedExample?: boolean;
   /** Restrict retrieval to specific source corpora. Defaults to SS_SOURCES or IRMAA_SOURCES by category. */
   sourcesFilter?: SourceType[];
+  /**
+   * POMS chapter allowlist. Defaults to RETIREMENT_POMS_CHAPTERS for social-security category
+   * to prevent SI (SSI) chapter bleed into Title II retirement pages.
+   * Pass [] explicitly to disable chapter filtering.
+   */
+  pomsChaptersInclude?: string[];
 }
 
 // Top-level vars for CLI usage (populated by runDraft or CLI entrypoint)
@@ -50,6 +56,7 @@ let topK = 15;
 let dryRun = false;
 let skipWorkedExample = false;
 let _sourcesFilter: SourceType[] | undefined;
+let _pomsChaptersInclude: string[] | undefined;
 
 // ─── Hardened system prompt ───────────────────────────────────────────────────
 //
@@ -169,6 +176,7 @@ export async function runDraft(opts: DraftTopicOptions): Promise<{ id: string; s
   dryRun   = opts.dryRun ?? false;
   skipWorkedExample = opts.skipWorkedExample ?? true;
   _sourcesFilter = opts.sourcesFilter;
+  _pomsChaptersInclude = opts.pomsChaptersInclude;
 
   const result = await main();
   return result;
@@ -184,7 +192,12 @@ async function main(): Promise<{ id: string; status: string }> {
 
   const defaultSources = category === 'irmaa' ? IRMAA_SOURCES : SS_SOURCES;
   const sourcesFilter = _sourcesFilter && _sourcesFilter.length > 0 ? _sourcesFilter : defaultSources;
-  const { sections, trace } = await hybridRetrieve(topic!, { topK, sourcesFilter });
+  // Default POMS chapter filter: retirement pages restrict to RS/GN/HI to block SI (SSI) bleed.
+  // Pass pomsChaptersInclude: [] explicitly in opts to disable.
+  const pomsChaptersInclude = _pomsChaptersInclude !== undefined
+    ? _pomsChaptersInclude
+    : category === 'social-security' ? [...RETIREMENT_POMS_CHAPTERS] : [];
+  const { sections, trace } = await hybridRetrieve(topic!, { topK, sourcesFilter, pomsChaptersInclude });
 
   console.log(`\nRetrieved ${sections.length} sections:`);
   sections.forEach((s, i) => {
@@ -199,6 +212,21 @@ async function main(): Promise<{ id: string; status: string }> {
     console.log(`\n✓ Acceptance check: ${targetSection} ranked #${targetRank + 1} in fused results`);
   } else if (topic!.toLowerCase().includes('spousal') || topic!.toLowerCase().includes('spouse')) {
     console.warn(`\n⚠ Acceptance check: ${targetSection} NOT in top ${topK} — retrieval may need tuning`);
+  }
+
+  // ── SI contamination check ────────────────────────────────────────────────
+  // Guard: warn if SSI (SI-prefix) sections sneak through on a retirement topic.
+  // Expected to be 0 when pomsChaptersInclude is active; fires when filter is bypassed or disabled.
+  const siSections = trace.passed_to_model.filter(sn => /^SI\s/i.test(sn));
+  const siPct = Math.round((siSections.length / Math.max(trace.passed_to_model.length, 1)) * 100);
+  if (siSections.length === 0) {
+    console.log('✓ SI contamination check: 0 SSI sections in retrieval set');
+  } else {
+    console.warn(`\n⚠ SI CONTAMINATION: ${siSections.length}/${trace.passed_to_model.length} sections (${siPct}%) are SSI (SI-prefix)`);
+    console.warn('  Sections:', siSections.join(', '));
+    if (siPct > 30) {
+      console.warn('  ⛔ >30% SSI content — this page will likely draft wrong topic. Consider adding pomsChaptersInclude filter.');
+    }
   }
 
   if (sections.length === 0) {

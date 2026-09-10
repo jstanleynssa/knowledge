@@ -255,6 +255,12 @@ export function classifySection(sectionNumber: string): SourceType | null {
   return null;
 }
 
+/**
+ * POMS chapter prefixes for retirement/Title II content.
+ * Use with pomsChaptersInclude to exclude SSI (SI) chapters from retrieval.
+ */
+export const RETIREMENT_POMS_CHAPTERS = ['RS', 'GN', 'HI'] as const;
+
 export interface HybridRetrieveOptions {
   /** Number of sections to return. Default 10. */
   topK?: number;
@@ -270,6 +276,12 @@ export interface HybridRetrieveOptions {
    * Pass IRMAA_SOURCES for Medicare/IRMAA pages, ALL_SOURCES for live Q&A.
    */
   sourcesFilter?: SourceType[];
+  /**
+   * Further restrict POMS results to specific chapter prefixes (e.g. ['RS', 'GN', 'HI']).
+   * Use RETIREMENT_POMS_CHAPTERS for Title II pages to prevent SI (SSI) chapter bleed.
+   * Has no effect on non-POMS sources.
+   */
+  pomsChaptersInclude?: string[];
 }
 
 export async function hybridRetrieve(
@@ -282,7 +294,18 @@ export async function hybridRetrieve(
     keywordTopK = 25,
     threshold   = 0.50,  // text-embedding-3-small cosine sims for SS policy text top ~0.55-0.70
     sourcesFilter = SS_SOURCES,
+    pomsChaptersInclude,
   } = options;
+
+  /** Returns false if the section_number is a POMS section whose chapter prefix
+   *  is not in pomsChaptersInclude. Non-POMS sections always pass. */
+  function allowedByChapter(sn: string): boolean {
+    if (!pomsChaptersInclude || pomsChaptersInclude.length === 0) return true;
+    const src = classifySection(sn);
+    if (src !== 'poms') return true; // cfr / handbook / cms / medicare — always allow
+    const prefix = sn.split(/\s/)[0].toUpperCase();
+    return pomsChaptersInclude.map(p => p.toUpperCase()).includes(prefix);
+  }
 
   const supabase = createServiceClient();
 
@@ -301,6 +324,8 @@ export async function hybridRetrieve(
     // Filter by allowed source types
     const chunkSource = classifySection(chunk.section_number);
     if (chunkSource && !sourcesFilter.includes(chunkSource)) continue;
+    // Filter by POMS chapter allowlist
+    if (!allowedByChapter(chunk.section_number)) continue;
     const current = vectorBySection.get(chunk.section_number) ?? 0;
     if (chunk.similarity > current) {
       vectorBySection.set(chunk.section_number, chunk.similarity);
@@ -317,9 +342,14 @@ export async function hybridRetrieve(
   const kwRanked = kwResults.map((r, i) => ({ ...r, rank: i + 1 }));
 
   // ── RRF fusion ─────────────────────────────────────────────────────────────
+  // Apply POMS chapter filter to keyword results (vector leg already filtered above)
+  const filteredKwRanked = kwRanked.filter(r => allowedByChapter(r.section_number));
+  // Re-rank after filtering
+  filteredKwRanked.forEach((r, i) => { r.rank = i + 1; });
+
   const allSectionNumbers = new Set([
     ...vectorRanked.map(r => r.section_number),
-    ...kwRanked.map(r => r.section_number),
+    ...filteredKwRanked.map(r => r.section_number),
   ]);
 
   const fused: Array<{
@@ -332,7 +362,7 @@ export async function hybridRetrieve(
 
   for (const sn of allSectionNumbers) {
     const vEntry = vectorRanked.find(r => r.section_number === sn);
-    const kEntry = kwRanked.find(r => r.section_number === sn);
+    const kEntry = filteredKwRanked.find(r => r.section_number === sn);
     fused.push({
       section_number: sn,
       score: (vEntry ? rrfScore(vEntry.rank) : 0) + (kEntry ? rrfScore(kEntry.rank) : 0),
@@ -359,7 +389,7 @@ export async function hybridRetrieve(
   const docMap = new Map((sectionDocs ?? []).map(d => [d.section_number, d]));
 
   // Merge — keyword results already have full_text, use that when available
-  const kwMap = new Map(kwRanked.map(r => [r.section_number, r]));
+  const kwMap = new Map(filteredKwRanked.map(r => [r.section_number, r]));
 
   const sections: RetrievedSection[] = topFused
     .flatMap(f => {
