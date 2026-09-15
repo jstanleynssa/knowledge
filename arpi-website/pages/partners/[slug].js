@@ -184,9 +184,9 @@ export async function getStaticProps({ params }) {
   const partner = bySlug.get(params.slug)
   if (!partner) return { notFound: true }
 
-  // Strip fields that must not be public.
+  // Strip internal-only fields; email is intentionally kept for the contact section.
   // eslint-disable-next-line no-unused-vars
-  const { email: _email, edit_token: _token, ...safePartner } = partner
+  const { edit_token: _token, ...safePartner } = partner
 
   return {
     props: { partner: JSON.parse(JSON.stringify(safePartner)), slug: params.slug },
@@ -510,6 +510,71 @@ export default function PartnerProfile({ partner, slug }) {
                   </p>
                 )}
 
+                {/* Contact information */}
+                {(partner.first_name || partner.email || partner.phone || web) && (
+                  <div
+                    style={{
+                      marginTop: '2.5rem',
+                      paddingTop: '1.5rem',
+                      borderTop: `1px solid ${GRAY.border}`,
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: '1.05rem', fontWeight: 700,
+                        color: GRAY.dark, marginBottom: '1rem', marginTop: 0,
+                      }}
+                    >
+                      Contact Information
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {(partner.first_name || partner.last_name) && (
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Contact</span>
+                          <span style={{ fontSize: '14px', color: GRAY.dark, fontWeight: 600 }}>
+                            {[partner.first_name, partner.last_name].filter(Boolean).join(' ')}
+                          </span>
+                        </div>
+                      )}
+                      {partner.email && (
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Email</span>
+                          <a
+                            href={`mailto:${partner.email}`}
+                            style={{ fontSize: '14px', color: GREEN.mid, fontWeight: 600, textDecoration: 'none' }}
+                          >
+                            {partner.email}
+                          </a>
+                        </div>
+                      )}
+                      {partner.phone && (
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Phone</span>
+                          <a
+                            href={`tel:${partner.phone.replace(/[^0-9+]/g, '')}`}
+                            style={{ fontSize: '14px', color: GREEN.mid, fontWeight: 600, textDecoration: 'none' }}
+                          >
+                            {partner.phone}
+                          </a>
+                        </div>
+                      )}
+                      {web && (
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Website</span>
+                          <a
+                            href={web}
+                            target="_blank"
+                            rel="nofollow noopener noreferrer"
+                            style={{ fontSize: '14px', color: GREEN.mid, fontWeight: 600, textDecoration: 'none' }}
+                          >
+                            {cleanWebsite(partner.website)}
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Referral preferences */}
                 <div
                   style={{
@@ -551,60 +616,6 @@ export default function PartnerProfile({ partner, slug }) {
                     )}
                   </div>
                 </div>
-
-                {/* Contact information */}
-                {(partner.first_name || partner.phone || web) && (
-                  <div
-                    style={{
-                      marginTop: '2.5rem',
-                      paddingTop: '1.5rem',
-                      borderTop: `1px solid ${GRAY.border}`,
-                    }}
-                  >
-                    <h3
-                      style={{
-                        fontSize: '1.05rem', fontWeight: 700,
-                        color: GRAY.dark, marginBottom: '1rem', marginTop: 0,
-                      }}
-                    >
-                      Contact Information
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      {(partner.first_name || partner.last_name) && (
-                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Contact</span>
-                          <span style={{ fontSize: '14px', color: GRAY.dark, fontWeight: 600 }}>
-                            {[partner.first_name, partner.last_name].filter(Boolean).join(' ')}
-                          </span>
-                        </div>
-                      )}
-                      {partner.phone && (
-                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Phone</span>
-                          <a
-                            href={`tel:${partner.phone.replace(/[^0-9+]/g, '')}`}
-                            style={{ fontSize: '14px', color: GREEN.mid, fontWeight: 600, textDecoration: 'none' }}
-                          >
-                            {partner.phone}
-                          </a>
-                        </div>
-                      )}
-                      {web && (
-                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                          <span style={{ fontSize: '13px', color: GRAY.text, width: 80, flexShrink: 0 }}>Website</span>
-                          <a
-                            href={web}
-                            target="_blank"
-                            rel="nofollow noopener noreferrer"
-                            style={{ fontSize: '14px', color: GREEN.mid, fontWeight: 600, textDecoration: 'none' }}
-                          >
-                            {cleanWebsite(partner.website)}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Right: Connect sidebar */}
