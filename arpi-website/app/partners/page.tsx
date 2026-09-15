@@ -455,8 +455,8 @@ export default function PartnersPage() {
         </section>
 
         {/* ── Main content ── */}
-        <section style={{ padding: '2rem', flex: 1 }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <section style={{ flex: 1, padding: '2rem 0' }}>
+          <div className="container">
 
             {/* Loading */}
             {loading && (
