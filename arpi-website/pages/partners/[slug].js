@@ -618,7 +618,7 @@ export default function PartnerProfile({ partner, slug }) {
                 ],
                 [
                   'Trusted, Vetted Partners',
-                  'Every organization in the CELP® Partner Network is reviewed and approved by ARPI. Families and professionals can connect with confidence knowing they're working with a vetted partner.',
+                  "Every organization in the CELP® Partner Network is reviewed and approved by ARPI. Families and professionals can connect with confidence knowing they're working with a vetted partner.",
                 ],
                 [
                   'Referrals That Work Both Ways',
