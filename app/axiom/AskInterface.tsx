@@ -242,6 +242,7 @@ interface Answer {
   clean_question: string;
   sections_used: SectionUsed[];
   verification: { passed: boolean; unverified: Unverified[] };
+  stale_warning?: string | null;
 }
 
 interface Turn {
@@ -778,6 +779,19 @@ function AnswerBubble({
           </div>
         )}
 
+        {/* Staleness warning */}
+        {a.stale_warning && (
+          <div style={{
+            background: 'rgba(245,158,11,0.08)',
+            border: '1px solid rgba(245,158,11,0.2)',
+            borderRadius: 6, padding: '8px 14px', marginTop: 8,
+          }}>
+            <p style={{ margin: 0, fontSize: 12, color: '#FCD34D', lineHeight: 1.5 }}>
+              <strong>⚠ Currency note:</strong> {a.stale_warning}
+            </p>
+          </div>
+        )}
+
         {/* Citations */}
         {a.primary_sources.length > 0 && (
           <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -802,6 +816,11 @@ function AnswerBubble({
             ))}
           </div>
         )}
+
+        {/* Disclaimer */}
+        <p style={{ margin: '12px 0 0', fontSize: 12, color: DIM, fontStyle: 'italic' }}>
+          For research purposes only — not a substitute for individualized client advice.
+        </p>
 
         {/* Staff training bar */}
         {showFeedback && (
@@ -877,35 +896,57 @@ const DEFAULT_THEME: AskTheme = {
   shadowColor: 'rgba(28,128,188,0.12)',
 };
 
-export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: themeProp }: { sourceSummary?: string; reviewerName?: string | null; userEmail?: string; theme?: Partial<AskTheme> }) {
+interface AskInterfaceProps {
+  sourceSummary?:       string;
+  reviewerName?:        string | null;
+  userEmail?:           string;
+  theme?:               Partial<AskTheme>;
+  /** DB conversation id — null for a new unsaved conversation */
+  conversationId?:      string | null;
+  /** Pre-loaded turns when restoring a conversation from the sidebar */
+  initialTurns?:        Turn[];
+  /** Called after each completed answer to persist to DB.
+   *  Returns the conversation id (new or existing). */
+  onConversationSave?:  (opts: { id: string | null; title: string; turns: Turn[] }) => Promise<string>;
+}
+
+export function AskInterface({
+  sourceSummary, reviewerName, userEmail, theme: themeProp,
+  conversationId: initialConvId = null,
+  initialTurns = [],
+  onConversationSave,
+}: AskInterfaceProps) {
   const theme: AskTheme = { ...DEFAULT_THEME, ...themeProp };
+
+  // Managed mode (DB-backed via AxiomApp): always use initialTurns — never fall back to localStorage.
+  // Standalone mode (no onConversationSave): restore from localStorage as before.
   const [turns, setTurns] = useState<Turn[]>(() => {
-    // Lazy init: restore conversation from localStorage on first render
+    if (onConversationSave) return initialTurns ?? [];
     if (typeof window === 'undefined') return [];
     return loadConversation();
   });
   const [input, setInput] = useState('');
   const [sectionsOpen, setSectionsOpen] = useState<Record<number, boolean>>({});
-  const [headerEl, setHeaderEl] = useState<Element | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-
-  // Locate the header portal target once mounted
-  useEffect(() => {
-    setHeaderEl(document.getElementById('axiom-header-right'));
-  }, []);
+  // Track the DB conversation id for this session
+  const convIdRef = useRef<string | null>(initialConvId);
+  // Capture latest turns synchronously for DB save (avoids stale closure)
+  const latestTurnsRef = useRef<Turn[]>([]);
 
   const handleReset = useCallback(() => {
     clearConversation();
     setTurns([]);
     setInput('');
     setSectionsOpen({});
+    convIdRef.current = null;
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
-  // Persist conversation to localStorage whenever turns change
+  // Persist conversation to localStorage (fallback) + DB whenever turns change
   useEffect(() => {
-    if (turns.length > 0) saveConversation(turns);
+    if (turns.length === 0) return;
+    saveConversation(turns);  // localStorage fallback always
   }, [turns]);
 
   useEffect(() => {
@@ -1058,11 +1099,24 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data) throw new Error(data?.error ?? 'The request timed out. Please try again.');
-      setTurns(prev => prev.map((t, i) => i === turnIndex ? {
-        ...t,
-        answer:  data,
-        loading: false,
-      } : t));
+      // Use functional updater (always operates on latest state, never stale closure).
+      // Capture updated turns into a ref so the DB save can read them outside the updater.
+      setTurns(prev => {
+        const updated = prev.map((t, i) => i === turnIndex ? { ...t, answer: data, loading: false } : t);
+        latestTurnsRef.current = updated;
+        return updated;
+      });
+
+      // Auto-save to DB — deferred via setTimeout so React has committed the state update first
+      if (onConversationSave) {
+        setTimeout(() => {
+          const latest = latestTurnsRef.current;
+          const title  = latest[0]?.question?.slice(0, 72) ?? 'Conversation';
+          onConversationSave({ id: convIdRef.current, title, turns: latest })
+            .then(id => { convIdRef.current = id; })
+            .catch(() => {});
+        }, 0);
+      }
     } catch (e) {
       setTurns(prev => prev.map((t, i) => i === turnIndex ? { ...t, error: (e as Error).message, loading: false } : t));
     }
@@ -1074,27 +1128,6 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-
-      {/* Portal: "New question" button into the header when conversation is active */}
-      {headerEl && turns.length > 0 && createPortal(
-        <button
-          onClick={handleReset}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 13, fontWeight: 600,
-            padding: '7px 16px', borderRadius: 6,
-            border: '1px solid rgba(255,255,255,0.35)',
-            background: 'transparent', color: '#fff',
-            cursor: 'pointer', whiteSpace: 'nowrap',
-          }}
-        >
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <path d="M11 6.5A4.5 4.5 0 1 1 6.5 2M11 2v4.5H6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          New question
-        </button>,
-        headerEl
-      )}
 
       {/* ── Scrollable conversation area ─────────────────────────────────── */}
       <div style={{
@@ -1120,7 +1153,7 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
               />
               <h2 style={{
                 fontFamily: '"Iowan Old Style","Palatino Linotype",Georgia,serif',
-                fontSize: 22, fontWeight: 600, color: TEXT,
+                fontSize: 32, fontWeight: 600, color: TEXT,
                 margin: '0 0 8px', lineHeight: 1.3,
               }}>
                 What would you like to research?
@@ -1132,8 +1165,7 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
               </p>
               {/* Input */}
               <div style={{ width: '100%', maxWidth: 580, marginTop: 8 }}>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
-                  <textarea
+                <textarea
                     ref={inputRef}
                     value={input}
                     onChange={e => setInput(e.target.value)}
@@ -1142,77 +1174,23 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
                     rows={3}
                     autoFocus
                     style={{
-                      flex: 1,
+                      width: '100%',
                       padding: '14px 18px',
                       fontSize: 16,
                       lineHeight: 1.55,
                       background: theme.textareaBg,
-                      border: `2px solid ${theme.accent}`,
+                      border: `1px solid ${theme.accent}`,
                       borderRadius: 14,
                       outline: 'none',
                       resize: 'none',
                       fontFamily: 'inherit',
                       color: TEXT,
                       boxShadow: `0 0 0 4px ${theme.shadowColor}`,
+                      boxSizing: 'border-box' as const,
                     }}
                   />
-                  <button
-                    onClick={() => handleSubmit()}
-                    disabled={!input.trim()}
-                    style={{
-                      padding: '14px 22px',
-                      borderRadius: 10,
-                      border: 'none',
-                      background: !input.trim() ? '#1A2535' : theme.accent,
-                      color: !input.trim() ? DIM : '#fff',
-                      fontWeight: 700,
-                      fontSize: 15,
-                      cursor: !input.trim() ? 'default' : 'pointer',
-                      fontFamily: 'inherit',
-                      whiteSpace: 'nowrap',
-                      flexShrink: 0,
-                      transition: 'background .15s',
-                    }}
-                  >
-                    Ask &rarr;
-                  </button>
-                </div>
-                <p style={{ margin: '7px 0 0', fontSize: 11, color: DIM, textAlign: 'left' }}>
-                  Enter to send &nbsp;·&nbsp; Not individualized advice
-                </p>
               </div>
 
-              {/* Example prompts */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 560, marginTop: 20 }}>
-                {[
-                  'When should my client claim Social Security?',
-                  'How does WEP affect pension recipients?',
-                  'What is the IRMAA surcharge threshold for 2026?',
-                  'Can a divorced spouse collect on an ex-spouse’s record?',
-                ].map(q => (
-                  <button
-                    key={q}
-                    onClick={() => { setInput(q); setTimeout(() => handleSubmit(q), 50); }}
-                    style={{
-                      padding: '8px 14px',
-                      borderRadius: 20,
-                      border: `1px solid ${BORDER}`,
-                      background: SURFACE,
-                      color: MUTED,
-                      fontSize: 12,
-                      cursor: 'pointer',
-                      fontFamily: 'inherit',
-                      textAlign: 'left',
-                      lineHeight: 1.4,
-                      transition: 'border-color 0.15s, color 0.15s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = ACCENT; e.currentTarget.style.color = TEXT; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = BORDER; e.currentTarget.style.color = MUTED; }}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
@@ -1304,30 +1282,8 @@ export function AskInterface({ sourceSummary, reviewerName, userEmail, theme: th
                     e.currentTarget.style.boxShadow = 'none';
                   }}
                 />
-                <button
-                  onClick={() => handleSubmit()}
-                  disabled={!input.trim()}
-                  style={{
-                    padding: '12px 20px',
-                    borderRadius: 10,
-                    border: 'none',
-                    background: !input.trim() ? '#1A2535' : theme.accent,
-                    color: !input.trim() ? DIM : '#fff',
-                    fontWeight: 700,
-                    fontSize: 15,
-                    cursor: !input.trim() ? 'default' : 'pointer',
-                    fontFamily: 'inherit',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    transition: 'background .15s',
-                  }}
-                >
-                  Ask &rarr;
-                </button>
+
               </div>
-              <p style={{ margin: '5px 0 0', fontSize: 11, color: DIM }}>
-                Enter to send &nbsp;·&nbsp; Shift+Enter for new line &nbsp;·&nbsp; Not individualized advice
-              </p>
             </div>
           )}
             </div>

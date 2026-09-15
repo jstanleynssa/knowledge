@@ -149,51 +149,85 @@ export async function saveAndApprove(pageId: string, fields: EditableFields): Pr
 
   if (error) throw new Error(error.message);
 
-  // Seed verified_answers from approved page — non-fatal, never blocks approval — the h1 becomes the question,
-  // quick_answer becomes the verified answer. This pre-fills the agent's
-  // few-shot corpus with every expert-approved KB page automatically.
+  // Seed verified_answers from approved page — non-fatal, never blocks approval.
+  // Seeds THREE levels per approval:
+  //   1. h1 + quick_answer  (page-level summary)
+  //   2. Each body_section  (heading → question, prose → answer)
+  //   3. Each FAQ item      (q → question, a → answer)
   try {
     const service2 = createServiceClient();
     const { data: page } = await service2
       .from('reference_pages')
-      .select('h1, title, quick_answer, primary_sources, category')
+      .select('h1, title, quick_answer, body_sections, faq, primary_sources, category')
       .eq('id', pageId)
       .single();
 
-    if (page?.quick_answer) {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const question = page.h1 || page.title;
-      const embRes = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: question,
-      });
-      const embedding = embRes.data[0].embedding;
-      const today2 = new Date().toISOString().split('T')[0];
+    if (page) {
+      const openai   = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const today2   = new Date().toISOString().split('T')[0];
+      const pageSrcs = page.primary_sources ?? [];
 
-      // Upsert — if this page was previously approved, update the answer
-      const { data: existing } = await service2
-        .from('verified_answers')
-        .select('id')
-        .eq('question', question)
-        .eq('category', page.category)
-        .single();
+      const stripHtml = (html: string) =>
+        html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 
-      if (existing) {
-        await service2.from('verified_answers').update({
-          answer: page.quick_answer, embedding, last_reviewed: today2,
-          primary_sources: page.primary_sources ?? [],
-        }).eq('id', existing.id);
-      } else {
-        await service2.from('verified_answers').insert({
-          question,
-          answer:          page.quick_answer,
-          primary_sources: page.primary_sources ?? [],
-          answered_by:     displayName,
-          category:        page.category,
-          status:          'published',
-          embedding,
-          last_reviewed:   today2,
+      // Build all pairs: quick_answer + body_sections + FAQ
+      const pairs: Array<{ question: string; answer: string; primary_sources: unknown[] }> = [];
+
+      if (page.quick_answer) {
+        pairs.push({ question: page.h1 || page.title, answer: page.quick_answer, primary_sources: pageSrcs });
+      }
+      for (const section of (page.body_sections ?? [])) {
+        const q = (section.heading || '').trim();
+        if (!q || stripHtml(section.prose || '').length < 50) continue;
+        const sources = section.citation_ref
+          ? [{ section_number: section.citation_ref, url: '', tag: 'Source' }]
+          : pageSrcs;
+        pairs.push({ question: q, answer: section.prose, primary_sources: sources });
+      }
+      for (const item of (page.faq ?? [])) {
+        const q = (item.q || '').trim();
+        if (!q || stripHtml(item.a || '').length < 30) continue;
+        pairs.push({ question: q, answer: item.a, primary_sources: pageSrcs });
+      }
+
+      if (pairs.length > 0) {
+        // Fetch existing keys for dedup
+        const { data: existingRows } = await service2
+          .from('verified_answers')
+          .select('id, question')
+          .eq('category', page.category);
+        const existingMap = new Map((existingRows ?? []).map(r => [r.question.toLowerCase().trim(), r.id]));
+
+        // Embed all questions in one batch call
+        const embRes = await openai.embeddings.create({
+          model: 'text-embedding-3-small',
+          input: pairs.map(p => p.question),
         });
+
+        for (let i = 0; i < pairs.length; i++) {
+          const p          = pairs[i];
+          const embedding  = embRes.data[i].embedding;
+          const existingId = existingMap.get(p.question.toLowerCase().trim());
+
+          if (existingId) {
+            await service2.from('verified_answers').update({
+              answer: p.answer, embedding, last_reviewed: today2,
+              primary_sources: p.primary_sources,
+            }).eq('id', existingId);
+          } else {
+            await service2.from('verified_answers').insert({
+              question:        p.question,
+              answer:          p.answer,
+              primary_sources: p.primary_sources,
+              answered_by:     displayName,
+              category:        page.category,
+              status:          'published',
+              embedding,
+              last_reviewed:   today2,
+            });
+          }
+        }
+        console.log(`[saveAndApprove] seeded ${pairs.length} verified_answers pairs for page ${pageId}`);
       }
     }
   } catch (e) {

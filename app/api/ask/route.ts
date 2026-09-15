@@ -336,6 +336,24 @@ export async function POST(req: NextRequest) {
     unverified: meaningfulUnverified,
   };
 
+  // Check staleness of cited sections — warn if last_checked > 90 days or never checked
+  let staleWarning: string | null = null;
+  try {
+    const citedSNs = result.primary_sources.map((s: { section_number: string }) => s.section_number);
+    if (citedSNs.length > 0) {
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0];
+      const { data: staleRows } = await supabaseLogger
+        .from('source_documents')
+        .select('section_number, last_checked, scrape_date')
+        .in('section_number', citedSNs)
+        .or(`last_checked.is.null,last_checked.lt.${ninetyDaysAgo}`)
+        .limit(5);
+      if (staleRows && staleRows.length > 0) {
+        staleWarning = `Source currency unverified for: ${staleRows.map((r: any) => r.section_number).join(', ')}. Verify these sections against current SSA guidance before advising clients.`;
+      }
+    }
+  } catch { /* non-fatal */ }
+
   return NextResponse.json({
     ...result,
     retrieval_queries: interpreted.retrieval_queries,
@@ -344,6 +362,7 @@ export async function POST(req: NextRequest) {
     category:          interpreted.category,
     sections_used:     sections.map(s => ({ section_number: s.section_number, title: s.title, score: s.score, source_url: s.source_url })),
     verification:      filteredVerification,
+    stale_warning:     staleWarning,
   });
   } catch (err: any) {
     console.error('[/api/ask] unhandled error:', err);

@@ -6,7 +6,7 @@
  */
 
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
-import { AskInterface } from './AskInterface';
+import { AxiomApp } from './AxiomApp';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,7 +65,7 @@ export default async function AxiomPage() {
   const sb = createServiceClient();
   const { data: sub } = await sb
     .from('axiom_subscribers')
-    .select('role, tier')
+    .select('role, tier, status')
     .eq('email', userEmail)
     .single();
 
@@ -81,40 +81,16 @@ export default async function AxiomPage() {
       background: BG,
       color: TEXT,
       display: 'flex',
-      flexDirection: 'column',
-      fontFamily: 'ui-sans-serif,-apple-system,"Segoe UI",sans-serif',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
       overflow: 'hidden',
     }}>
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header style={{
-        flexShrink: 0,
-        background: ACCENT,
-        padding: '12px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: `1px solid rgba(0,0,0,0.15)`,
-        zIndex: 10,
-      }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-by-nssa.png"
-          alt="AXIOM by NSSA"
-          height={28}
-          style={{ height: 28, width: 'auto', display: 'block' }}
-        />
-        {/* New Question button portal target — populated by AskInterface */}
-        <div id="axiom-header-right" />
-      </header>
-
-      {/* ── Chat fills remaining height ─────────────────────────────────────── */}
-      <AskInterface
+      <AxiomApp
         sourceSummary={sourceSummary}
         reviewerName={reviewerName}
         userEmail={userEmail}
+        tier={sub?.tier ?? 'standard'}
+        status={sub?.status ?? 'active'}
       />
-
     </div>
   );
 }
