@@ -867,7 +867,7 @@ export default function PartnersPage() {
                             width: '10px',
                             height: '10px',
                             borderRadius: '50%',
-                            background: BLUE,
+                            background: GREEN,
                             display: 'inline-block',
                           }}
                         />
