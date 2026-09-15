@@ -517,7 +517,14 @@ export default function PartnersPage() {
                     {/* Partner type — multi-select checkbox list */}
                     <div style={{ marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                        <span className="filter-label" style={{ margin: 0 }}>Partner Type</span>
+                        <span className="filter-label" style={{ margin: 0 }}>
+                          Partner Type
+                          {selectedRoles.size > 0 && (
+                            <span style={{ fontWeight: 400, color: GRAY.text, marginLeft: 6 }}>
+                              ({selectedRoles.size} of {REFERRAL_PARTNERS.length})
+                            </span>
+                          )}
+                        </span>
                         {selectedRoles.size > 0 && (
                           <button
                             onClick={() => setSelectedRoles(new Set())}
@@ -577,11 +584,7 @@ export default function PartnersPage() {
                           )
                         })}
                       </div>
-                      {selectedRoles.size > 0 && (
-                        <p style={{ margin: '4px 0 0', fontSize: '11px', color: GRAY.text }}>
-                          {selectedRoles.size} of {REFERRAL_PARTNERS.length} selected
-                        </p>
-                      )}
+
                     </div>
 
                     {/* Referral direction toggle */}
