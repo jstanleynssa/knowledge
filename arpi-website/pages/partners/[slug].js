@@ -319,7 +319,7 @@ export default function PartnerProfile({ partner, slug }) {
           .partner-vp-grid   { grid-template-columns: 1fr !important; gap: 2px !important; }
         }
         @media (max-width: 640px) {
-          .partner-hero-inner { padding: 2.5rem 1.25rem 2rem !important; }
+          .partner-hero-inner { padding: 2.5rem 20px 2rem !important; }
           .partner-body-inner { padding: 2rem 1.25rem !important; }
         }
       `}</style>
@@ -331,7 +331,7 @@ export default function PartnerProfile({ partner, slug }) {
         <section style={{ background: GREEN.dark, color: 'white' }}>
           <div
             className="partner-hero-inner"
-            style={{ maxWidth: '1100px', margin: '0 auto', padding: '4rem 2rem 3rem' }}
+            style={{ maxWidth: '1180px', margin: '0 auto', padding: '4rem 32px 3rem' }}
           >
             {/* Eyebrow */}
             <div
@@ -414,7 +414,7 @@ export default function PartnerProfile({ partner, slug }) {
         <section style={{ background: 'white' }}>
           <div
             className="partner-body-inner"
-            style={{ maxWidth: '1100px', margin: '0 auto', padding: '3.5rem 2rem' }}
+            style={{ maxWidth: '1180px', margin: '0 auto', padding: '3.5rem 32px' }}
           >
             <div
               className="partner-body-grid"
@@ -717,7 +717,7 @@ export default function PartnerProfile({ partner, slug }) {
             borderTop: `1px solid ${GRAY.border}`,
           }}
         >
-          <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 32px' }}>
             <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
               <div
                 style={{
