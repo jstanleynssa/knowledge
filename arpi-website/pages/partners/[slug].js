@@ -6,6 +6,7 @@
 import Head from 'next/head'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
+import { useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { buildPartnerSlugIndex } from '@/lib/slug'
 
@@ -13,6 +14,130 @@ import { buildPartnerSlugIndex } from '@/lib/slug'
 const GREEN = { light: '#d9ede5', mid: '#2a6b54', dark: '#1a4a37' }
 const GRAY  = { text: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb', dark: '#1f2937' }
 const SITE  = 'https://arpinstitute.com/partners'
+
+// ── Contact form ─────────────────────────────────────────────────────────────
+function ContactForm({ partnerId, partnerOrg, partnerFirst }) {
+  const [form, setForm]     = useState({ name: '', email: '', celp: '', message: '' })
+  const [sending, setSending] = useState(false)
+  const [done, setDone]     = useState(false)
+  const [error, setError]   = useState('')
+
+  function set(e) {
+    const { name, value } = e.target
+    setForm(f => ({ ...f, [name]: value }))
+  }
+
+  async function submit(e) {
+    e.preventDefault()
+    setError('')
+    if (!form.name || !form.email || !form.message) {
+      setError('Please fill in your name, email, and message.')
+      return
+    }
+    if (form.message.length > 1000) {
+      setError('Message must be 1,000 characters or fewer.')
+      return
+    }
+    setSending(true)
+    try {
+      const res = await fetch('/api/partner-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          partner_id:   partnerId,
+          sender_name:  form.name,
+          sender_email: form.email,
+          sender_celp:  form.celp || null,
+          message:      form.message,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.ok) throw new Error(data.error || 'Something went wrong.')
+      setDone(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const inp = {
+    width: '100%', padding: '9px 12px', fontSize: '14px',
+    border: `1px solid ${GRAY.border}`, borderRadius: '6px',
+    boxSizing: 'border-box', fontFamily: 'inherit',
+    background: 'white', color: GRAY.dark, outline: 'none',
+  }
+  const lbl = {
+    display: 'block', fontSize: '12px', fontWeight: 600,
+    color: GRAY.text, marginBottom: 5, letterSpacing: '0.02em',
+  }
+
+  if (done) {
+    return (
+      <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+        <div style={{
+          width: 48, height: 48, borderRadius: '50%',
+          background: GREEN.light, display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          margin: '0 auto 12px',
+        }}>
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke={GREEN.mid} strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p style={{ fontWeight: 700, color: GRAY.dark, margin: '0 0 6px', fontSize: '15px' }}>
+          Message sent!
+        </p>
+        <p style={{ fontSize: '13px', color: GRAY.text, margin: 0, lineHeight: 1.5 }}>
+          {partnerOrg} will be in touch at your email.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={submit} noValidate>
+      <div style={{ marginBottom: 14 }}>
+        <label style={lbl}>Your name<span style={{ color: '#dc2626' }}> *</span></label>
+        <input name="name" value={form.name} onChange={set} required style={inp} placeholder="Jane Smith, CFP" />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={lbl}>Your email<span style={{ color: '#dc2626' }}> *</span></label>
+        <input name="email" type="email" value={form.email} onChange={set} required style={inp} placeholder="you@example.com" />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={lbl}>CELP® cert number <span style={{ fontWeight: 400 }}>(optional)</span></label>
+        <input name="celp" value={form.celp} onChange={set} style={inp} placeholder="CELP-####" />
+      </div>
+      <div style={{ marginBottom: 14 }}>
+        <label style={lbl}>
+          Message<span style={{ color: '#dc2626' }}> *</span>
+          <span style={{ fontWeight: 400, float: 'right' }}>{form.message.length}/1000</span>
+        </label>
+        <textarea
+          name="message" value={form.message} onChange={set} required
+          maxLength={1000} rows={4}
+          style={{ ...inp, resize: 'vertical', minHeight: 90 }}
+          placeholder={`Hi ${partnerFirst}, I\u2019m a CELP\u00ae professional looking to connect...`}
+        />
+      </div>
+      {error && <p style={{ fontSize: '13px', color: '#dc2626', margin: '0 0 10px' }}>{error}</p>}
+      <button
+        type="submit" disabled={sending}
+        style={{
+          width: '100%', padding: '12px 20px',
+          background: sending ? GRAY.text : GREEN.mid,
+          color: 'white', border: 'none', borderRadius: '6px',
+          fontWeight: 700, fontSize: '14px',
+          cursor: sending ? 'not-allowed' : 'pointer',
+          fontFamily: 'inherit',
+        }}
+      >
+        {sending ? 'Sending\u2026' : `Send message to ${partnerOrg}`}
+      </button>
+    </form>
+  )
+}
 
 const DIRECTION_LABELS = {
   send:    'Sends referrals to CELP® professionals',
@@ -442,118 +567,78 @@ export default function PartnerProfile({ partner, slug }) {
                   style={{
                     fontFamily: 'Inter, system-ui, sans-serif',
                     fontSize: '1.1rem', fontWeight: 700,
-                    color: GRAY.dark, marginBottom: '1.25rem', marginTop: 0,
+                    color: GRAY.dark, marginBottom: 6, marginTop: 0,
                   }}
                 >
-                  Connect with {partner.first_name}
+                  Connect with {partner.organization}
                 </h3>
+                <p style={{ fontSize: '13px', color: GRAY.text, margin: '0 0 1.25rem', lineHeight: 1.5 }}>
+                  Reach out to explore a referral relationship.
+                </p>
 
-                {/* Phone */}
-                {partner.phone && (
-                  <a
-                    href={`tel:${partner.phone.replace(/[^0-9+]/g, '')}`}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 14px', marginBottom: '8px',
-                      background: GRAY.bg, borderRadius: '8px',
-                      color: GRAY.dark, textDecoration: 'none',
-                      fontSize: '14px', fontWeight: 600,
-                    }}
-                  >
-                    <svg
-                      width="16" height="16" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round" strokeLinejoin="round"
-                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                      />
-                    </svg>
-                    {partner.phone}
-                  </a>
-                )}
-
-                {/* Website */}
-                {web && (
-                  <a
-                    href={web}
-                    target="_blank"
-                    rel="nofollow noopener noreferrer"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 14px', marginBottom: '8px',
-                      background: GRAY.bg, borderRadius: '8px',
-                      color: GRAY.dark, textDecoration: 'none',
-                      fontSize: '14px', fontWeight: 600,
-                    }}
-                  >
-                    <svg
-                      width="16" height="16" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-                    >
-                      <path
-                        strokeLinecap="round" strokeLinejoin="round"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                    Visit website
-                  </a>
-                )}
-
-                {/* LinkedIn */}
-                {linkedin && (
-                  <a
-                    href={linkedin}
-                    target="_blank"
-                    rel="nofollow noopener noreferrer"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 14px', marginBottom: '8px',
-                      background: GRAY.bg, borderRadius: '8px',
-                      color: GRAY.dark, textDecoration: 'none',
-                      fontSize: '14px', fontWeight: 600,
-                    }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                    </svg>
-                    Connect on LinkedIn
-                  </a>
+                {/* Quick links: phone + website */}
+                {(partner.phone || web || linkedin) && (
+                  <div style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {partner.phone && (
+                      <a
+                        href={`tel:${partner.phone.replace(/[^0-9+]/g, '')}`}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '9px 12px', background: GRAY.bg,
+                          borderRadius: 6, color: GRAY.dark,
+                          textDecoration: 'none', fontSize: '13px', fontWeight: 600,
+                        }}
+                      >
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        {partner.phone}
+                      </a>
+                    )}
+                    {web && (
+                      <a
+                        href={web} target="_blank" rel="nofollow noopener noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '9px 12px', background: GRAY.bg,
+                          borderRadius: 6, color: GRAY.dark,
+                          textDecoration: 'none', fontSize: '13px', fontWeight: 600,
+                        }}
+                      >
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        {cleanWebsite(partner.website)}
+                      </a>
+                    )}
+                    {linkedin && (
+                      <a
+                        href={linkedin} target="_blank" rel="nofollow noopener noreferrer"
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '9px 12px', background: GRAY.bg,
+                          borderRadius: 6, color: GRAY.dark,
+                          textDecoration: 'none', fontSize: '13px', fontWeight: 600,
+                        }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                        LinkedIn
+                      </a>
+                    )}
+                  </div>
                 )}
 
                 {/* Divider */}
-                <hr
-                  style={{
-                    border: 'none',
-                    borderTop: `1px solid ${GRAY.border}`,
-                    margin: '1.25rem 0',
-                  }}
+                <hr style={{ border: 'none', borderTop: `1px solid ${GRAY.border}`, margin: '1.25rem 0' }} />
+
+                {/* Contact form */}
+                <ContactForm
+                  partnerId={partner.id}
+                  partnerOrg={partner.organization}
+                  partnerFirst={partner.first_name}
                 />
-
-                {/* Primary CTA */}
-                <a
-                  href={`/partners/apply${partner.role_id ? `?role=${encodeURIComponent(partner.role_id)}` : ''}`}
-                  style={{
-                    display: 'block', textAlign: 'center',
-                    background: GREEN.mid, color: 'white',
-                    padding: '13px 20px', borderRadius: '6px',
-                    fontWeight: 700, fontSize: '0.9rem',
-                    textDecoration: 'none', letterSpacing: '0.02em',
-                    marginBottom: '12px',
-                  }}
-                >
-                  Apply to Partner Network
-                </a>
-
-                <p
-                  style={{
-                    fontSize: '12px', color: GRAY.text,
-                    textAlign: 'center', margin: 0, lineHeight: 1.5,
-                  }}
-                >
-                  Are you a CELP® professional?{' '}
-                  {partner.first_name}&rsquo;s listing is maintained by ARPI.
-                </p>
               </div>
             </div>
           </div>
