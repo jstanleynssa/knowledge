@@ -95,6 +95,8 @@ export default async function AxiomFeedbackPage({
           <span style={{ color: G.border }}>|</span>
           <Link href="/codex/admin/axiom-subscribers" style={{ fontSize: 13, color: G.text, textDecoration: 'none' }}>Subscribers</Link>
           <span style={{ color: G.border }}>|</span>
+          <Link href="/admin/axiom-beta" style={{ fontSize: 13, color: G.text, textDecoration: 'none' }}>Beta Report</Link>
+          <span style={{ color: G.border }}>|</span>
           <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#111827' }}>AXIOM Feedback</h1>
         </div>
         <span style={{ fontSize: 13, color: G.text }}>{uniqueUsers} contributor{uniqueUsers !== 1 ? 's' : ''}</span>

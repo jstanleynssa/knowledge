@@ -56,6 +56,10 @@ export default async function AxiomSubscribersPage() {
             ← Admin
           </Link>
           <span style={{ color: '#D1D5DB' }}>|</span>
+          <Link href="/admin/axiom-feedback" style={{ fontSize: 13, color: '#6B7280', textDecoration: 'none' }}>Feedback</Link>
+          <span style={{ color: '#D1D5DB' }}>|</span>
+          <Link href="/admin/axiom-beta" style={{ fontSize: 13, color: '#6B7280', textDecoration: 'none' }}>Beta Report</Link>
+          <span style={{ color: '#D1D5DB' }}>|</span>
           <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#111827' }}>
             AXIOM Subscribers
           </h1>

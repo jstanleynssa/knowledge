@@ -183,6 +183,7 @@ export default async function KbReviewPage({
           <Link href="/admin/roadmap"     style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Roadmap ↗</Link>
           <Link href="/admin/topics"     style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>180 Topics ↗</Link>
           <Link href="/axiom"             style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>AXIOM ↗</Link>
+          <Link href="/admin/axiom-beta"   style={{ color: NSSA.light, fontSize: 13, textDecoration: 'none' }}>Beta Report ↗</Link>
           <GenerateButton topics={remainingTopics} sourceStats={SOURCE_STATS} />
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
