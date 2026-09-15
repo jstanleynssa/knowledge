@@ -50,6 +50,37 @@ export function buildBaseSlug(member) {
   return parts.join('-')
 }
 
+// ── Partner slug helpers ────────────────────────────────────────────────────
+// Slug shape: {org-name-slugified}-{city}-{state}
+// e.g. "holloway-webb-estate-law-charlotte-nc"
+
+export function buildPartnerSlug(partner) {
+  const parts = [
+    slugify(partner.organization),
+    slugify(partner.city),
+    stateToken(partner.state),
+  ].filter(Boolean)
+  return parts.join('-')
+}
+
+// Build index for the full approved partner list (collision-safe).
+// Returns { bySlug: Map<slug, partner>, byId: Map<id, slug> }.
+export function buildPartnerSlugIndex(partners) {
+  const seen   = new Map()   // baseSlug -> count
+  const bySlug = new Map()   // finalSlug -> partner
+  const byId   = new Map()   // partnerId -> finalSlug
+  for (const p of partners) {
+    const base  = buildPartnerSlug(p)
+    const count = seen.get(base) || 0
+    seen.set(base, count + 1)
+    const finalSlug = count === 0 ? base : `${base}-${p.id}`
+    bySlug.set(finalSlug, p)
+    byId.set(p.id, finalSlug)
+  }
+  return { bySlug, byId }
+}
+
+// ── Member slug helpers ──────────────────────────────────────────────────────
 // Build slugs for the full member set, disambiguating collisions.
 // First occurrence keeps the clean slug; subsequent collisions get the member
 // id appended (stable, since ids don't change). Returns a Map of email -> slug

@@ -94,13 +94,32 @@ interface PartnerRow extends Partner {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+// Inlined slug helpers (avoids importing lib/slug.js into a client component).
+function slugify(s: string) {
+  return (s || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+function partnerSlug(p: Partner): string {
+  return [
+    slugify(p.organization || ''),
+    slugify(p.city || ''),
+    (p.state || '').toLowerCase(),
+  ]
+    .filter(Boolean)
+    .join('-') || String(p.id)
+}
+
 function transformPartner(p: Partner): PartnerRow {
   const stateCode = p.state ? p.state.trim().toUpperCase() : null
   const coords =
     p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null
   return {
     ...p,
-    slug: String(p.id),
+    slug: partnerSlug(p),
     stateCode,
     coords,
     name: `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim(),
@@ -953,8 +972,12 @@ export default function PartnersPage() {
                   ) : (
                     <div className="partner-cards">
                       {filtered.map(p => (
-                        <div
+                        <a
                           key={p.id}
+                          href={`/partners/${p.slug}`}
+                          style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                        >
+                        <div
                           id={`partner-${p.id}`}
                           className="partner-card"
                         >
@@ -1049,7 +1072,7 @@ export default function PartnersPage() {
                               style={{
                                 fontSize: '13px',
                                 color: GRAY.text,
-                                margin: 0,
+                                margin: '0 0 10px',
                                 lineHeight: 1.55,
                               }}
                             >
@@ -1058,7 +1081,20 @@ export default function PartnersPage() {
                                 : p.about}
                             </p>
                           )}
+
+                          {/* View profile link */}
+                          <p
+                            style={{
+                              fontSize: '13px',
+                              fontWeight: 600,
+                              color: GREEN,
+                              margin: 0,
+                            }}
+                          >
+                            View profile →
+                          </p>
                         </div>
+                        </a>
                       ))}
                     </div>
                   )}
