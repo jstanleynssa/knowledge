@@ -283,8 +283,8 @@ export default function DirectoryIndex({ advisors, stateList }) {
         </section>
 
         {/* Main */}
-        <section style={{ padding: '2rem', flex: 1 }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <section style={{ padding: '2rem 0', flex: 1 }}>
+          <div style={{ maxWidth: '1180px', margin: '0 auto', padding: '0 32px' }}>
 
             {/* Top row: filters (left) + large map (right) */}
             <div className="dir-top">
