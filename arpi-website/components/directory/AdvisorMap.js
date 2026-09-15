@@ -49,7 +49,8 @@ const STATE_FEATURES = (() => {
 })()
 
 // Resolve dot fill color based on the active designation filter.
-function dotColor(a, designation) {
+function dotColor(a, designation, overrideColor) {
+  if (overrideColor) return overrideColor
   if (designation === 'nssa')  return NSSA.medium
   if (designation === 'irmaa') return IRMAA.medium
   if (designation === 'both')  return '#7B4F9E'
@@ -58,7 +59,7 @@ function dotColor(a, designation) {
 
 export default function AdvisorMap({
   mapView, zoomNudge, mapZoomed, mapMarkers, allMarkers, passesDesignation,
-  designation,
+  designation, dotColorOverride,
   stateFilter, stateList, setStateFilter, setHovered,
   showPreview, hidePreview, onMarkerClick,
 }) {
@@ -326,7 +327,7 @@ export default function AdvisorMap({
         {jitteredMarkers.map(({ a, x, y }) => {
           const visible = passesDesignation(a)
           const radius = (mapZoomed ? 5 : 4) / z
-          const color = dotColor(a, designation)
+          const color = dotColor(a, designation, dotColorOverride)
           // Debug: log Hawaii markers
           if (a.coords.lat > 18 && a.coords.lat < 23 && a.coords.lng < -155 && a.coords.lng > -161) {
             console.log(`[HI RENDER] ${a.name || a.slug}: visible=${visible}, x=${x.toFixed(1)}, y=${y.toFixed(1)}, r=${radius.toFixed(2)}, color=${color}, mapZoomed=${mapZoomed}, opacity=${visible ? 0.85 : 0}`)

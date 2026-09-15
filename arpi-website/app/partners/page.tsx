@@ -730,6 +730,7 @@ export default function PartnersPage() {
                         allMarkers={allMarkers}
                         passesDesignation={passesDesignation}
                         designation=""
+                        dotColorOverride={GREEN}
                         stateFilter={stateFilter}
                         stateList={stateList.states}
                         setStateFilter={setStateFilter}
