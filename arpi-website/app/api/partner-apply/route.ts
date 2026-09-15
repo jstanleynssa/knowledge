@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
         email: body.email.trim().toLowerCase(),
         phone: body.phone?.trim() || null,
         organization: body.organization.trim(),
+        street_address: body.street_address?.trim() || null,
         website: body.website?.trim() || null,
         city: body.city.trim(),
         state: body.state.trim().toUpperCase(),

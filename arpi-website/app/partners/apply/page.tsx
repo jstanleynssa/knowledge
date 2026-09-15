@@ -84,6 +84,7 @@ function PartnerApplyPageInner() {
     city: '',
     state: '',
     zip: '',
+    street_address: '',
     clients_per_year: '',
     referral_send: false,
     referral_receive: false,
@@ -264,6 +265,10 @@ function PartnerApplyPageInner() {
                 </div>
 
                 <SectionDivider title="Location" />
+
+                <Field label="Street address" id="street_address" hint="Optional — suite or unit number welcome">
+                  <input id="street_address" name="street_address" value={form.street_address} onChange={set} style={inputStyle} placeholder="123 Main St" />
+                </Field>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 20px' }}>
                   <Field label="City" id="city" required>

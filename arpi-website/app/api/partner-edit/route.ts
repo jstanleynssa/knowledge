@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const supabase = adminClient()
   const { data: partner, error } = await supabase
     .from('celp_partners')
-    .select('id, role_id, role_label, first_name, last_name, email, phone, organization, website, city, state, zip, clients_per_year, referral_direction, about, linkedin, status')
+    .select('id, role_id, role_label, first_name, last_name, email, phone, organization, street_address, website, city, state, zip, clients_per_year, referral_direction, about, linkedin, status')
     .eq('edit_token', token)
     .in('status', ['approved', 'pending'])
     .maybeSingle()
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     // Build update payload — only editable fields (role is locked)
     const update: Record<string, unknown> = {}
-    const editable = ['first_name', 'last_name', 'phone', 'organization', 'website', 'city', 'state', 'zip', 'clients_per_year', 'referral_direction', 'about', 'linkedin']
+    const editable = ['first_name', 'last_name', 'phone', 'organization', 'street_address', 'website', 'city', 'state', 'zip', 'clients_per_year', 'referral_direction', 'about', 'linkedin']
     for (const key of editable) {
       if (fields[key] !== undefined) {
         update[key] = typeof fields[key] === 'string' ? fields[key].trim() : fields[key]

@@ -64,6 +64,7 @@ interface Partner {
   first_name: string
   last_name: string
   organization: string | null
+  street_address: string | null
   city: string | null
   state: string | null
   zip: string | null
@@ -995,10 +996,12 @@ export default function PartnersPage() {
                             </span>
                           </div>
 
-                          {/* City, State · distance */}
+                          {/* Address */}
                           {(p.city || p.stateCode) && (
                             <p style={{ fontSize: '13px', color: GRAY.text, margin: '0 0 8px' }}>
-                              {[p.city, p.stateCode].filter(Boolean).join(', ')}
+                              {p.street_address
+                                ? [p.street_address, p.city, `${p.stateCode ?? ''} ${p.zip ?? ''}`.trim()].filter(Boolean).join(', ')
+                                : [p.city, `${p.stateCode ?? ''} ${p.zip ?? ''}`.trim()].filter(Boolean).join(', ')}
                               {origin &&
                                 p.distance !== undefined &&
                                 p.distance !== Infinity

@@ -67,6 +67,7 @@ interface Partner {
   email: string
   phone: string
   organization: string
+  street_address: string
   website: string
   city: string
   state: string
@@ -205,6 +206,9 @@ function EditForm() {
         </Field>
         <Field label="Organization / firm name" id="organization" required>
           <input id="organization" name="organization" value={form.organization ?? ''} onChange={set} required style={inputStyle} />
+        </Field>
+        <Field label="Street address" id="street_address" hint="Optional">
+          <input id="street_address" name="street_address" value={form.street_address ?? ''} onChange={set} style={inputStyle} placeholder="123 Main St" />
         </Field>
         <Field label="Website" id="website" hint="Optional">
           <input id="website" name="website" type="url" value={form.website ?? ''} onChange={set} style={inputStyle} placeholder="https://" />

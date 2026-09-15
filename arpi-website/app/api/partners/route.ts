@@ -22,7 +22,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from('celp_partners')
       .select(
-        'id, role_id, role_label, first_name, last_name, organization, city, state, zip, lat, lng, clients_per_year, referral_direction, about'
+        'id, role_id, role_label, first_name, last_name, organization, street_address, city, state, zip, lat, lng, clients_per_year, referral_direction, about'
       )
       .eq('status', 'approved')
       .order('organization', { ascending: true })
