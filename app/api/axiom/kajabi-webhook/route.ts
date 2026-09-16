@@ -27,13 +27,26 @@ function pluck(obj: unknown, ...path: string[]): string {
   return cur != null ? String(cur) : '';
 }
 
+// Kajabi pings the endpoint with a GET to verify it's live before activating
+export async function GET() {
+  return NextResponse.json({ ok: true, service: 'axiom-kajabi-webhook' });
+}
+
 export async function POST(req: NextRequest) {
   // ── Auth ──────────────────────────────────────────────────────────────────
-  const secret   = process.env.KAJABI_AXIOM_WEBHOOK_SECRET;
-  const incoming = req.headers.get('x-kajabi-token');
+  const secret = process.env.KAJABI_AXIOM_WEBHOOK_SECRET;
+  // Kajabi may send the secret in different locations depending on webhook config
+  const url = req.nextUrl;
+  const incoming =
+    req.headers.get('x-kajabi-token') ||
+    req.headers.get('authorization')?.replace('Bearer ', '') ||
+    url.searchParams.get('secret') ||
+    url.searchParams.get('token');
+
+  console.log('[kajabi-webhook] incoming secret present:', !!incoming, 'expected:', !!secret);
 
   if (!secret || incoming !== secret) {
-    console.error('[kajabi-webhook] Unauthorized — bad or missing x-kajabi-token');
+    console.error('[kajabi-webhook] Unauthorized — bad or missing secret. Header keys:', [...req.headers.keys()].join(', '));
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
