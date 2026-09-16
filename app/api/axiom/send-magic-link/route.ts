@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
 
   const sb = createServiceClient();
 
+  try {
   // Check axiom_subscribers — gate on status
   const { data: sub } = await sb
     .from('axiom_subscribers')
@@ -93,6 +94,10 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[send-magic-link] unhandled error:', err);
+    return NextResponse.json({ ok: false, error: 'Something went wrong. Please try again.' }, { status: 500 });
+  }
 }
 
 // ── Email HTML ────────────────────────────────────────────────────────────────
