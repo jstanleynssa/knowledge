@@ -30,8 +30,38 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const KAJABI_API     = 'https://api.kajabi.com/v1';
-const AXIOM_OFFER_ID = '2151386538';
+const KAJABI_API      = 'https://api.kajabi.com/v1';
+const KAJABI_TOKEN    = 'https://api.kajabi.com/v1/oauth/token';
+const AXIOM_OFFER_ID  = '2151386538';
+
+// ── OAuth2 token (in-memory cache, valid ~2h) ─────────────────────────────────
+let _cachedToken    = '';
+let _tokenExpiresAt = 0;
+
+async function getBearerToken(): Promise<string> {
+  const now = Date.now();
+  if (_cachedToken && now < _tokenExpiresAt) return _cachedToken;
+
+  const clientId     = process.env.KAJABI_CLIENT_ID;
+  const clientSecret = process.env.KAJABI_CLIENT_SECRET;
+  if (!clientId || !clientSecret) throw new Error('KAJABI_CLIENT_ID or KAJABI_CLIENT_SECRET not set');
+
+  const params = new URLSearchParams();
+  params.append('grant_type',    'client_credentials');
+  params.append('client_id',     clientId);
+  params.append('client_secret', clientSecret);
+
+  const res = await fetch(KAJABI_TOKEN, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body:    params.toString(),
+  });
+  if (!res.ok) throw new Error(`Kajabi token fetch failed (${res.status})`);
+  const json = await res.json() as { access_token: string; expires_in: number };
+  _cachedToken    = json.access_token;
+  _tokenExpiresAt = now + (json.expires_in - 300) * 1000; // refresh 5min early
+  return _cachedToken;
+}
 
 // ── Supabase setup ────────────────────────────────────────────────────────────
 
@@ -68,17 +98,16 @@ interface KajabiPurchase {
  * offer_id or contact_id filter parameters.
  */
 async function fetchKajabiActivePurchase(
-  email: string,
-  apiKey: string
+  email: string
 ): Promise<boolean> {
-  // Query by contact_email; pass offer_id as a hint (may be ignored by Kajabi)
+  const token = await getBearerToken();
   const url =
     `${KAJABI_API}/purchases` +
     `?contact_email=${encodeURIComponent(email)}` +
     `&offer_id=${AXIOM_OFFER_ID}`;
 
   const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${apiKey}` },
+    headers: { Authorization: `Bearer ${token}` },
   });
 
   if (res.status === 404) {
@@ -116,14 +145,8 @@ async function fetchKajabiActivePurchase(
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export async function main(): Promise<{ checked: number; revoked: number }> {
-  const apiKey = process.env.KAJABI_API_KEY;
-
-  if (!apiKey) {
-    console.warn(
-      '[kajabi-sync] WARNING: KAJABI_API_KEY not set — skipping Kajabi reconciliation.\n' +
-      '  Add KAJABI_API_KEY to Vercel environment variables and .env.local to enable this check.\n' +
-      '  See docs/axiom-kajabi-setup.md for setup instructions.'
-    );
+  if (!process.env.KAJABI_CLIENT_ID || !process.env.KAJABI_CLIENT_SECRET) {
+    console.warn('[kajabi-sync] WARNING: KAJABI_CLIENT_ID or KAJABI_CLIENT_SECRET not set — skipping.');
     return { checked: 0, revoked: 0 };
   }
 
@@ -153,7 +176,7 @@ export async function main(): Promise<{ checked: number; revoked: number }> {
     if (!email) continue;
 
     try {
-      const hasActive = await fetchKajabiActivePurchase(email, apiKey);
+      const hasActive = await fetchKajabiActivePurchase(email);
 
       if (!hasActive) {
         // No active Kajabi purchase for the AXIOM offer — revoke access
