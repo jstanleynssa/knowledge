@@ -41,59 +41,19 @@ export default async function proxy(req: NextRequest) {
   // axiom.nssapros.com path mapping is handled by the Cloudflare Worker.
   // Requests arrive here already mapped to /codex/axiom/* — no rewrite needed.
 
-  // ── 3. Always allow: login pages, public APIs, and auth callback ────────────
+  // ── 3. Always allow: AXIOM routes + login pages + public APIs + auth callback ──
+  // AXIOM auth is now handled by standalone cookie (axiom_session JWT).
+  // The middleware no longer gates /axiom — axiom/page.tsx does its own check.
   if (
+    path.startsWith('/axiom') ||
+    path.startsWith('/api/axiom') ||
     path.startsWith('/admin/login') ||
-    path.startsWith('/axiom/login') ||
-    path.startsWith('/axiom/join') ||
-    path.startsWith('/auth/callback') ||
-    path === '/api/axiom/enroll'         // public beta enrollment — no auth required
+    path.startsWith('/auth/callback')
   ) {
     return NextResponse.next();
   }
 
-  // ── 4. AXIOM auth gate ────────────────────────────────────────────────────
-  // Gate /axiom routes (also fires for axiom.nssapros.com after the rewrite above)
-  const isAxiomRequest = path.startsWith('/axiom') || hostname.startsWith('axiom.');
-  if (isAxiomRequest) {
-    const res = NextResponse.next();
-    const supabase = createProxyClient(req, res);
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      const loginUrl = new URL(`${BASEPATH}/axiom/login`, req.url);
-      loginUrl.searchParams.set('next', '/axiom');
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // Check axiom_subscribers for active subscription
-    const service = createServiceClient();
-    const { data: sub } = await service
-      .from('axiom_subscribers')
-      .select('status')
-      .eq('email', user.email!.toLowerCase())
-      .single();
-
-    if (!sub) {
-      return NextResponse.redirect(
-        new URL(`${BASEPATH}/axiom/login?error=not_subscriber`, req.url)
-      );
-    }
-    if (sub.status === 'past_due') {
-      return NextResponse.redirect(
-        new URL(`${BASEPATH}/axiom/login?error=past_due`, req.url)
-      );
-    }
-    if (sub.status !== 'active') {
-      return NextResponse.redirect(
-        new URL(`${BASEPATH}/axiom/login?error=not_subscriber`, req.url)
-      );
-    }
-
-    return res;
-  }
-
-  // ── 5. Admin auth gate ────────────────────────────────────────────────────
+  // ── 4. Admin auth gate ────────────────────────────────────────────────────
   // Only gate /admin routes
   if (!path.startsWith('/admin')) {
     return NextResponse.next();
