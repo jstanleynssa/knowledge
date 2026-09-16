@@ -12,7 +12,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServiceClient } from '@/lib/supabase';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy — instantiated per-request so env var is available at runtime, not build time
+function getResend() { return new Resend(process.env.RESEND_API_KEY); }
 
 // Valid subscription statuses that may sign in
 const ALLOWED_STATUSES = ['active', 'trialing'];
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
   const magicLink = `https://axiom.nssapros.com/codex/axiom/auth?token=${token}`;
 
   // Send email via Resend
-  const { error: sendError } = await resend.emails.send({
+  const { error: sendError } = await getResend().emails.send({
     from:    'AXIOM <axiom@updates.nssapros.com>',
     to:      email,
     subject: 'Your AXIOM sign-in link',
