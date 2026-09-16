@@ -1,25 +1,26 @@
 /**
  * POST /api/axiom/provision
- * Zapier webhook endpoint for Kajabi purchase/cancellation events.
+ * Internal webhook endpoint for Kajabi purchase/cancellation events.
+ * (Currently used by Zapier; direct Kajabi webhooks go to /api/axiom/kajabi-webhook.)
  *
  * Actions:
- *   provision  → new purchase, set status = 'active'
- *   revoke     → cancellation, set status = 'cancelled'
- *   past_due   → failed payment, set status = 'past_due'
+ *   provision  → new purchase or trial→paid upgrade; status = 'active'
+ *   trial      → trial purchase; status = 'trialing', trial_ends_at = now + 7d
+ *   revoke     → cancellation; status = 'cancelled'
+ *   past_due   → failed payment; status = 'past_due'
  *
  * Required header: x-axiom-secret: <AXIOM_PROVISION_SECRET>
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase';
-
-type Action = 'provision' | 'revoke' | 'past_due';
-type Tier   = 'standard' | 'arpi_grad' | 'firm' | 'staff';
+import { runProvision } from '@/lib/axiom-provision';
+import type { Action, Tier } from '@/lib/axiom-provision';
 
 interface ProvisionBody {
   action:              Action;
   email:               string;
   tier?:               Tier;
+  name?:               string;
   kajabi_purchase_id?: string;
 }
 
@@ -43,69 +44,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { action, email, tier, kajabi_purchase_id } = body;
+  const { action, email, tier, name, kajabi_purchase_id } = body;
 
   if (!action || !email) {
     return NextResponse.json({ error: 'Missing action or email' }, { status: 400 });
   }
 
   const normalizedEmail = email.toLowerCase().trim();
-  const sb = createServiceClient();
 
-  // ── Handle actions ────────────────────────────────────────────────────────
-  if (action === 'provision') {
-    const { error } = await sb
-      .from('axiom_subscribers')
-      .upsert(
-        {
-          email:               normalizedEmail,
-          tier:                tier ?? 'standard',
-          role:                'subscriber',
-          status:              'active',
-          kajabi_purchase_id:  kajabi_purchase_id ?? null,
-          updated_at:          new Date().toISOString(),
-        },
-        { onConflict: 'email' }
-      );
+  // ── Delegate to shared provisioning logic ─────────────────────────────────
+  const result = await runProvision({
+    action,
+    email: normalizedEmail,
+    tier,
+    name,
+    kajabi_purchase_id,
+  });
 
-    if (error) {
-      console.error('[axiom/provision] upsert error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    console.log(`[axiom/provision] provisioned: ${normalizedEmail} (${tier ?? 'standard'})`);
-    return NextResponse.json({ ok: true, action, email: normalizedEmail });
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: result.statusCode ?? 500 });
   }
 
-  if (action === 'revoke') {
-    const { error } = await sb
-      .from('axiom_subscribers')
-      .update({ status: 'cancelled', updated_at: new Date().toISOString() })
-      .eq('email', normalizedEmail);
-
-    if (error) {
-      console.error('[axiom/provision] revoke error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    console.log(`[axiom/provision] revoked: ${normalizedEmail}`);
-    return NextResponse.json({ ok: true, action, email: normalizedEmail });
-  }
-
-  if (action === 'past_due') {
-    const { error } = await sb
-      .from('axiom_subscribers')
-      .update({ status: 'past_due', updated_at: new Date().toISOString() })
-      .eq('email', normalizedEmail);
-
-    if (error) {
-      console.error('[axiom/provision] past_due error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    console.log(`[axiom/provision] past_due: ${normalizedEmail}`);
-    return NextResponse.json({ ok: true, action, email: normalizedEmail });
-  }
-
-  return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
+  return NextResponse.json({ ok: true, action, email: normalizedEmail });
 }
