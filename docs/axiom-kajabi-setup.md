@@ -134,5 +134,115 @@ All emails are sent from `AXIOM <axiom@updates.nssapros.com>` via Resend
 | `lib/axiom-provision.ts` | Shared provisioning logic (DB + emails) |
 | `app/api/axiom/provision/route.ts` | Updated internal webhook (Zapier) |
 | `app/api/axiom/kajabi-webhook/route.ts` | **New** direct Kajabi webhook |
-| `scripts/axiom-trial-reminder.ts` | Daily trial reminder script |
+| `scripts/axiom-trial-reminder.ts` | Daily trial reminder + auto-expiry script |
+| `scripts/axiom-kajabi-sync.ts` | Daily Kajabi purchase reconciliation |
+| `app/api/axiom/trial-expire/route.ts` | Tank-callable trial lifecycle API endpoint |
 | `docs/axiom-kajabi-setup.md` | This document |
+
+---
+
+## 8. Kajabi Webhook — Cart Purchase & Payment Events
+
+Kajabi does **not** send a cancellation webhook reliably, so cancellation is
+handled by the daily auto-expiry job (see §9). You only need two webhook
+events to cover the purchase lifecycle:
+
+1. In Kajabi, go to **Settings → Integrations → Webhooks**
+2. Click **Add Webhook** and configure the first webhook:
+
+   | Field | Value |
+   |---|---|
+   | URL | `https://axiom.nssapros.com/codex/api/axiom/kajabi-webhook` |
+   | Secret / Token | `31c111e56aae87ccb2e4b2a28b8a0d9bcbcd5f4d1c89d44c` |
+   | Events | **Cart purchase** (`purchase_created` / `offer_purchase`) |
+
+3. Click **Add Webhook** again for the second:
+
+   | Field | Value |
+   |---|---|
+   | URL | `https://axiom.nssapros.com/codex/api/axiom/kajabi-webhook` |
+   | Secret / Token | `31c111e56aae87ccb2e4b2a28b8a0d9bcbcd5f4d1c89d44c` |
+   | Events | **Payment successful** (`subscription_activated` / `subscription.activated`) |
+
+> Both webhooks point to the same handler. The handler filters on offer ID
+> `2151386538` — it silently skips events for any other Kajabi offer.
+
+---
+
+## 9. Trial Auto-Expiry and Kajabi Reconciliation (Daily Jobs)
+
+Because Kajabi provides no cancellation webhook, access revocation is handled
+by two scheduled jobs:
+
+### 9a. Trial Lifecycle (auto-expiry + reminders)
+
+The `/api/axiom/trial-expire` endpoint runs both reminder sends and
+auto-expiry in a single call.
+
+**Tank automation — invoke once daily (recommended: 9:00 AM Eastern):**
+
+```bash
+curl -X POST https://axiom.nssapros.com/codex/api/axiom/trial-expire \
+  -H "x-axiom-secret: <AXIOM_PROVISION_SECRET>" \
+  -H "Content-Type: application/json"
+```
+
+**What it does:**
+- **Phase 1 (reminders):** Finds `trialing` subscribers whose `trial_ends_at`
+  is 1–3 days out and `reminder_sent_at IS NULL`. Sends the 2-day warning
+  email and stamps `reminder_sent_at`.
+- **Phase 2 (auto-expire):** Finds `trialing` subscribers whose `trial_ends_at`
+  is in the past. Sets `status = 'cancelled'` and sends the "trial ended" email.
+
+**Response shape:**
+```json
+{ "ok": true, "reminded": 2, "expired": 1 }
+```
+
+Alternatively, the script can be run directly (local / CI):
+
+```bash
+cd ~/knowledge && npx tsx --env-file=.env.local scripts/axiom-trial-reminder.ts
+```
+
+### 9b. Kajabi Purchase Reconciliation
+
+The script `scripts/axiom-kajabi-sync.ts` is a safety net that cross-references
+every `active`/`trialing` subscriber in Supabase against Kajabi's purchases API.
+If no active purchase is found for offer `2151386538`, the subscriber is revoked.
+
+This catches cases where a Kajabi cancellation webhook was never fired — it does
+**not** send user-facing emails (that's the webhook's job).
+
+**Run command (once daily, e.g. 10:00 AM Eastern):**
+
+```bash
+cd ~/knowledge && npx tsx --env-file=.env.local scripts/axiom-kajabi-sync.ts
+```
+
+**Requires new env var `KAJABI_API_KEY`** (see §10). If the var is not set,
+the script exits cleanly with a warning — it will not crash the automation.
+
+---
+
+## 10. New Environment Variable: KAJABI_API_KEY
+
+The Kajabi reconciliation script (`scripts/axiom-kajabi-sync.ts`) requires a
+Kajabi API bearer token that is **not** yet in the knowledge app's Vercel
+environment.
+
+**Add to Vercel** (Settings → Environment Variables → knowledge project):
+
+| Variable | Value | Environments |
+|---|---|---|
+| `KAJABI_API_KEY` | Kajabi API token (obtain from Kajabi Settings → Integrations → API) | Production, Preview, Development |
+
+**Also add to `~/knowledge/.env.local`** for local script runs:
+
+```bash
+KAJABI_API_KEY=your_token_here
+```
+
+> Until this is set, `axiom-kajabi-sync.ts` skips gracefully and logs a
+> warning. The webhook path and trial auto-expiry route continue to function
+> normally without it.

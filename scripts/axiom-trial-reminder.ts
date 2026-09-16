@@ -19,7 +19,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { sendTrialReminderEmail } from '@/lib/axiom-emails';
+import { sendTrialReminderEmail, sendTrialEndedEmail } from '@/lib/axiom-emails';
 
 // Uses createClient directly (not @/lib/supabase) to avoid importing next/headers
 // in a non-Next.js script context.
@@ -83,6 +83,50 @@ export async function main(): Promise<void> {
     } catch (err) {
       console.error(`[trial-reminder] Error processing ${email}:`, err);
     }
+  }
+
+  // ── Second pass: auto-expire unconverted trials ──────────────────────────
+  // Query: status='trialing' AND trial_ends_at < now()
+  const { data: overdue, error: overdueError } = await sb
+    .from('axiom_subscribers')
+    .select('email')
+    .eq('status', 'trialing')
+    .lt('trial_ends_at', now.toISOString());
+
+  if (overdueError) {
+    console.error('[trial-reminder] Expire query error:', overdueError.message);
+    // Don't exit — reminders were already sent; log and continue
+  } else {
+    const toExpire = overdue ?? [];
+    console.log(`[trial-reminder] Found ${toExpire.length} expired trial(s) to cancel`);
+
+    let expiredCount = 0;
+    for (const sub of toExpire) {
+      const email = sub.email as string;
+      if (!email) continue;
+
+      try {
+        // Defensive: only update rows that are still 'trialing'
+        const { error: updateError } = await sb
+          .from('axiom_subscribers')
+          .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+          .eq('email', email)
+          .eq('status', 'trialing');
+
+        if (updateError) {
+          console.error(`[trial-reminder] Failed to expire ${email}:`, updateError.message);
+          continue;
+        }
+
+        await sendTrialEndedEmail(email);
+        expiredCount++;
+        console.log(`[trial-reminder] Expired and notified: ${email}`);
+      } catch (err) {
+        console.error(`[trial-reminder] Error expiring ${email}:`, err);
+      }
+    }
+
+    console.log(`[trial-reminder] Auto-expired ${expiredCount} trial(s)`);
   }
 
   console.log('[trial-reminder] Done');

@@ -253,3 +253,35 @@ export async function sendTrialReminderEmail(to: string, trialEndsAt: Date): Pro
   });
   if (error) console.error('[axiom-emails] trial-reminder error:', error);
 }
+
+export function buildTrialEndedHtml(): string {
+  return wrap('Your AXIOM trial has ended', `
+    <p style="margin:0 0 8px;font-size:20px;font-weight:700;color:#F0F4F8;line-height:1.3;">
+      Your AXIOM trial has ended
+    </p>
+    <p style="margin:0 0 28px;font-size:14px;color:#8EA3B8;line-height:1.6;">
+      Your free 7-day trial has expired and your AXIOM access has been deactivated.
+      To continue getting sourced, advisor-grade Social Security answers,
+      subscribe below.
+    </p>
+
+    ${ctaButton(SUBSCRIBE_URL, 'Subscribe to AXIOM &rarr;')}
+
+    ${divider()}
+
+    <p style="margin:0;font-size:12px;color:#4A6070;line-height:1.6;">
+      Questions about the subscription? Reply to this email and
+      we&rsquo;ll help.
+    </p>
+  `);
+}
+
+export async function sendTrialEndedEmail(to: string): Promise<void> {
+  const { error } = await getResend().emails.send({
+    from:    FROM,
+    to,
+    subject: 'Your AXIOM trial has ended',
+    html:    buildTrialEndedHtml(),
+  });
+  if (error) console.error('[axiom-emails] trial-ended error:', error);
+}
