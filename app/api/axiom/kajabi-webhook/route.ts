@@ -69,68 +69,65 @@ export async function POST(req: NextRequest) {
     JSON.stringify(body).slice(0, 300)
   );
 
-  // ── Field extraction ──────────────────────────────────────────────────────
+  // ── Field extraction — confirmed Kajabi payload shapes ───────────────────
+  // order.created:     { order:{id, order_items:[{id:offer_id, unit_cost}]}, payment_transaction:{customer:{email}} }
+  // payment.succeeded: { offer:{id}, member:{email, first_name, last_name}, payment_transaction:{} }
+
+  const orderObj   = (body.order   ?? null) as Record<string, unknown> | null;
+  const memberObj  = (body.member  ?? null) as Record<string, unknown> | null;
+  const offerObj   = (body.offer   ?? null) as Record<string, unknown> | null;
+  const ptObj      = (body.payment_transaction ?? null) as Record<string, unknown> | null;
+  const ptCustomer = (ptObj?.customer ?? null) as Record<string, unknown> | null;
+  const orderItems = Array.isArray(orderObj?.order_items)
+    ? (orderObj!.order_items as Record<string, unknown>[])
+    : [];
+  const firstItem  = orderItems[0] ?? null;
+
   const email = (
-    pluck(body, 'member',   'email') ||
-    pluck(body, 'purchase', 'email') ||
-    pluck(body, 'email')             ||
-    pluck(body, 'data',     'email')
+    (memberObj?.email  as string) ||       // payment.succeeded
+    (ptCustomer?.email as string) ||       // order.created
+    pluck(body, 'email') ||
+    pluck(body, 'data', 'email')
   ).toLowerCase().trim();
 
-  const firstName =
-    pluck(body, 'member',   'first_name') ||
-    pluck(body, 'purchase', 'first_name');
-  const lastName =
-    pluck(body, 'member',   'last_name') ||
-    pluck(body, 'purchase', 'last_name');
-  const name = `${firstName} ${lastName}`.trim() || undefined;
+  const firstName = (memberObj?.first_name as string) || '';
+  const lastName  = (memberObj?.last_name  as string) || '';
+  const name      = `${firstName} ${lastName}`.trim() || undefined;
 
-  const purchaseId =
-    pluck(body, 'purchase', 'id') ||
-    pluck(body, 'id')             ||
-    pluck(body, 'data',     'id');
+  const purchaseId = String(orderObj?.id || ptObj?.id || pluck(body, 'id') || '');
 
-  const offerId =
-    pluck(body, 'purchase', 'offer_id') ||
-    pluck(body, 'offer_id')             ||
-    pluck(body, 'data',     'offer_id');
-
-  // Detect trial purchase (check both purchase and data sub-objects)
-  const purchaseObj =
-    typeof body.purchase === 'object' && body.purchase !== null
-      ? (body.purchase as Record<string, unknown>)
-      : null;
-  const dataObj =
-    typeof body.data === 'object' && body.data !== null
-      ? (body.data as Record<string, unknown>)
-      : null;
-
-  const isTrial = !!(
-    purchaseObj?.trial_period ||
-    purchaseObj?.is_trial     ||
-    body.trial_end_at         ||
-    dataObj?.trial_end_at
+  const offerId = String(
+    offerObj?.id   ||   // payment.succeeded
+    firstItem?.id  ||   // order.created
+    pluck(body, 'offer_id') || ''
   );
+
+  // Trial: unit_cost === 0 in order.created → free trial period
+  const isTrial = firstItem !== null && Number(firstItem?.unit_cost ?? -1) === 0;
 
   // ── Map event type → action ───────────────────────────────────────────────
   let action: Action | null = null;
 
   switch (eventType) {
+    // Kajabi "Cart Purchase" event
+    case 'order.created':
     case 'purchase_created':
     case 'offer_purchase':
-      // Guard: skip if this event belongs to a different offer
       if (offerId && offerId !== AXIOM_OFFER_ID) {
-        console.log(
-          `[kajabi-webhook] skipping — offer ${offerId} is not AXIOM (${AXIOM_OFFER_ID})`
-        );
+        console.log(`[kajabi-webhook] skipping — offer ${offerId} !== AXIOM`);
         return NextResponse.json({ ok: true, skipped: 'wrong offer' });
       }
       action = isTrial ? 'trial' : 'provision';
       break;
 
+    // Kajabi "Payment Successful" event
+    case 'payment.succeeded':
     case 'subscription_activated':
     case 'subscription.activated':
-      // Trial converted to paid subscription
+      if (offerId && offerId !== AXIOM_OFFER_ID) {
+        console.log(`[kajabi-webhook] skipping — offer ${offerId} !== AXIOM`);
+        return NextResponse.json({ ok: true, skipped: 'wrong offer' });
+      }
       action = 'provision';
       break;
 
