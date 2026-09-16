@@ -65,7 +65,7 @@ export default async function AxiomPage() {
   const session     = rawToken ? await verifyAxiomSession(rawToken) : null;
 
   if (!session) {
-    redirect('/codex/axiom/login');
+    redirect('/axiom/login');
   }
 
   const userEmail = session.email.toLowerCase();
