@@ -78,7 +78,13 @@ export default async function AxiomPage() {
     .eq('email', userEmail)
     .single();
 
-  const isStaff      = sub?.role === 'staff';
+  // Live status gate — catch expired trials / cancellations even with a valid cookie
+  const ALLOWED = ['active', 'trialing'];
+  if (!sub || !ALLOWED.includes(sub.status)) {
+    redirect('/axiom/login?error=not_subscriber');
+  }
+
+  const isStaff      = sub.role === 'staff';
   const reviewerName = isStaff ? (STAFF_NAMES[userEmail] ?? userEmail) : null;
 
   const { totalDocs, totalChunks } = await fetchStats();
