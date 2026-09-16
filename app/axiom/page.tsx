@@ -1,11 +1,14 @@
 /**
  * /axiom — AXIOM subscriber chat interface
  *
- * Auth is handled by proxy.ts (Supabase session + axiom_subscribers check).
- * Full-height app layout: sticky header + chat fills remaining viewport.
+ * Auth: reads axiom_session cookie (custom JWT, independent of Supabase Auth).
+ * Unauthenticated → redirect to /axiom/login.
  */
 
-import { createSessionClient, createServiceClient } from '@/lib/supabase';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { verifyAxiomSession, AXIOM_COOKIE_NAME } from '@/lib/axiom-auth';
+import { createServiceClient } from '@/lib/supabase';
 import { AxiomApp } from './AxiomApp';
 
 export const dynamic = 'force-dynamic';
@@ -22,28 +25,26 @@ export const metadata = {
     title: 'AXIOM',
   },
   other: {
-    'mobile-web-app-capable':              'yes',
-    'theme-color':                         '#1C80BC',
-    'apple-mobile-web-app-capable':        'yes',
+    'mobile-web-app-capable':                'yes',
+    'theme-color':                           '#1C80BC',
+    'apple-mobile-web-app-capable':          'yes',
     'apple-mobile-web-app-status-bar-style': 'black-translucent',
-    'apple-mobile-web-app-title':          'AXIOM',
-    'apple-touch-icon':                    '/codex/axiom-icon-192.png',
+    'apple-mobile-web-app-title':            'AXIOM',
+    'apple-touch-icon':                      '/codex/axiom-icon-192.png',
   },
 };
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
-const BG     = '#0D1520';
-const BORDER = '#1E2D42';
-const ACCENT = '#1C80BC';
-const TEXT   = '#F0F4F8';
+const BG   = '#0D1520';
+const TEXT = '#F0F4F8';
 
 // ── Staff name map ─────────────────────────────────────────────────────────────
 const STAFF_NAMES: Record<string, string> = {
-  'jstanley@nssapros.com':          'Jason Stanley',
-  'chill@nssapros.com':             'Cindi Hill',
-  'tvalles@nssapros.com':           'Todd Valles',
-  'jblair@mypremierplan.com':       'Jim Blair',
-  'travispaulstanley@gmail.com':    'Travis Stanley',
+  'jstanley@nssapros.com':       'Jason Stanley',
+  'chill@nssapros.com':          'Cindi Hill',
+  'tvalles@nssapros.com':        'Todd Valles',
+  'jblair@mypremierplan.com':    'Jim Blair',
+  'travispaulstanley@gmail.com': 'Travis Stanley',
 };
 
 // ── Stats (for empty-state corpus label) ──────────────────────────────────────
@@ -58,10 +59,18 @@ async function fetchStats() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default async function AxiomPage() {
-  const sessionClient = await createSessionClient();
-  const { data: { user } } = await sessionClient.auth.getUser();
-  const userEmail = user?.email?.toLowerCase() ?? '';
+  // Read axiom_session cookie and verify JWT
+  const cookieStore = await cookies();
+  const rawToken    = cookieStore.get(AXIOM_COOKIE_NAME)?.value;
+  const session     = rawToken ? await verifyAxiomSession(rawToken) : null;
 
+  if (!session) {
+    redirect('/codex/axiom/login');
+  }
+
+  const userEmail = session.email.toLowerCase();
+
+  // Re-fetch live subscriber data (tier/status may have changed since cookie was issued)
   const sb = createServiceClient();
   const { data: sub } = await sb
     .from('axiom_subscribers')
@@ -77,19 +86,19 @@ export default async function AxiomPage() {
 
   return (
     <div style={{
-      height: '100dvh',
+      height:     '100dvh',
       background: BG,
-      color: TEXT,
-      display: 'flex',
+      color:      TEXT,
+      display:    'flex',
       fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif',
-      overflow: 'hidden',
+      overflow:   'hidden',
     }}>
       <AxiomApp
         sourceSummary={sourceSummary}
         reviewerName={reviewerName}
         userEmail={userEmail}
-        tier={sub?.tier ?? 'standard'}
-        status={sub?.status ?? 'active'}
+        tier={sub?.tier    ?? session.tier    ?? 'standard'}
+        status={sub?.status ?? session.status ?? 'active'}
       />
     </div>
   );

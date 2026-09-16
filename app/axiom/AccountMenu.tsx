@@ -6,7 +6,6 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-import { createBrowserClient } from '@supabase/ssr';
 
 const BG     = '#0D1520';
 const SURFACE= '#1A2B3E';
@@ -63,11 +62,9 @@ export function AccountMenu({ userEmail, tier = 'standard', status = 'active', o
 
   async function handleSignOut() {
     setSigningOut(true);
-    const supabase = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-    await supabase.auth.signOut();
+    try {
+      await fetch('/codex/api/axiom/sign-out', { method: 'POST' });
+    } catch { /* ignore network errors — redirect anyway */ }
     window.location.href = '/codex/axiom/login';
   }
 
