@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
   // Send email via Resend
   const { error: sendError } = await resend.emails.send({
-    from:    'AXIOM <engage@arpinstitute.com>',
+    from:    'AXIOM <axiom@updates.nssapros.com>',
     to:      email,
     subject: 'Your AXIOM sign-in link',
     html:    buildEmailHtml(magicLink),
