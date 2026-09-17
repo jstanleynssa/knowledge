@@ -44,7 +44,7 @@ export const SAVINGS_3_TUITION = TUITION_CELP + TUITION_1 * 2 - TUITION_3  // �
 export const SAVINGS_3 = TOTAL_CELP + TOTAL_1 * 2 - TOTAL_3                // → 1,175
 
 // ── NSSA → IRMAACP upgrade add-on (existing NSSA holders only) ───────────────
-export const ADDON_IRMAACP = 300
+export const ADDON_IRMAACP = 505  // $1,195 + $505 = $1,700 bundle tuition (updated 2026-09-17)
 
 // ── CE Hours ─────────────────────────────────────────────────────────────────
 export const CE_NSSA     = 6   // maximum; varies by state (AR=3, AK/ID=4, most states=5)
