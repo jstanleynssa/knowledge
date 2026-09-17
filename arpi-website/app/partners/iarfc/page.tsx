@@ -46,7 +46,7 @@ const CREDENTIALS = [
     tagClass: 'tag-celp',
     name: 'Certified End-of-Life Planner',
     description:
-      'Navigate the financial transitions that accompany terminal illness and death — asset protection, benefit coordination, and compassionate client guidance during life's hardest moments.',
+      "Navigate the financial transitions that accompany terminal illness and death -- asset protection, benefit coordination, and compassionate client guidance during life's hardest moments.",
     href: '/credentials/celp',
     ce: 'CE Eligible',
     price: 'Apply',
@@ -59,7 +59,7 @@ const VALUES = [
   {
     icon: '🎓',
     title: 'Deepen Your Expertise',
-    body: 'ARPI credentials are 100% focused on the planning topics IARFC members already advise on — Social Security, Medicare costs, and late-life transitions. You won't learn anything you won't use.',
+    body: "ARPI credentials are 100% focused on the planning topics IARFC members already advise on -- Social Security, Medicare costs, and late-life transitions. You won't learn anything you won't use.",
   },
   {
     icon: '📜',
