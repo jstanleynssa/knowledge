@@ -107,7 +107,15 @@ const VISION_MAP: Record<string, { headline: string; body: string }> = {
 // ─── Pricing — sourced from lib/pricing.ts ──────────────────
 const TUITION = TUITION_MAP
 const CERT    = CERT_MAP
-const BUNDLE_HREF = 'https://www.nssapros.com/resource_redirect/offers/Pi9xowh2'
+const BUNDLE_HREF = 'https://www.nssapros.com/offers/Pi9xowh2/checkout'  // NSSA + IRMAACP bundle
+
+// Standalone exam, cert & membership — for customers who purchased course only
+// Use these links in support/sales when someone missed the upsell at checkout
+const EXAM_HREF: Record<string, string> = {
+  nssa:           'https://www.nssapros.com/offers/GJSX238b/checkout',
+  irmaacp:        'https://www.nssapros.com/offers/zTVaDFF4/checkout',
+  'nssa+irmaacp': 'https://www.nssapros.com/offers/5qRbtokg/checkout',
+}
 
 function getCtaHref(selected: string[]) {
   if (selected.length === 0) return '#'
