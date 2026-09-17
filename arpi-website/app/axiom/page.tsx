@@ -101,7 +101,7 @@ const PLANS = [
       'Query history & saved cases',
       'New regulation updates as published',
     ],
-    cta: 'Start Free — 7 Days on Us',
+    cta: 'Get Early Access',
     ctaStyle: 'primary',
   },
 ]
@@ -129,7 +129,7 @@ export default function AxiomPage() {
                 </p>
                 <div className="ax-hero-actions">
                   <a href="#how-it-works" className="btn-primary">See How It Works</a>
-                  <a href="https://www.nssapros.com/offers/ggxn92RJ" className="btn-outline-dark">Start Free — 7 Days on Us</a>
+                  <a href="/contact" className="btn-outline-dark">Get Early Access — Q4 2026</a>
                 </div>
                 <div className="ax-trust-row">
                   <span className="ax-trust-pill"><IconShield size={13} /> Grounded in federal law</span>
@@ -534,10 +534,10 @@ export default function AxiomPage() {
                     <p className="ax-plan-annual-note">Billed ${PLANS[0].annual}/year</p>
                   )}
 
-                  <a href="https://www.nssapros.com/offers/ggxn92RJ" className="ax-plan-cta ax-plan-cta--primary">
+                  <a href="/contact" className="ax-plan-cta ax-plan-cta--primary">
                     {PLANS[0].cta}
                   </a>
-                  <p className="ax-plan-fine">7 days free · then {annual ? `$${PLANS[0].annual}/yr` : `$${PLANS[0].monthly}/mo`} · cancel anytime</p>
+                  <p className="ax-plan-fine">Beta launching Q4 2026 · early access available now</p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
@@ -555,10 +555,10 @@ export default function AxiomPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">Your first 7 days are on us.</h2>
-              <p className="ax-cta-sub">Enter your card once. Full access starts immediately. Cancel anytime in your first 7 days and you won’t be charged.</p>
+              <h2 className="ax-cta-h">AXIOM is launching Q4 2026.</h2>
+              <p className="ax-cta-sub">Beta access is available now for ARPI credential holders. Contact us to get on the early access list.</p>
             </div>
-            <a href="https://www.nssapros.com/offers/ggxn92RJ" className="btn-primary ax-cta-btn">Start Free — 7 Days on Us</a>
+            <a href="/contact" className="btn-primary ax-cta-btn">Get Early Access</a>
           </div>
         </section>
 
