@@ -385,7 +385,7 @@ export default function EnrollClient({
               {n > 0 && (
                 <p className="ep-checkout-note">
                   {isBundled
-                    ? <>Your bundle price is <strong>all-inclusive</strong> — course tuition, exams, certification fees, and first-year membership are all covered. No additional packages required at checkout.</>
+                    ? <>Your bundle price is <strong>all-inclusive</strong> at {fmt(total)} — course tuition, exams, certification fees, and first-year membership are all covered. You’ll still need to add the <strong>Dual Exam, Certification &amp; Membership package</strong> on the next page to complete your enrollment.</>
                     : <>Your course tuition will be pre-loaded at checkout. To sit for the exam and use your designation, you&apos;ll also need to add the <strong>Exam, Certification &amp; Membership</strong> package on the next page.</>}
                 </p>
               )}
