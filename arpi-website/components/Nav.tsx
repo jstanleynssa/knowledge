@@ -23,6 +23,12 @@ export default function Nav() {
       <nav className="nav">
         <div className="container">
           <div className="nav-inner">
+            {/* Flat mobile logo — visible only on mobile, no badge drop */}
+            <a href="/working-home" className="nav-logo-mobile">
+              <Image src="/assets/arpi-logo-new.png" alt="ARPI" width={48} height={48} style={{ height: 48, width: 'auto', display: 'block' }} priority />
+            </a>
+
+            {/* Badge logo — desktop only */}
             <a href="/working-home" className="nav-logo" style={{ overflow: 'visible', position: 'relative', top: '23px', zIndex: 101 }}>
               <div style={{
                 background: '#2a6b54',
