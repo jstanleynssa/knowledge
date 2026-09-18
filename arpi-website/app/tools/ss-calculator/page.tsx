@@ -46,6 +46,10 @@ interface AnnualRow {
   stratBCum: number
   stratAMonthly: number
   stratBMonthly: number
+  stratAaMonthly: number  // Person A monthly in Strategy A
+  stratAbMonthly: number  // Person B monthly in Strategy A (0 if single or deceased)
+  stratBaMonthly: number  // Person A monthly in Strategy B
+  stratBbMonthly: number  // Person B monthly in Strategy B (0 if single or deceased)
 }
 
 interface Results {
@@ -278,7 +282,7 @@ function computeBreakeven(
     const cf = Math.pow(1 + cola, aAge - aCurrentAge)
     cumA += monthlyAt(stA, aAge) * cf
     cumB += monthlyAt(stB, aAge) * cf
-    if (cumB >= cumA && cumA > 0) {
+    if (cumB > cumA && cumA > 0) {
       return Math.round(aAge * 10) / 10
     }
   }
@@ -378,20 +382,22 @@ export default function SSCalculatorPage() {
     const endYr = Math.ceil(leA)
 
     for (let yr = startYr; yr <= endYr; yr++) {
-      let yrA = 0, yrB = 0
+      let yrA = 0, yrB = 0, yrAa = 0, yrAb = 0, yrBa = 0, yrBb = 0
       for (let mo = 0; mo < 12; mo++) {
         const aAge = yr + mo / 12
         if (aAge >= leA) break
         const cf = Math.pow(1 + colaRate, aAge - aCurrentAge2)
-        // A's contribution per strategy
-        yrA += moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2) * cf
-        yrB += moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2) * cf
-        // B's own contribution per strategy (while alive and after B's filing age)
+        // Person A contribution per strategy
+        const aContribA = moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2) * cf
+        const aContribB = moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2) * cf
+        yrA += aContribA; yrAa += aContribA
+        yrB += aContribB; yrBa += aContribB
+        // Person B contribution per strategy (while alive and after B's filing age)
         if (b) {
           const bAge = aAge + ageDiff2
           if (bAge < leB) {
-            if (sbA != null && bAge >= sbA) yrA += bOwnA2 * cf
-            if (sbB != null && bAge >= sbB) yrB += bOwnB2 * cf
+            if (sbA != null && bAge >= sbA) { yrA += bOwnA2 * cf; yrAb += bOwnA2 * cf }
+            if (sbB != null && bAge >= sbB) { yrB += bOwnB2 * cf; yrBb += bOwnB2 * cf }
           }
         }
       }
@@ -407,6 +413,10 @@ export default function SSCalculatorPage() {
         stratBCum: Math.round(cumAnn_B),
         stratAMonthly: Math.round(yrA / 12),
         stratBMonthly: Math.round(yrB / 12),
+        stratAaMonthly: Math.round(yrAa / 12),
+        stratAbMonthly: Math.round(yrAb / 12),
+        stratBaMonthly: Math.round(yrBa / 12),
+        stratBbMonthly: Math.round(yrBb / 12),
       })
     }
 
@@ -714,15 +724,23 @@ export default function SSCalculatorPage() {
                     }
                   </p>
                   <p className="ssc-diff-num">{fmt(Math.abs(results.netDiff))}</p>
-                  <p className="ssc-diff-sub">lifetime (to age {results.lifeExps.a})</p>
+                  <p className="ssc-diff-sub">
+                    {marital === 'married' && results.lifeExps.a !== results.lifeExps.b
+                      ? `lifetime (${results.names.a} to ${results.lifeExps.a} / ${results.names.b} to ${results.lifeExps.b})`
+                      : `lifetime (to age ${results.lifeExps.a})`
+                    }
+                  </p>
 
                   {results.breakeven != null && (
                     <div className="ssc-breakeven">
                       <span className="ssc-breakeven-label">Breakeven</span>
                       <span className="ssc-breakeven-val">
                         {results.names.a}: {fmtAge(results.breakeven!)}
-                        {marital === 'married' && (
+                        {marital === 'married' && results.breakeven! + results.ageDiff <= results.lifeExps.b && (
                           <> &nbsp;/&nbsp; {results.names.b}: {fmtAge(results.breakeven! + results.ageDiff)}</>
+                        )}
+                        {marital === 'married' && results.breakeven! + results.ageDiff > results.lifeExps.b && (
+                          <> &nbsp;(after {results.names.b}&apos;s death)</>
                         )}
                       </span>
                     </div>
@@ -746,15 +764,38 @@ export default function SSCalculatorPage() {
                 <div className="ssc-table-wrap">
                   <table className="ssc-table">
                     <thead>
-                      <tr>
-                        <th>{results.names.a}</th>
-                        {marital === 'married' && <th>{results.names.b}</th>}
-                        <th>Strategy A /mo</th>
-                        <th>Strategy A total</th>
-                        <th>Strategy B /mo</th>
-                        <th>Strategy B total</th>
-                        <th>Difference</th>
-                      </tr>
+                      {marital === 'married' ? (
+                        <>
+                          <tr>
+                            <th rowSpan={2}>{results.names.a}</th>
+                            <th colSpan={2} className="ssc-th-benefit">Benefit</th>
+                            <th rowSpan={2}>{results.names.b}</th>
+                            <th colSpan={2} className="ssc-th-benefit">Benefit</th>
+                            <th colSpan={2} className="ssc-th-group ssc-th-group--a">Strategy A</th>
+                            <th colSpan={2} className="ssc-th-group ssc-th-group--b">Strategy B</th>
+                            <th rowSpan={2}>Difference</th>
+                          </tr>
+                          <tr>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>A</th>
+                            <th>B</th>
+                            <th>Household /mo</th>
+                            <th>Total</th>
+                            <th>Household /mo</th>
+                            <th>Total</th>
+                          </tr>
+                        </>
+                      ) : (
+                        <tr>
+                          <th>{results.names.a}</th>
+                          <th>Strategy A /mo</th>
+                          <th>Strategy A total</th>
+                          <th>Strategy B /mo</th>
+                          <th>Strategy B total</th>
+                          <th>Difference</th>
+                        </tr>
+                      )}
                     </thead>
                     <tbody>
                       {results.annualRows.map((row, i) => {
@@ -769,18 +810,37 @@ export default function SSCalculatorPage() {
                               {isLastYear && <span className="ssc-badge ssc-badge--a"> last year</span>}
                             </td>
                             {marital === 'married' && (
-                              <td className="ssc-td-age">
-                                {row.bAlive
-                                  ? `Age ${Math.floor(row.ageB ?? 0)}`
-                                  : <span className="ssc-deceased">Deceased</span>
-                                }
-                                {bDiesThisYear && <span className="ssc-badge ssc-badge--b"> dies</span>}
-                              </td>
+                              <>
+                                {/* Anna benefit: A then B — sits right after Anna age */}
+                                <td className="ssc-td-monthly">{row.stratAaMonthly > 0 ? fmt(row.stratAaMonthly) : '—'}</td>
+                                <td className="ssc-td-monthly">{row.stratBaMonthly > 0 ? fmt(row.stratBaMonthly) : '—'}</td>
+                                {/* Jason age */}
+                                <td className="ssc-td-age">
+                                  {row.bAlive
+                                    ? `Age ${Math.floor(row.ageB ?? 0)}`
+                                    : <span className="ssc-deceased">Deceased</span>
+                                  }
+                                </td>
+                                {/* Jason benefit: A then B */}
+                                <td className="ssc-td-monthly">{row.stratAbMonthly > 0 ? fmt(row.stratAbMonthly) : '—'}</td>
+                                <td className="ssc-td-monthly">{row.stratBbMonthly > 0 ? fmt(row.stratBbMonthly) : '—'}</td>
+                                {/* Strategy A: household + total */}
+                                <td className="ssc-td-monthly ssc-td-bold">{row.stratAMonthly > 0 ? fmt(row.stratAMonthly) : '—'}</td>
+                                <td>{fmt(row.stratACum)}</td>
+                                {/* Strategy B: household + total */}
+                                <td className="ssc-td-monthly ssc-td-bold">{row.stratBMonthly > 0 ? fmt(row.stratBMonthly) : '—'}</td>
+                              </>
                             )}
-                            <td className="ssc-td-monthly">{row.stratAMonthly > 0 ? fmt(row.stratAMonthly) : '—'}</td>
-                            <td>{fmt(row.stratACum)}</td>
-                            <td className="ssc-td-monthly">{row.stratBMonthly > 0 ? fmt(row.stratBMonthly) : '—'}</td>
-                            <td>{fmt(row.stratBCum)}</td>
+                            {marital !== 'married' && (
+                              <td className="ssc-td-monthly">{row.stratAMonthly > 0 ? fmt(row.stratAMonthly) : '—'}</td>
+                            )}
+                            <td>{fmt(marital === 'married' ? row.stratBCum : row.stratACum)}</td>
+                            {marital !== 'married' && (
+                              <>
+                                <td className="ssc-td-monthly">{row.stratBMonthly > 0 ? fmt(row.stratBMonthly) : '—'}</td>
+                                <td>{fmt(row.stratBCum)}</td>
+                              </>
+                            )}
                             <td className={diff > 0 ? 'ssc-td-pos' : diff < 0 ? 'ssc-td-neg' : ''}>
                               {diff >= 0 ? '+' : ''}{fmt(diff)}
                             </td>
