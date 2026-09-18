@@ -80,7 +80,7 @@ export default function TeamSection() {
           }}>JS</div>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
-              <h3 style={{ fontFamily: 'var(--font-merriweather), Georgia, serif', fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)' }}>Jason Stanley</h3>
+              <h3 style={{ fontFamily: 'var(--font-merriweather), Georgia, serif', fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)' }}>{team[0].name}</h3>
               <span style={{
                 fontSize: '0.68rem',
                 fontWeight: 700,
@@ -90,11 +90,10 @@ export default function TeamSection() {
                 color: 'var(--green-dark)',
                 padding: '3px 10px',
                 borderRadius: 2,
-              }}>Managing Director</span>
+              }}>{team[0].title}</span>
             </div>
             <p style={{ fontSize: '0.9rem', color: 'var(--ink-mid)', lineHeight: 1.75, maxWidth: 600 }}>
-              Jason leads ARPI with a focus on innovation, technology, and expanding the reach of
-              professional certification in retirement benefits planning.
+              {team[0].bio}
             </p>
           </div>
         </div>
