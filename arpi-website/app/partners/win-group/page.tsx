@@ -69,7 +69,7 @@ const VALUES = [
   {
     icon: '🤝',
     title: 'WIN Group Member Benefit',
-    body: '[Placeholder] As a WIN Group member you receive a preferred enrollment rate on ARPI credentials. Verify your membership at enrollment to unlock your discount.',
+    body: 'Contact The WIN Group or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.',
   },
 ]
 
@@ -92,22 +92,6 @@ export default function WinGroupPartnerPage() {
       <section className="hero" style={{ padding: '96px 0 88px' }}>
         <div className="container">
           <div style={{ maxWidth: 760, position: 'relative', zIndex: 1 }}>
-            {/* Partner × ARPI badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-              <img
-                src="/logos/win-group.webp"
-                alt="The WIN Group"
-                style={{ height: 36, width: 'auto', objectFit: 'contain' }}
-              />
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '1.1rem', fontWeight: 300 }}>×</span>
-              <span style={{
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.5)',
-              }}>ARPI</span>
-            </div>
             <div className="hero-eyebrow">WIN Group Partnership</div>
             <h1 style={{ marginBottom: 20 }}>
               For WIN Group Members:<br />
@@ -188,8 +172,7 @@ export default function WinGroupPartnerPage() {
                   WIN Group Member Benefit
                 </div>
                 <div style={{ fontSize: '0.9rem', color: INK_MID, lineHeight: 1.65 }}>
-                  [Placeholder] WIN Group members receive a preferred enrollment rate on ARPI
-                  credentials. Verify your membership at enrollment to unlock your discount.
+                  Contact The WIN Group or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
                 </div>
               </div>
             </div>
@@ -209,7 +192,7 @@ export default function WinGroupPartnerPage() {
               <img
                 src="/logos/win-group.webp"
                 alt="The WIN Group"
-                style={{ height: 56, width: 'auto', objectFit: 'contain', maxWidth: 200 }}
+                style={{ height: 84, width: 'auto', objectFit: 'contain', maxWidth: 280 }}
               />
               <div style={{
                 fontSize: '0.72rem',
@@ -243,14 +226,16 @@ export default function WinGroupPartnerPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 24,
           }}>
-            {VALUES.map(v => (
+            {VALUES.map((v, i) => (
               <div key={v.title} style={{
                 background: WHITE,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 8,
                 padding: '32px 28px',
               }}>
-                <div style={{ fontSize: '2rem', marginBottom: 16 }}>{v.icon}</div>
+                              {i === 0 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><polyline points="2 20 22 20"/></svg>` }} />}
+              {i === 1 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>` }} />}
+              {i === 2 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" strokeWidth="2.5"/></svg>` }} />}
                 <h3 style={{
                   fontFamily: 'var(--font-merriweather), Georgia, serif',
                   fontSize: '1.05rem',

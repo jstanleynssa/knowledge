@@ -69,7 +69,7 @@ const VALUES = [
   {
     icon: '🤝',
     title: 'Exclusive Member Benefit',
-    body: '[Placeholder] As an IARFC member you receive a preferred enrollment rate on ARPI credentials. Contact ARPI to verify your membership and unlock your discount.',
+    body: 'Contact IARFC or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.',
   },
 ]
 
@@ -84,22 +84,6 @@ export default function IarfcPartnerPage() {
       <section className="hero" style={{ padding: '96px 0 88px' }}>
         <div className="container">
           <div style={{ maxWidth: 740, position: 'relative', zIndex: 1 }}>
-            {/* Partner × ARPI badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
-              <img
-                src="/logos/iarfc.png"
-                alt="IARFC"
-                style={{ height: 36, width: 'auto', objectFit: 'contain' }}
-              />
-              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '1.1rem', fontWeight: 300 }}>×</span>
-              <span style={{
-                fontSize: '0.72rem',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'rgba(255,255,255,0.5)',
-              }}>ARPI</span>
-            </div>
             <div className="hero-eyebrow">IARFC Partnership</div>
             <h1 style={{ marginBottom: 20 }}>
               For IARFC Members:<br />
@@ -143,7 +127,7 @@ export default function IarfcPartnerPage() {
               <img
                 src="/logos/iarfc.png"
                 alt="IARFC"
-                style={{ height: 56, width: 'auto', objectFit: 'contain', maxWidth: 200 }}
+                style={{ height: 84, width: 'auto', objectFit: 'contain', maxWidth: 280 }}
               />
               <div style={{
                 fontSize: '0.72rem',
@@ -184,8 +168,7 @@ export default function IarfcPartnerPage() {
                   IARFC Member Benefit
                 </div>
                 <div style={{ fontSize: '0.9rem', color: INK_MID, lineHeight: 1.65 }}>
-                  [Placeholder] IARFC members receive a preferred enrollment rate on ARPI
-                  credentials. Verify your membership at enrollment to unlock your discount.
+                  Contact IARFC or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
                 </div>
               </div>
             </div>
@@ -211,14 +194,16 @@ export default function IarfcPartnerPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 24,
           }}>
-            {VALUES.map(v => (
+            {VALUES.map((v, i) => (
               <div key={v.title} style={{
                 background: WHITE,
                 border: `1px solid ${BORDER}`,
                 borderRadius: 8,
                 padding: '32px 28px',
               }}>
-                <div style={{ fontSize: '2rem', marginBottom: 16 }}>{v.icon}</div>
+                              {i === 0 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>` }} />}
+              {i === 1 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>` }} />}
+              {i === 2 && <div style={{ width: 48, height: 48, background: 'var(--green-xlight)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--green-dark)' }} dangerouslySetInnerHTML={{ __html: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7" strokeWidth="2.5"/></svg>` }} />}
                 <h3 style={{
                   fontFamily: 'var(--font-merriweather), Georgia, serif',
                   fontSize: '1.05rem',
