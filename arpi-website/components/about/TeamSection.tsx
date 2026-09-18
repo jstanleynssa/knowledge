@@ -19,6 +19,18 @@ const team = [
     bio: 'Cindi oversees the NSSA® curriculum and continuing education, ensuring advisors receive the most current and accurate Social Security guidance.',
   },
   {
+    name: 'CiCi Reidy',
+    title: 'Director of Institutional Partnerships',
+    initials: 'CR',
+    bio: 'With 25 years spanning higher education, workforce development, and technology, CiCi specializes in building the partnerships and revenue structures that move organizations into new markets. A former Kaplan executive turned fractional VP through Reidy & Associates LLC, she chairs two national education-access committees and has led ventures into institutional and government markets. At ARPI, she leads institutional partnership development and strategic growth.',
+  },
+  {
+    name: 'Richard Capezzali',
+    title: 'Strategic Advisor',
+    initials: 'RC',
+    bio: 'Richard brings a 50-year track record of building, scaling, and exiting education and healthcare companies. He founded the National Institute for Paralegal Arts and Sciences, sold it to Kaplan Inc., and helped grow Kaplan University into one of the largest online higher-education institutions in the US as SVP of Marketing and Sales. He founded Education Connection, co-founded Revolve Capital (managing $100M+ in mortgage notes annually), and served on the board of Digital Media Solutions through its 2020 NYSE listing.',
+  },
+  {
     name: 'Marc Kiner',
     title: 'Co-Founder',
     initials: 'MK',
