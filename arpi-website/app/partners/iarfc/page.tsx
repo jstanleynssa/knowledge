@@ -162,7 +162,7 @@ export default function IarfcPartnerPage() {
                 padding: '6px 12px',
                 marginTop: 4,
               }}>
-                Logo placeholder — upload at /public/logos/iarfc.png
+                <img src="/logos/iarfc.png" alt="IARFC" style={{ height: 48, width: 'auto', objectFit: 'contain' }} />
               </div>
             </div>
 

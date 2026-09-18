@@ -228,7 +228,7 @@ export default function WinGroupPartnerPage() {
                 padding: '6px 12px',
                 marginTop: 4,
               }}>
-                Logo placeholder — upload at /public/logos/win-group.png
+                <img src="/logos/win-group.webp" alt="The WIN Group" style={{ height: 48, width: 'auto', objectFit: 'contain' }} />
               </div>
             </div>
           </div>

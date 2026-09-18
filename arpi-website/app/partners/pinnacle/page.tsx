@@ -237,7 +237,7 @@ export default function PinnaclePartnerPage() {
                 padding: '6px 12px',
                 marginTop: 4,
               }}>
-                Logo placeholder — upload at /public/logos/pinnacle.png
+                <img src="/logos/pinnacle.webp" alt="Pinnacle Financial Services" style={{ height: 48, width: 'auto', objectFit: 'contain' }} />
               </div>
             </div>
 
