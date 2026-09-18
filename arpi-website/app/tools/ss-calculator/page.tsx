@@ -12,9 +12,11 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface PersonInput {
+  name: string
   pia: string
   birthYear: string
   birthMonth: string
+  lifeExp: string
 }
 
 interface StrategyInput {
@@ -42,6 +44,8 @@ interface Results {
   netDiff: number
   milestones: number[]
   fra: { a: number; b: number }
+  names: { a: string; b: string }
+  lifeExps: { a: number; b: number }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,7 +77,8 @@ function runStrategy(
   b: { pia: number; birthYear: number; birthMonth: number } | null,
   aFilingAge: number,
   bFilingAge: number | null,
-  lifeExp: number,
+  lifeExpA: number,
+  lifeExpB: number,
   milestones: number[],
 ): StrategyResult {
   const now = new Date()
@@ -97,7 +102,7 @@ function runStrategy(
     : 0
 
   // Survivor: A survives B
-  const bDeathAgeA = b ? lifeExp - ageDiff : lifeExp  // A's age when B dies
+  const bDeathAgeA = b ? lifeExpB - ageDiff : lifeExpA  // A's age when B dies
   const aSurvivor = (marital && b && bFilingAge != null)
     ? calcSurvivorBenefit(aOwn + aSpousal, bOwn, b.pia)
     : 0
@@ -138,14 +143,14 @@ function runStrategy(
         label: 'Survivor benefit',
         monthly: aSurvivor,
         startAge: bDeathAgeA,
-        endAge: lifeExp,
+        endAge: lifeExpA,
       })
     } else {
       phases.push({
         label: 'Own benefit (survivor phase)',
         monthly: aOwn + aSpousal,
         startAge: bDeathAgeA,
-        endAge: lifeExp,
+        endAge: lifeExpA,
       })
     }
   } else {
@@ -153,12 +158,12 @@ function runStrategy(
       label: 'Own benefit',
       monthly: aOwn,
       startAge: aFilingAge,
-      endAge: lifeExp,
+      endAge: lifeExpA,
     })
   }
 
   // Accumulate lifetime total month by month
-  const totalMonths = Math.round((lifeExp - aCurrentAge) * 12)
+  const totalMonths = Math.round((lifeExpA - aCurrentAge) * 12)
   const atAge: Record<number, number> = {}
   let running = 0
   const milestonesSet = new Set(milestones)
@@ -200,7 +205,8 @@ function computeBreakeven(
   b: { pia: number; birthYear: number; birthMonth: number } | null,
   stA: { aFilingAge: number; bFilingAge: number | null },
   stB: { aFilingAge: number; bFilingAge: number | null },
-  lifeExp: number,
+  lifeExpA: number,
+  lifeExpB: number,
 ): number | null {
   const now = new Date()
   const aCurrentAge = now.getFullYear() - a.birthYear + (now.getMonth() + 1 - a.birthMonth) / 12
@@ -218,7 +224,7 @@ function computeBreakeven(
     const aSpousal = (marital && b && strategy.bFilingAge != null)
       ? calcSpousalAddon(a.pia, b.pia, a.birthYear, aAgeWhenBFiles)
       : 0
-    const bDeathAgeA = b ? lifeExp - ageDiff : lifeExp
+    const bDeathAgeA = b ? lifeExpB - ageDiff : lifeExpA
     const aSurvivor = (marital && b && strategy.bFilingAge != null)
       ? calcSurvivorBenefit(aOwn + aSpousal, bOwn, b.pia)
       : 0
@@ -234,7 +240,7 @@ function computeBreakeven(
   }
 
   let cumA = 0, cumB = 0
-  const totalMonths = Math.round((lifeExp - aCurrentAge) * 12)
+  const totalMonths = Math.round((lifeExpA - aCurrentAge) * 12)
   for (let m = 0; m < totalMonths; m++) {
     const aAge = aCurrentAge + m / 12
     cumA += monthlyAt(stA, aAge)
@@ -249,11 +255,10 @@ function computeBreakeven(
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function SSCalculatorPage() {
   const [marital, setMarital] = useState<'single' | 'married'>('married')
-  const [personA, setPersonA] = useState<PersonInput>({ pia: '', birthYear: '', birthMonth: '1' })
-  const [personB, setPersonB] = useState<PersonInput>({ pia: '', birthYear: '', birthMonth: '1' })
+  const [personA, setPersonA] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
+  const [personB, setPersonB] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
   const [stratA, setStratA] = useState<StrategyInput>({ aFilingAge: '62', bFilingAge: '67' })
   const [stratB, setStratB] = useState<StrategyInput>({ aFilingAge: '67', bFilingAge: '67' })
-  const [lifeExp, setLifeExp] = useState('90')
   const [results, setResults] = useState<Results | null>(null)
   const [errors, setErrors] = useState<string[]>([])
 
@@ -265,13 +270,15 @@ export default function SSCalculatorPage() {
     const bPIA = marital === 'married' ? parsePIA(personB.pia) : null
     const bBY = marital === 'married' ? parseInt(personB.birthYear) : null
     const bBM = marital === 'married' ? parseInt(personB.birthMonth) : null
-    const le = parseFloat(lifeExp)
+    const leA = parseFloat(personA.lifeExp)
+    const leB = marital === 'married' ? parseFloat(personB.lifeExp) : leA
 
-    if (!aPIA) errs.push('Enter a valid PIA for Person A')
-    if (!aBY || aBY < 1940 || aBY > 2005) errs.push('Enter a valid birth year for Person A')
-    if (marital === 'married' && !bPIA) errs.push('Enter a valid PIA for Person B')
-    if (marital === 'married' && (!bBY || bBY < 1940 || bBY > 2005)) errs.push('Enter a valid birth year for Person B')
-    if (!le || le < 70 || le > 105) errs.push('Life expectancy must be between 70 and 105')
+    if (!aPIA) errs.push(`Enter a valid PIA for ${personA.name || 'Person A'}`)
+    if (!aBY || aBY < 1940 || aBY > 2005) errs.push(`Enter a valid birth year for ${personA.name || 'Person A'}`)
+    if (marital === 'married' && !bPIA) errs.push(`Enter a valid PIA for ${personB.name || 'Person B'}`)
+    if (marital === 'married' && (!bBY || bBY < 1940 || bBY > 2005)) errs.push(`Enter a valid birth year for ${personB.name || 'Person B'}`)
+    if (!leA || leA < 70 || leA > 105) errs.push(`Life expectancy for ${personA.name || 'Person A'} must be between 70 and 105`)
+    if (marital === 'married' && (!leB || leB < 70 || leB > 105)) errs.push(`Life expectancy for ${personB.name || 'Person B'} must be between 70 and 105`)
 
     const saA = parseFloat(stratA.aFilingAge)
     const saB = parseFloat(stratB.aFilingAge)
@@ -286,14 +293,14 @@ export default function SSCalculatorPage() {
     const fraA = getFRAYears(aBY)
     const fraB = b ? getFRAYears(bBY!) : 0
 
-    const milestones = [...new Set([75, 80, 82, 85, 90, Math.floor(le)])].filter(m => m <= le).sort((x, y) => x - y)
+    const milestones = [...new Set([75, 80, 82, 85, 90, Math.floor(leA)])].filter(m => m <= leA).sort((x, y) => x - y)
 
-    const resA = runStrategy(marital, a, b, saA, sbA, le, milestones)
-    const resB = runStrategy(marital, a, b, saB, sbB, le, milestones)
+    const resA = runStrategy(marital, a, b, saA, sbA, leA, leB, milestones)
+    const resB = runStrategy(marital, a, b, saB, sbB, leA, leB, milestones)
     const bkv = computeBreakeven(marital, a, b,
       { aFilingAge: saA, bFilingAge: sbA },
       { aFilingAge: saB, bFilingAge: sbB },
-      le,
+      leA, leB,
     )
 
     setResults({
@@ -303,9 +310,11 @@ export default function SSCalculatorPage() {
       netDiff: resB.lifetimeTotal - resA.lifetimeTotal,
       milestones,
       fra: { a: fraA, b: fraB },
+      names: { a: personA.name || 'Person A', b: personB.name || 'Person B' },
+      lifeExps: { a: leA, b: leB },
     })
     setErrors([])
-  }, [marital, personA, personB, stratA, stratB, lifeExp])
+  }, [marital, personA, personB, stratA, stratB])
 
   const inputCls = 'ssc-input'
   const selCls = 'ssc-select'
@@ -396,6 +405,12 @@ export default function SSCalculatorPage() {
                     <h3 className="ssc-person-heading">Person B (higher earner)</h3>
                     <div className="ssc-fields">
                       <div className="ssc-field">
+                        <label className="ssc-label">Name <span className="ssc-optional">(optional)</span></label>
+                        <input className={inputCls} type="text" placeholder="e.g. John"
+                          value={personB.name}
+                          onChange={e => setPersonB(p => ({ ...p, name: e.target.value }))} />
+                      </div>
+                      <div className="ssc-field">
                         <label className="ssc-label">PIA (monthly benefit at FRA)</label>
                         <div className="ssc-input-prefix-wrap">
                           <span className="ssc-prefix">$</span>
@@ -424,21 +439,20 @@ export default function SSCalculatorPage() {
                           FRA: {getFRAYears(parseInt(personB.birthYear))}
                         </p>
                       )}
+                      <div className="ssc-field ssc-field--le-inline">
+                        <label className="ssc-label">Life Expectancy</label>
+                        <div className="ssc-le-row">
+                          <input className={`${inputCls} ssc-le-input`} type="number"
+                            min={70} max={105} value={personB.lifeExp}
+                            onChange={e => setPersonB(p => ({ ...p, lifeExp: e.target.value }))} />
+                          <input className="ssc-slider" type="range" min={70} max={105}
+                            value={personB.lifeExp}
+                            onChange={e => setPersonB(p => ({ ...p, lifeExp: e.target.value }))} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Life expectancy */}
-              <div className="ssc-field ssc-field--le">
-                <label className="ssc-label">Life Expectancy (years)</label>
-                <div className="ssc-le-row">
-                  <input className={`${inputCls} ssc-le-input`} type="number"
-                    min={70} max={105} value={lifeExp}
-                    onChange={e => setLifeExp(e.target.value)} />
-                  <input className="ssc-slider" type="range" min={70} max={105}
-                    value={lifeExp} onChange={e => setLifeExp(e.target.value)} />
-                </div>
               </div>
 
               {/* Strategy inputs */}
@@ -452,7 +466,7 @@ export default function SSCalculatorPage() {
                     <div className="ssc-fields">
                       <div className="ssc-field">
                         <label className="ssc-label">
-                          {marital === 'married' ? 'Person A filing age' : 'Filing age'}
+                          {marital === 'married' ? `${personA.name || 'Person A'} filing age` : 'Filing age'}
                         </label>
                         <select className={selCls} value={st.aFilingAge}
                           onChange={e => setSt(s => ({ ...s, aFilingAge: e.target.value }))}>
@@ -461,7 +475,7 @@ export default function SSCalculatorPage() {
                       </div>
                       {marital === 'married' && (
                         <div className="ssc-field">
-                          <label className="ssc-label">Person B filing age</label>
+                          <label className="ssc-label">{personB.name || 'Person B'} filing age</label>
                           <select className={selCls} value={st.bFilingAge}
                             onChange={e => setSt(s => ({ ...s, bFilingAge: e.target.value }))}>
                             {AGE_OPTIONS.map(a => <option key={a} value={a}>{a}</option>)}
@@ -539,7 +553,7 @@ export default function SSCalculatorPage() {
                     {results.netDiff >= 0 ? 'B is better by' : 'A is better by'}
                   </p>
                   <p className="ssc-diff-num">{fmt(Math.abs(results.netDiff))}</p>
-                  <p className="ssc-diff-sub">lifetime (to age {lifeExp})</p>
+                  <p className="ssc-diff-sub">lifetime (to age {results.lifeExps.a})</p>
 
                   {results.breakeven != null && (
                     <div className="ssc-breakeven">
@@ -575,7 +589,7 @@ export default function SSCalculatorPage() {
                         const diff = b - a
                         return (
                           <tr key={ms}>
-                            <td className="ssc-td-age">Age {ms}</td>
+                            <td className="ssc-td-age">{results.names.a} age {ms}</td>
                             <td>{fmt(a)}</td>
                             <td>{fmt(b)}</td>
                             <td className={diff > 0 ? 'ssc-td-pos' : diff < 0 ? 'ssc-td-neg' : ''}>

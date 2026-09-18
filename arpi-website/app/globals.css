@@ -3011,7 +3011,13 @@ article .prose h4 {
   margin-top: 2px;
 }
 
-/* Life expectancy */
+/* Optional label hint */
+.ssc-optional { font-weight: 400; color: var(--ink-xlight); text-transform: none; letter-spacing: 0; font-size: 0.75rem; }
+
+/* Life expectancy inline (inside person block) */
+.ssc-field--le-inline { margin-top: 4px; }
+
+/* Life expectancy standalone (legacy — keep for single mode) */
 .ssc-field--le { margin-bottom: 28px; max-width: 420px; }
 .ssc-le-row { display: flex; align-items: center; gap: 16px; }
 .ssc-le-input { width: 80px; }
