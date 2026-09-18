@@ -189,9 +189,10 @@ export default function AxiomPage() {
                 </p>
                 <p className="ax-cost-label">The cost of acting on this advice?</p>
                 <p className="ax-cost-summary">
-                  By filing at 62, she locks in a permanent 30% reduction on her own benefit
-                  and a 35% reduction on her spousal — even though the spousal doesn’t kick in
-                  until her husband files at 67. The net lifetime loss compared to waiting: <strong>$52,260</strong>.
+                  By filing at 62, she locks in a permanent 30% reduction on her own benefit.
+                  Her spousal add-on is also reduced — but only by 16.7%, applied to the $400
+                  excess over her own PIA when her husband files at 67 (she&rsquo;s 65, just
+                  24 months before her FRA). The net lifetime loss compared to waiting: <strong>$71,700</strong>.
                 </p>
               </div>
 
@@ -269,16 +270,16 @@ export default function AxiomPage() {
                   <div className="ax-tile-icon" style={{ background: 'rgba(255,255,255,0.15)', color: '#fff' }}><IconUser /></div>
                   <h3 className="ax-tile-title">Her Spousal<br/>Benefit</h3>
                 </div>
-                <p className="ax-tile-sub">50% of $3,800 = $1,900<br/>same reduction · kicks in at age 65</p>
+                <p className="ax-tile-sub">50% of $3,800 = $1,900 · excess over own PIA:<br/>$1,900 − $1,500 = $400 · kicks in at age 65</p>
                 <div className="ax-tile-math">
-                  <span>36 mo × 25⁄36% = 25%</span>
-                  <span className="ax-tile-op">+</span>
-                  <span>24 mo × 5⁄12% = 10%</span>
+                  <span>24 mo × 25⁄36% = 16.7%</span>
+                  <span className="ax-tile-op">→</span>
+                  <span>$400 × 83.3% = $333 add-on</span>
                 </div>
                 <div className="ax-tile-result">
-                  <span className="ax-tile-was">$1,900</span>
-                  <span className="ax-tile-arrow">→</span>
-                  <span className="ax-tile-now">$1,235<em>/mo</em></span>
+                  <span className="ax-tile-was">$1,050</span>
+                  <span className="ax-tile-arrow">+$333</span>
+                  <span className="ax-tile-now">$1,383<em>/mo</em></span>
                 </div>
               </div>
 
@@ -291,7 +292,7 @@ export default function AxiomPage() {
                 <div className="ax-tile-scenarios">
                   <div className="ax-tile-scenario-row">
                     <span className="ax-tile-scenario-label">Claims at 62</span>
-                    <span className="ax-tile-scenario-val ax-tile-scenario-val--dim">$408,300</span>
+                    <span className="ax-tile-scenario-val ax-tile-scenario-val--dim">$452,700</span>
                   </div>
                   <div className="ax-tile-scenario-row">
                     <span className="ax-tile-scenario-label">Waits to FRA</span>
@@ -300,7 +301,7 @@ export default function AxiomPage() {
                 </div>
                 <div className="ax-tile-gain">
                   <span className="ax-tile-gain-label">By waiting</span>
-                  <span className="ax-tile-gain-num">+$116,100</span>
+                  <span className="ax-tile-gain-num">+$71,700</span>
                 </div>
               </div>
 
@@ -312,12 +313,12 @@ export default function AxiomPage() {
                 <div className="ax-tile-loss-row">
                   <div>
                     <p className="ax-tile-loss-sub">To age 82</p>
-                    <p className="ax-tile-loss-num ax-tile-loss-num--sm">$52,260</p>
+                    <p className="ax-tile-loss-num ax-tile-loss-num--sm">$22,068</p>
                   </div>
                   <div className="ax-tile-loss-divider" />
                   <div>
                     <p className="ax-tile-loss-sub">To age 90</p>
-                    <p className="ax-tile-loss-num ax-tile-loss-num--sm">$116,100</p>
+                    <p className="ax-tile-loss-num ax-tile-loss-num--sm">$71,700</p>
                   </div>
                 </div>
                 <p className="ax-tile-loss-note">
