@@ -6,12 +6,24 @@ import { createPublicClient } from '@/lib/codex-supabase';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'Social Security Reference | ARPI Knowledge Base',
-  description:
-    'Authoritative Social Security rules for financial advisors — claiming rules, spousal benefits, survivor benefits, WEP, GPO, and more. Verified against SSA POMS.',
-  alternates: { canonical: 'https://arpinstitute.com/codex/social-security' },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  return topic
+    ? {
+        title: `${topic} | Social Security | ARPI Knowledge Base`,
+        alternates: { canonical: 'https://arpinstitute.com/codex/social-security' },
+      }
+    : {
+        title: 'Social Security Reference | ARPI Knowledge Base',
+        description:
+          'Authoritative Social Security rules for financial advisors — claiming rules, spousal benefits, survivor benefits, WEP, GPO, and more. Verified against SSA POMS.',
+        alternates: { canonical: 'https://arpinstitute.com/codex/social-security' },
+      };
+}
 
 const SS_DARK = '#13405E';
 const SS_BLUE = 'var(--blue-400)';
@@ -33,7 +45,13 @@ const css = `
 @media(max-width:600px){.ci-wrap{padding:32px 16px}.ci-h1{font-size:26px}}
 `;
 
-export default async function SocialSecurityIndex() {
+export default async function SocialSecurityIndex({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  const activeTopic = topic ? decodeURIComponent(topic) : null;
   const supabase = createPublicClient();
   const { data } = await supabase
     .from('reference_pages')
@@ -45,21 +63,26 @@ export default async function SocialSecurityIndex() {
 
   const pages = data ?? [];
 
-  // Group by eyebrow topic
-  const groups = new Map<string, typeof pages>();
+  // Group by eyebrow topic, then filter if ?topic= is set
+  const allGroups = new Map<string, typeof pages>();
   for (const p of pages) {
     const key = p.eyebrow || 'General';
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(p);
+    if (!allGroups.has(key)) allGroups.set(key, []);
+    allGroups.get(key)!.push(p);
   }
+  const groups = activeTopic && allGroups.has(activeTopic)
+    ? new Map([[activeTopic, allGroups.get(activeTopic)!]])
+    : allGroups;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="ci-wrap">
-        <a href="/codex" className="ci-back">← Knowledge Base</a>
-        <p className="ci-eyebrow">Reference</p>
-        <h1 className="ci-h1">Social Security</h1>
+        {activeTopic
+          ? <a href="/codex/social-security" className="ci-back">← Social Security</a>
+          : <a href="/codex" className="ci-back">← Knowledge Base</a>}
+        <p className="ci-eyebrow">Social Security{activeTopic ? ` / ${activeTopic}` : ''}</p>
+        <h1 className="ci-h1">{activeTopic ?? 'Social Security'}</h1>
         <p className="ci-desc">
           Authoritative rules for Social Security claiming, spousal and survivor benefits,
           earnings test, WEP, and GPO — verified against the SSA Program Operations Manual System (POMS).

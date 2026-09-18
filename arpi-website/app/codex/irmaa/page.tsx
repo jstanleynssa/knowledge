@@ -6,12 +6,25 @@ import { createPublicClient } from '@/lib/codex-supabase';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata = {
-  title: 'IRMAA & Medicare Reference | ARPI Knowledge Base',
-  description:
-    'Authoritative IRMAA and Medicare rules for financial advisors — surcharges, the two-year look-back, life-changing event appeals, Part B and D enrollment. Verified against CMS and Medicare.gov.',
-  alternates: { canonical: 'https://arpinstitute.com/codex/irmaa' },
-};
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  return topic
+    ? {
+        title: `${topic} | IRMAA & Medicare | ARPI Knowledge Base`,
+        alternates: { canonical: 'https://arpinstitute.com/codex/irmaa' },
+      }
+    : {
+        title: 'IRMAA & Medicare Reference | ARPI Knowledge Base',
+        description:
+          'Authoritative IRMAA and Medicare rules for financial advisors — surcharges, the two-year look-back, life-changing event appeals, Part B and D enrollment. Verified against CMS and Medicare.gov.',
+        alternates: { canonical: 'https://arpinstitute.com/codex/irmaa' },
+      };
+}
+
 
 const IRMAA_RED  = 'var(--red-dark)';
 const IRMAA_DARK = '#7f1424';
@@ -33,7 +46,13 @@ const css = `
 @media(max-width:600px){.ci-wrap{padding:32px 16px}.ci-h1{font-size:26px}}
 `;
 
-export default async function IrmaaIndex() {
+export default async function IrmaaIndex({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  const activeTopic = topic ? decodeURIComponent(topic) : null;
   const supabase = createPublicClient();
   const { data } = await supabase
     .from('reference_pages')
@@ -45,21 +64,26 @@ export default async function IrmaaIndex() {
 
   const pages = data ?? [];
 
-  // Group by eyebrow topic
-  const groups = new Map<string, typeof pages>();
+  // Group by eyebrow topic, then filter if ?topic= is set
+  const allGroups = new Map<string, typeof pages>();
   for (const p of pages) {
     const key = p.eyebrow || 'General';
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(p);
+    if (!allGroups.has(key)) allGroups.set(key, []);
+    allGroups.get(key)!.push(p);
   }
+  const groups = activeTopic && allGroups.has(activeTopic)
+    ? new Map([[activeTopic, allGroups.get(activeTopic)!]])
+    : allGroups;
 
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: css }} />
       <div className="ci-wrap">
-        <a href="/codex" className="ci-back">← Knowledge Base</a>
-        <p className="ci-eyebrow">Reference</p>
-        <h1 className="ci-h1">IRMAA &amp; Medicare</h1>
+        {activeTopic
+          ? <a href="/codex/irmaa" className="ci-back">← IRMAA &amp; Medicare</a>
+          : <a href="/codex" className="ci-back">← Knowledge Base</a>}
+        <p className="ci-eyebrow">IRMAA &amp; Medicare{activeTopic ? ` / ${activeTopic}` : ''}</p>
+        <h1 className="ci-h1">{activeTopic ?? 'IRMAA & Medicare'}</h1>
         <p className="ci-desc">
           Income-related Medicare surcharges, the two-year look-back rule, life-changing event appeals,
           and Part B and D enrollment — verified against CMS regulations and Medicare.gov guidance.
