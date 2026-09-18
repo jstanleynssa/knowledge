@@ -3257,6 +3257,21 @@ article .prose h4 {
 .ssc-deceased { color: var(--ink-xlight); font-style: italic; font-size: 0.82rem; }
 
 /* Disclaimer */
+/* ── NSSA→ARPI announcement credential cards ── */
+.arpi-cred-card {
+  display: block;
+  padding: 28px 24px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  text-decoration: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.arpi-cred-card:hover {
+  border-color: var(--green-mid);
+  box-shadow: 0 4px 16px rgba(61,138,110,.12);
+}
+
 .ssc-disclaimer {
   font-size: 0.78rem;
   color: var(--ink-xlight);

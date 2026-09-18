@@ -136,24 +136,7 @@ export default function NssaArpiPage() {
                   href: '/credentials/celp',
                 },
               ].map(cred => (
-                <a key={cred.name} href={cred.href} style={{
-                  display: 'block',
-                  padding: '28px 24px',
-                  border: '1px solid var(--border)',
-                  borderRadius: 10,
-                  background: 'var(--white)',
-                  textDecoration: 'none',
-                  transition: 'border-color .15s, box-shadow .15s',
-                }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--green-mid)'
-                    ;(e.currentTarget as HTMLElement).style.boxShadow = '0 4px 16px rgba(61,138,110,.12)'
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-                    ;(e.currentTarget as HTMLElement).style.boxShadow = 'none'
-                  }}
-                >
+                <a key={cred.name} href={cred.href} className="arpi-cred-card">
                   <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--green-dark)', marginBottom: 4 }}>{cred.name}</div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--ink-light)', letterSpacing: '0.02em', marginBottom: 12 }}>{cred.full}</div>
                   <p style={{ fontSize: '0.88rem', color: 'var(--ink-mid)', lineHeight: 1.65, margin: 0 }}>{cred.desc}</p>
