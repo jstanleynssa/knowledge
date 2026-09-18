@@ -3223,6 +3223,34 @@ article .prose h4 {
   text-align: center;
 }
 
+/* COLA row */
+.ssc-cola-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 20px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.ssc-cola-label-wrap { flex: 0 0 260px; }
+.ssc-cola-inputs { flex: 1; align-items: center; }
+.ssc-cola-pct { font-size: 0.95rem; color: var(--ink-mid); font-weight: 600; margin-left: -8px; }
+.ssc-cola-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: var(--green-xlight);
+  color: var(--green-dark);
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-left: 12px;
+  vertical-align: middle;
+  font-family: var(--font-inter), sans-serif;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .ssc-tiles-grid { grid-template-columns: 1fr; }

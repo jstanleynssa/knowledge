@@ -90,6 +90,7 @@ function runStrategy(
   bFilingAge: number | null,
   lifeExpA: number,
   lifeExpB: number,
+  cola: number,
   milestones: number[],
 ): StrategyResult {
   const now = new Date()
@@ -190,7 +191,8 @@ function runStrategy(
       }
     }
 
-    running += monthly
+    const colaFactor = Math.pow(1 + cola, aAge - aCurrentAge)
+    running += monthly * colaFactor
 
     for (const ms of milestones) {
       if (milestonesSet.has(ms) && aAge >= ms - 1 / 24 && atAge[ms] === undefined) {
@@ -218,6 +220,7 @@ function computeBreakeven(
   stB: { aFilingAge: number; bFilingAge: number | null },
   lifeExpA: number,
   lifeExpB: number,
+  cola: number,
 ): number | null {
   const now = new Date()
   const aCurrentAge = now.getFullYear() - a.birthYear + (now.getMonth() + 1 - a.birthMonth) / 12
@@ -254,8 +257,9 @@ function computeBreakeven(
   const totalMonths = Math.round((lifeExpA - aCurrentAge) * 12)
   for (let m = 0; m < totalMonths; m++) {
     const aAge = aCurrentAge + m / 12
-    cumA += monthlyAt(stA, aAge)
-    cumB += monthlyAt(stB, aAge)
+    const cf = Math.pow(1 + cola, aAge - aCurrentAge)
+    cumA += monthlyAt(stA, aAge) * cf
+    cumB += monthlyAt(stB, aAge) * cf
     if (cumB >= cumA && cumA > 0) {
       return Math.round(aAge * 10) / 10
     }
@@ -268,6 +272,7 @@ export default function SSCalculatorPage() {
   const [marital, setMarital] = useState<'single' | 'married'>('married')
   const [personA, setPersonA] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
   const [personB, setPersonB] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
+  const [cola, setCola] = useState('2.5')
   const [stratA, setStratA] = useState<StrategyInput>({ aFilingAge: '62', bFilingAge: '67' })
   const [stratB, setStratB] = useState<StrategyInput>({ aFilingAge: '67', bFilingAge: '67' })
   const [results, setResults] = useState<Results | null>(null)
@@ -304,14 +309,15 @@ export default function SSCalculatorPage() {
     const fraA = getFRAYears(aBY)
     const fraB = b ? getFRAYears(bBY!) : 0
 
+    const colaRate = Math.max(0, Math.min(0.10, parseFloat(cola) / 100 || 0))
     const milestones = [...new Set([75, 80, 82, 85, 90, Math.floor(leA)])].filter(m => m <= leA).sort((x, y) => x - y)
 
-    const resA = runStrategy(marital, a, b, saA, sbA, leA, leB, milestones)
-    const resB = runStrategy(marital, a, b, saB, sbB, leA, leB, milestones)
+    const resA = runStrategy(marital, a, b, saA, sbA, leA, leB, colaRate, milestones)
+    const resB = runStrategy(marital, a, b, saB, sbB, leA, leB, colaRate, milestones)
     const bkv = computeBreakeven(marital, a, b,
       { aFilingAge: saA, bFilingAge: sbA },
       { aFilingAge: saB, bFilingAge: sbB },
-      leA, leB,
+      leA, leB, colaRate,
     )
 
     // ── Annual rows for comparison table ──────────────────────────────────
@@ -358,8 +364,9 @@ export default function SSCalculatorPage() {
       for (let mo = 0; mo < 12; mo++) {
         const aAge = yr + mo / 12
         if (aAge >= leA) break
-        yrA += moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2)
-        yrB += moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2)
+        const cf = Math.pow(1 + colaRate, aAge - aCurrentAge2)
+        yrA += moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2) * cf
+        yrB += moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2) * cf
       }
       cumAnn_A += yrA
       cumAnn_B += yrB
@@ -388,7 +395,7 @@ export default function SSCalculatorPage() {
       annualRows,
     })
     setErrors([])
-  }, [marital, personA, personB, stratA, stratB])
+  }, [marital, personA, personB, stratA, stratB, cola])
 
   const inputCls = 'ssc-input'
   const selCls = 'ssc-select'
@@ -546,6 +553,22 @@ export default function SSCalculatorPage() {
                 )}
               </div>
 
+              {/* COLA */}
+              <div className="ssc-cola-row">
+                <div className="ssc-cola-label-wrap">
+                  <label className="ssc-label">Annual COLA Rate</label>
+                  <p className="ssc-fra-note">Applied to both strategies equally. Higher rates compound the advantage of the larger benefit.</p>
+                </div>
+                <div className="ssc-le-row ssc-cola-inputs">
+                  <input className={`${inputCls} ssc-le-input`} type="number"
+                    min={0} max={10} step={0.1} value={cola}
+                    onChange={e => setCola(e.target.value)} />
+                  <span className="ssc-cola-pct">%</span>
+                  <input className="ssc-slider" type="range" min={0} max={6} step={0.1}
+                    value={cola} onChange={e => setCola(e.target.value)} />
+                </div>
+              </div>
+
               {/* Strategy inputs */}
               <div className="ssc-strategies-grid">
                 {([
@@ -669,7 +692,12 @@ export default function SSCalculatorPage() {
 
               {/* Annual table */}
               <div className="ssc-milestone-wrap">
-                <h2 className="ssc-section-heading">Cumulative benefits by year</h2>
+                <h2 className="ssc-section-heading">
+                Cumulative benefits by year
+                {parseFloat(cola) > 0 && (
+                  <span className="ssc-cola-badge">{cola}% COLA applied</span>
+                )}
+              </h2>
                 <div className="ssc-table-wrap">
                   <table className="ssc-table">
                     <thead>
@@ -722,9 +750,10 @@ export default function SSCalculatorPage() {
               {/* Disclaimer */}
               <p className="ssc-disclaimer">
                 This tool uses the dual-entitlement excess method for spousal benefits per SSA POMS rules.
-                All projections assume no COLAs, no earnings test, and constant PIAs.
-                Intended for educational illustration only — not financial or legal advice.
-                Survivor benefit assumes Person A outlives Person B.
+                {parseFloat(cola) > 0
+                  ? ` COLA of ${cola}% compounded annually from today. `
+                  : ' All projections in today\'s dollars (no COLA). '}
+                Projections assume no earnings test and constant PIAs. Intended for educational illustration only — not financial or legal advice. Survivor benefit assumes Person A outlives Person B.
               </p>
 
             </div>
