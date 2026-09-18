@@ -32,15 +32,15 @@ const team = [
   },
   {
     name: 'Marc Kiner',
-    title: 'Co-Founder',
+    title: 'NSSA® Co-Founder',
     initials: 'MK',
-    bio: 'A licensed CPA with 40 years of experience and advanced degrees in Accounting, Finance, and Tax, Marc co-founded the NSSA program in 2013.',
+    bio: 'Marc is a licensed CPA with over 40 years of experience and advanced degrees in Accounting, Finance, and Tax from the University of Cincinnati. Since 2010 he has run a Social Security consulting and education practice focused on helping individuals maximize their benefits and training advisors across the country to do the same. He co-founded the NSSA® program in 2013 and has served as course developer and instructor ever since — building the curriculum around the intersection of tax strategy and Social Security planning that most credential programs never address.',
   },
   {
     name: 'Jim Blair',
-    title: 'Co-Founder',
+    title: 'NSSA® Co-Founder',
     initials: 'JB',
-    bio: 'Jim brings 49 years of Social Security expertise, including 35 years with the Social Security Administration, as one of the foremost authorities in the field.',
+    bio: 'Jim brought 34½ years inside the Social Security Administration to the founding of NSSA®. His SSA career began as a Service Representative, progressed through Claims Representative and Operations Supervisor, and culminated as District Manager of the Piqua, Ohio office — one of the few practitioners who has sat on both sides of every Social Security decision. He holds a BS in Administrative Management from the University of Cincinnati. Jim co-founded the NSSA® program in 2013 to give financial advisors the ground-level regulatory fluency he earned across nearly four decades at the agency.',
   },
 ]
 
