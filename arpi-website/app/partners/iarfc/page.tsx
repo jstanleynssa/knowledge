@@ -114,7 +114,7 @@ export default function IarfcPartnerPage() {
           }}>
             {/* Logo placeholder */}
             <div style={{
-              background: BG_SOFT,
+              background: '#111827',
               border: `1px solid ${BORDER}`,
               borderRadius: 8,
               display: 'flex',
