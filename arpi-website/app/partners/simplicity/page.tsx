@@ -283,9 +283,8 @@ export default function SimplicityPartnerPage() {
             Ready to Add ARPI Credentials to Your Practice?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '1rem', marginBottom: 32, lineHeight: 1.7 }}>
-            Simplicity Group advisors enroll at a preferred rate. Use code{' '}
-            <strong>SIMPLICITY25</strong> at checkout — start with IRMAA, Social Security,
-            or end-of-life planning, or bundle both and save.
+            Simplicity Group advisors enroll at a preferred rate. Start with IRMAA, Social
+            Security, or end-of-life planning — or bundle both and save.
           </p>
           <div className="cta-banner-actions">
             <a href="/enroll?partner=simplicity" className="btn-primary">Enroll as a Simplicity Advisor</a>

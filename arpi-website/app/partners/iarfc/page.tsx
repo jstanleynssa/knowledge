@@ -69,7 +69,7 @@ const VALUES = [
   {
     icon: '🤝',
     title: 'Exclusive Member Benefit',
-    body: 'Contact IARFC or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.',
+    body: 'Contact IARFC or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive. Visit arpinstitute.com/contact to get started.',
   },
 ]
 
@@ -168,7 +168,9 @@ export default function IarfcPartnerPage() {
                   IARFC Member Benefit
                 </div>
                 <div style={{ fontSize: '0.9rem', color: INK_MID, lineHeight: 1.65 }}>
-                  Contact IARFC or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
+                  Contact IARFC or{' '}
+                  <a href="/contact" style={{ color: GREEN, fontWeight: 600, textDecoration: 'none' }}>reach out to ARPI directly</a>{' '}
+                  for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
                 </div>
               </div>
             </div>

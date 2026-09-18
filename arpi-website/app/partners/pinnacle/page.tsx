@@ -229,7 +229,9 @@ export default function PinnaclePartnerPage() {
                   Pinnacle Agent Benefit
                 </div>
                 <div style={{ fontSize: '0.9rem', color: INK_MID, lineHeight: 1.65 }}>
-                  Contact Pinnacle Financial Services or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
+                  Contact Pinnacle Financial Services or{' '}
+                  <a href="/contact" style={{ color: GREEN, fontWeight: 600, textDecoration: 'none' }}>reach out to ARPI directly</a>{' '}
+                  for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
                 </div>
               </div>
             </div>

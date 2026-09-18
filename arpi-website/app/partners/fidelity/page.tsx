@@ -68,7 +68,7 @@ const VALUES = [
   },
   {
     title: 'An Exclusive Benefit for Fidelity Network Advisors',
-    body: 'Fidelity advisors receive 25% off tuition on any ARPI credential. Use code FIDELITY25 at checkout on arpinstitute.com/enroll.',
+    body: 'Contact Fidelity or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.',
     icon: 2,
   },
 ]
@@ -169,9 +169,9 @@ export default function FidelityPartnerPage() {
                   Fidelity Advisor Benefit
                 </div>
                 <div style={{ fontSize: '0.9rem', color: INK_MID, lineHeight: 1.65 }}>
-                  Fidelity network advisors receive 25% off tuition on any ARPI credential. Use
-                  code <strong>FIDELITY25</strong> at checkout on{' '}
-                  <a href="/enroll?partner=fidelity" style={{ color: GREEN, fontWeight: 600, textDecoration: 'none' }}>arpinstitute.com/enroll</a>.
+                  Contact Fidelity or{' '}
+                  <a href="/contact" style={{ color: GREEN, fontWeight: 600, textDecoration: 'none' }}>reach out to ARPI directly</a>{' '}
+                  for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.
                 </div>
               </div>
             </div>
@@ -279,9 +279,8 @@ export default function FidelityPartnerPage() {
             Ready to Add ARPI Credentials to Your Practice?
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '1rem', marginBottom: 32, lineHeight: 1.7 }}>
-            Fidelity network advisors enroll at a preferred rate. Use code{' '}
-            <strong>FIDELITY25</strong> at checkout — start with Social Security, IRMAA,
-            or end-of-life planning, or bundle both and save.
+            Fidelity network advisors enroll at a preferred rate. Start with Social Security,
+            IRMAA, or end-of-life planning — or bundle both and save.
           </p>
           <div className="cta-banner-actions">
             <a href="/enroll?partner=fidelity" className="btn-primary">Enroll as a Fidelity Advisor</a>

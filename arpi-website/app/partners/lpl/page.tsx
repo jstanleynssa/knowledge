@@ -69,7 +69,7 @@ const VALUES = [
   {
     icon: 'tag',
     title: 'Exclusive LPL Advisor Benefit',
-    body: 'Contact LPL or reach out to ARPI directly for your advisor discount code. We verify affiliation before issuing codes to keep the benefit exclusive.',
+    body: 'Contact LPL or reach out to ARPI directly for your member discount code. We verify membership before issuing codes to keep the benefit exclusive.',
   },
 ]
 
@@ -252,8 +252,7 @@ export default function LplPartnerPage() {
         <div className="container">
           <h2>Ready to Add a Credential?</h2>
           <p>
-            LPL advisors receive a preferred enrollment rate. Contact LPL or ARPI directly
-            for your discount code -- we verify affiliation before issuing codes.
+            LPL advisors enroll at a preferred rate. Contact LPL or reach out to ARPI directly for your member discount code — we verify membership before issuing codes to keep the benefit exclusive.
           </p>
           <div className="cta-banner-actions">
             <a href="/enroll?partner=lpl" className="btn-white">Enroll as an LPL Advisor</a>
