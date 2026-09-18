@@ -100,6 +100,19 @@ export async function GET() {
       },
     });
 
+    // 5b. Thank-you page by device (actual confirmed conversion path)
+    const actualThankYouByDevice = await ga4RunReport({
+      dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'deviceCategory' }],
+      metrics: [{ name: 'sessions' }, { name: 'activeUsers' }],
+      dimensionFilter: {
+        filter: {
+          fieldName: 'pagePath',
+          stringFilter: { matchType: 'BEGINS_WITH', value: '/10-mistakes-advisors-make-thank-you-download' },
+        },
+      },
+    });
+
     // Also try common thank-you path variants
     const thankYouVariants = await ga4RunReport({
       dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
@@ -141,6 +154,7 @@ export async function GET() {
       optinSessionsByDevice: optinSessionsByDevice.rows ?? [],
       optinConvByDevice: optinConvByDevice.rows ?? [],
       thankYouByDevice: thankYouByDevice.rows ?? [],
+      actualThankYouByDevice: actualThankYouByDevice.rows ?? [],
       thankYouVariants: thankYouVariants.rows ?? [],
     });
   } catch (err) {
