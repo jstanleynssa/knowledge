@@ -50,6 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url('/partners/iarfc',     0.7, 'monthly'),
     url('/partners/win-group', 0.7, 'monthly'),
     url('/partners/pinnacle',  0.7, 'monthly'),
+    url('/partners/lpl',       0.7, 'monthly'),
     url('/privacy',       0.3, 'yearly'),
     url('/terms',         0.3, 'yearly'),
     ...(AXIOM_ENABLED ? [url('/axiom', 0.8, 'monthly')] : []),
