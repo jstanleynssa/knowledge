@@ -368,6 +368,12 @@ export default function SSCalculatorPage() {
                   </h3>
                   <div className="ssc-fields">
                     <div className="ssc-field">
+                      <label className="ssc-label">Name <span className="ssc-optional">(optional)</span></label>
+                      <input className={inputCls} type="text" placeholder="e.g. Jane"
+                        value={personA.name}
+                        onChange={e => setPersonA(p => ({ ...p, name: e.target.value }))} />
+                    </div>
+                    <div className="ssc-field">
                       <label className="ssc-label">PIA (monthly benefit at FRA)</label>
                       <div className="ssc-input-prefix-wrap">
                         <span className="ssc-prefix">$</span>
@@ -396,6 +402,17 @@ export default function SSCalculatorPage() {
                         FRA: {getFRAYears(parseInt(personA.birthYear))}
                       </p>
                     )}
+                    <div className="ssc-field ssc-field--le-inline">
+                      <label className="ssc-label">Life Expectancy</label>
+                      <div className="ssc-le-row">
+                        <input className={`${inputCls} ssc-le-input`} type="number"
+                          min={70} max={105} value={personA.lifeExp}
+                          onChange={e => setPersonA(p => ({ ...p, lifeExp: e.target.value }))} />
+                        <input className="ssc-slider" type="range" min={70} max={105}
+                          value={personA.lifeExp}
+                          onChange={e => setPersonA(p => ({ ...p, lifeExp: e.target.value }))} />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
