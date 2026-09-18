@@ -84,6 +84,22 @@ export default function IarfcPartnerPage() {
       <section className="hero" style={{ padding: '96px 0 88px' }}>
         <div className="container">
           <div style={{ maxWidth: 740, position: 'relative', zIndex: 1 }}>
+            {/* Partner × ARPI badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+              <img
+                src="/logos/iarfc.png"
+                alt="IARFC"
+                style={{ height: 36, width: 'auto', objectFit: 'contain' }}
+              />
+              <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '1.1rem', fontWeight: 300 }}>×</span>
+              <span style={{
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.5)',
+              }}>ARPI</span>
+            </div>
             <div className="hero-eyebrow">IARFC Partnership</div>
             <h1 style={{ marginBottom: 20 }}>
               For IARFC Members:<br />
@@ -112,57 +128,31 @@ export default function IarfcPartnerPage() {
             gap: 64,
             alignItems: 'center',
           }}>
-            {/* Logo placeholder */}
+            {/* Partner logo — dark panel */}
             <div style={{
               background: '#111827',
-              border: `1px solid ${BORDER}`,
-              borderRadius: 8,
+              borderRadius: 12,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '48px 32px',
-              gap: 12,
+              padding: '64px 48px',
+              gap: 20,
+              minHeight: 240,
             }}>
-              {/* Placeholder — Jason will upload IARFC logo */}
-              <div style={{
-                width: 80,
-                height: 80,
-                background: GREEN_XL,
-                borderRadius: 8,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '2rem',
-              }}>
-                🤝
-              </div>
-              <div style={{
-                fontWeight: 700,
-                fontSize: '1.1rem',
-                color: INK,
-                textAlign: 'center',
-              }}>
-                IARFC®
-              </div>
-              <div style={{
-                fontSize: '0.8rem',
-                color: INK_LIGHT,
-                textAlign: 'center',
-                fontStyle: 'italic',
-              }}>
-                International Association of Registered Financial Consultants
-              </div>
+              <img
+                src="/logos/iarfc.png"
+                alt="IARFC"
+                style={{ height: 56, width: 'auto', objectFit: 'contain', maxWidth: 200 }}
+              />
               <div style={{
                 fontSize: '0.72rem',
-                color: INK_LIGHT,
-                background: '#f9fafb',
-                border: `1px dashed ${BORDER}`,
-                borderRadius: 4,
-                padding: '6px 12px',
-                marginTop: 4,
+                fontWeight: 700,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'rgba(255,255,255,0.3)',
               }}>
-                <img src="/logos/iarfc.png" alt="IARFC" style={{ height: 48, width: 'auto', objectFit: 'contain' }} />
+                ARPI Partner
               </div>
             </div>
 
