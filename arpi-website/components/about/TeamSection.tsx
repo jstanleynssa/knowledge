@@ -50,7 +50,7 @@ export default function TeamSection() {
       <div className="container">
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
           <div className="section-eyebrow">Meet the Team</div>
-          <h2 className="section-title">The People Behind the Credential</h2>
+          <h2 className="section-title">The People Behind the Institute</h2>
           <p className="section-sub" style={{ margin: '16px auto 0' }}>
             A team of dedicated professionals with deep expertise in Social Security, Medicare,
             financial advising, and professional education.

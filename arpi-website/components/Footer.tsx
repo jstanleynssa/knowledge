@@ -52,6 +52,7 @@ export default function Footer() {
             <div className="footer-col-label">Company</div>
             <ul>
               <li><a href="/about">About ARPI</a></li>
+              <li><a href="/partners">Partners</a></li>
               <li><a href="/mission">Our Mission</a></li>
               <li><a href="/contact">Contact Us</a></li>
               <li><a href="/press">Press &amp; Media</a></li>
