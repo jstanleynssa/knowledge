@@ -26,7 +26,7 @@ const PARTNERS = [
     description:
       'Professional association for RFC® and MRFC® credentialed financial consultants — advisors who have demonstrated rigorous, exam-backed competence in comprehensive financial planning.',
     logo: '/logos/iarfc.png',
-    logoHeight: 72,
+    logoHeight: 52,
     href: '/partners/iarfc',
   },
   {
@@ -152,7 +152,7 @@ export default function PartnersIndexPage() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     padding: '2.5rem 2rem',
-                    minHeight: 140,
+                    height: 152,
                   }}>
                     <img
                       src={p.logo}
