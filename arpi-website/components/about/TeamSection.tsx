@@ -3,7 +3,7 @@ const team = [
     name: 'Jason Stanley',
     title: 'Managing Director',
     initials: 'JS',
-    bio: 'Jason leads ARPI with a focus on innovation, technology, and expanding the reach of professional certification in retirement benefits planning.',
+    bio: 'Jason built his career at the intersection of creativity, technology, and business strategy — starting as a web designer in the late 1990s and growing into leadership roles that consistently brought those disciplines together. He spent 12 years at Coalmarch Productions, a digital marketing agency he helped build as Creative Director before taking over as CEO, where he grew revenue 5× in five years. He then joined Canopy Lawn Care as CMO, overseeing a full rebrand, building integrated sales and marketing automation, and growing monthly recurring revenue 56% while reducing sales headcount by 40%. He completed AI and business strategy coursework at MIT Sloan School of Management in 2023. At ARPI, he leads strategy, technology, marketing, and member experience — building the systems, platforms, and infrastructure that help financial professionals earn and apply the credentials that matter most to their clients.',
     featured: true,
   },
   {
