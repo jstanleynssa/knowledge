@@ -124,7 +124,7 @@ export default function PinnaclePartnerPage() {
               retirement guidance.
             </p>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <a href="/enroll" className="btn-primary">Enroll as a Pinnacle Agent</a>
+              <a href="/enroll?partner=pinnacle" className="btn-primary">Enroll as a Pinnacle Agent</a>
               <a href="/credentials/irmaacp" className="btn-outline">IRMAACP™ — Start Here</a>
             </div>
           </div>
@@ -423,7 +423,7 @@ export default function PinnaclePartnerPage() {
             to build the most complete Medicare &amp; retirement credential stack available.
           </p>
           <div className="cta-banner-actions">
-            <a href="/enroll" className="btn-primary">Enroll as a Pinnacle Agent</a>
+            <a href="/enroll?partner=pinnacle" className="btn-primary">Enroll as a Pinnacle Agent</a>
             <a href="/contact" className="btn-outline">Questions? Contact Us</a>
           </div>
         </div>

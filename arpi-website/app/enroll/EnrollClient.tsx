@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, Fragment } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { fmt, TUITION_MAP, CERT_MAP, CE_NSSA, CE_IRMAACP } from '@/lib/pricing'
 import Image from 'next/image'
 import Nav from '@/components/Nav'
@@ -145,6 +146,8 @@ function SavingsIcon() {
 }
 
 // ─── Component ───────────────────────────────────────────────
+const PARTNER_DISCOUNT = 0.25
+
 export default function EnrollClient({
   defaultCourse,
   pickTwo,
@@ -152,6 +155,8 @@ export default function EnrollClient({
   defaultCourse?: string
   pickTwo?: boolean
 }) {
+  const searchParams = useSearchParams()
+  const isPartner = !!(searchParams?.get('partner'))
   const getInitial = (): string[] => {
     if (defaultCourse === 'all') return ENROLLABLE_IDS
     const validId = ENROLLABLE_IDS.find(id => id === defaultCourse)
@@ -178,7 +183,9 @@ export default function EnrollClient({
   const n       = selectedCourses.length
   const tuition = TUITION[n] ?? 0
   const cert    = CERT[n] ?? 0
-  const total   = tuition + cert
+  // Partner discount: 25% off tuition only
+  const partnerDiscount = isPartner ? Math.round(tuition * PARTNER_DISCOUNT) : 0
+  const total   = tuition - partnerDiscount + cert
   // "Individual" price = what you'd pay enrolling each selected course separately
   const fullPrice = selectedCourses.reduce((sum, c) => sum + (TUITION[1] + CERT[1]), 0)
   const savings   = fullPrice - total
@@ -331,8 +338,14 @@ export default function EnrollClient({
               <div className="ep-subs">
                 <div className="ep-sub">
                   <span>Course tuition</span>
-                  <span>{fmt(n * (TUITION_MAP[1] ?? 0))}</span>
+                  <span>{isPartner ? <s style={{ color: '#9ca3af', marginRight: 6 }}>{fmt(tuition)}</s> : null}{fmt(isPartner ? tuition - partnerDiscount : tuition)}</span>
                 </div>
+                {isPartner && partnerDiscount > 0 && (
+                  <div className="ep-sub ep-sub--discount">
+                    <span>Partner discount (25%)</span>
+                    <span className="ep-discount-val">−{fmt(partnerDiscount)}</span>
+                  </div>
+                )}
                 <div className="ep-sub">
                   <span>Certification &amp; dues</span>
                   <span>{fmt(n * (CERT_MAP[1] ?? 0))}</span>

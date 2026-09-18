@@ -103,7 +103,7 @@ export default function WinGroupPartnerPage() {
               income conversations they&rsquo;re already leading.
             </p>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <a href="/enroll" className="btn-primary">Enroll as a WIN Group Member</a>
+              <a href="/enroll?partner=win-group" className="btn-primary">Enroll as a WIN Group Member</a>
               <a href="/credentials" className="btn-outline">View All Credentials</a>
             </div>
           </div>
@@ -312,7 +312,7 @@ export default function WinGroupPartnerPage() {
             or both — and bring credential-backed planning depth to every client conversation.
           </p>
           <div className="cta-banner-actions">
-            <a href="/enroll" className="btn-primary">Enroll as a WIN Group Member</a>
+            <a href="/enroll?partner=win-group" className="btn-primary">Enroll as a WIN Group Member</a>
             <a href="/contact" className="btn-outline">Questions? Contact Us</a>
           </div>
         </div>

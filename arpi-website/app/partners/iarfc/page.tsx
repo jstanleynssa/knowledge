@@ -96,7 +96,7 @@ export default function IarfcPartnerPage() {
               conversation.
             </p>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-              <a href="/enroll" className="btn-primary">Enroll as an IARFC Member</a>
+              <a href="/enroll?partner=iarfc" className="btn-primary">Enroll as an IARFC Member</a>
               <a href="/credentials" className="btn-outline">View All Credentials</a>
             </div>
           </div>
@@ -280,7 +280,7 @@ export default function IarfcPartnerPage() {
             or end-of-life planning — or bundle and save.
           </p>
           <div className="cta-banner-actions">
-            <a href="/enroll" className="btn-primary">Enroll as an IARFC Member</a>
+            <a href="/enroll?partner=iarfc" className="btn-primary">Enroll as an IARFC Member</a>
             <a href="/contact" className="btn-outline">Questions? Contact Us</a>
           </div>
         </div>
