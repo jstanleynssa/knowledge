@@ -10,7 +10,7 @@ const team = [
     name: 'Todd Valles',
     title: 'Director of IRMAA & Medicare Education',
     initials: 'TV',
-    bio: 'Todd brings deep expertise in IRMAA, Medicare, and income planning, leading the development and delivery of the IRMAACP™ curriculum.',
+    bio: 'Todd spent nearly a decade at T. Rowe Price as VP of Separate Account Sales for the Northeast, working directly with annuity wholesalers at Jackson, Corebridge, Equitable, Prudential, Lincoln, PacLife, Protective, and Delaware. Before that he was an investment and economic sales resource at Prudential Financial covering broker-dealer and bank channels. That front-line wholesaler experience — understanding precisely how advisors think about annuity products alongside income and Medicare planning — is what he brings to the IRMAACP™ curriculum. At ARPI since 2023, he designs and continuously updates the IRMAA certification course, presents Medicare and Social Security strategy to wholesaler teams nationwide, and leads webinars helping advisors confidently integrate IRMAA costs into every client conversation.',
   },
   {
     name: 'Cindi Hill',
