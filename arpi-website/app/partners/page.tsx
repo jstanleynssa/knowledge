@@ -34,7 +34,7 @@ const PARTNERS = [
     fullName: 'Pinnacle Financial Services',
     description:
       'Insurance IMO supporting independent agents and financial advisors with annuity, life, and Medicare product access, practice management, and training.',
-    logo: '/logos/pinnacle.webp',
+    logo: '/logos/pinnacle.png',
     logoHeight: 60,
     href: '/partners/pinnacle',
   },
@@ -43,7 +43,7 @@ const PARTNERS = [
     fullName: 'The WIN Group',
     description:
       'Insurance and annuity marketing organization serving independent advisors focused on retirement income planning, asset protection, and client distribution strategies.',
-    logo: '/logos/win-group.webp',
+    logo: '/logos/win-group.png',
     logoHeight: 56,
     href: '/partners/win-group',
   },

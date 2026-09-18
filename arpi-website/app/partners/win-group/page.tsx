@@ -177,7 +177,7 @@ export default function WinGroupPartnerPage() {
             {/* Partner logo — dark panel */}
             <div className="partner-logo">
               <img
-                src="/logos/win-group.webp"
+                src="/logos/win-group.png"
                 alt="The WIN Group"
                 style={{ height: 84, width: 'auto', objectFit: 'contain', maxWidth: 280 }}
               />

@@ -185,7 +185,7 @@ export default function PinnaclePartnerPage() {
             {/* Partner logo — dark panel */}
             <div className="partner-logo">
               <img
-                src="/logos/pinnacle.webp"
+                src="/logos/pinnacle.png"
                 alt="Pinnacle Financial Services"
                 style={{ height: 84, width: 'auto', objectFit: 'contain', maxWidth: 280 }}
               />
