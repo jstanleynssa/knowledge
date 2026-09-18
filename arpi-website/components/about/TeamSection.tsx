@@ -10,13 +10,13 @@ const team = [
     name: 'Todd Valles',
     title: 'Director of IRMAA & Medicare Education',
     initials: 'TV',
-    bio: 'Todd spent nearly a decade at T. Rowe Price as VP of Separate Account Sales for the Northeast, working directly with annuity wholesalers at major carriers across the country, and before that as an investment and economic sales resource at Prudential Financial covering broker-dealer and bank channels. That front-line wholesaler experience — understanding precisely how advisors think about annuity products alongside Medicare and income planning — is what he brings to the IRMAACP™ curriculum at ARPI. He designs and delivers the certification course, presents Medicare and Social Security strategy to wholesaler teams nationwide, and leads webinars helping advisors confidently integrate IRMAA into every client conversation.',
+    bio: 'Todd brings nearly a decade of experience as VP of Separate Account Sales at T. Rowe Price, working directly with annuity wholesalers at major carriers across the country. That front-line wholesaler experience — understanding precisely how advisors think about annuity products alongside Medicare and income planning — is what he brings to the IRMAACP™ curriculum at ARPI, where he designs and delivers the certification course and presents Medicare and Social Security strategy to wholesaler teams and advisor audiences nationwide.',
   },
   {
     name: 'Cindi Hill',
     title: 'Director of Social Security Education',
     initials: 'CH',
-    bio: 'Cindi holds one of the deeper credential stacks in retirement planning — CFP®, ChFC®, RICP®, CRPC®, ABFP®, and NSSA® — backed by 33 years at TruStage leading financial planning and retirement consulting for credit union investment programs and their advisors nationwide. A national speaker at industry conferences and advisor events, she launched CKH Consulting LLC in 2025 to partner with financial advisors on case design, advanced retirement income planning, and client-facing education. At ARPI, she oversees the NSSA® curriculum and continuing education, ensuring the guidance advisors receive reflects the most current rules, regulations, and real-world planning scenarios.',
+    bio: 'Cindi holds one of the deeper credential stacks in retirement planning — CFP®, ChFC®, RICP®, CRPC®, ABFP®, and NSSA® — backed by 33 years at TruStage consulting credit union investment programs and advisors nationwide on IRA strategy, Social Security, and Medicare planning. A national speaker at industry conferences and advisor events, she launched CKH Consulting LLC in 2025 before joining ARPI to oversee the NSSA® curriculum and continuing education.'
   },
   {
     name: 'CiCi Reidy',
