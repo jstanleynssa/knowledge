@@ -1,7 +1,8 @@
 /**
- * /search?q= — Knowledge Base search results
+ * /codex/search?q= — Knowledge Base search results
  * Full-text search across published reference_pages.
  */
+import type { Metadata } from 'next';
 import { createPublicClient } from '@/lib/codex-supabase';
 
 export const dynamic = 'force-dynamic';
@@ -47,6 +48,19 @@ footer.foot{border-top:1px solid ${RULE};padding:24px 0 60px;font-size:13px;colo
 footer.foot a{color:${NAVY};text-decoration:none}
 `;
 
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  const query = (q ?? '').trim();
+  return {
+    title: query ? `"${query}" — ARPI Knowledge Base` : 'Search — ARPI Knowledge Base',
+    robots: { index: false, follow: false },
+  };
+}
+
 export default async function SearchPage({
   searchParams,
 }: {
@@ -72,93 +86,72 @@ export default async function SearchPage({
   }
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{query ? `"${query}" — ARPI Knowledge Base` : 'Search — ARPI Knowledge Base'}</title>
-        <meta name="robots" content="noindex" />
-        <style dangerouslySetInnerHTML={{ __html: css }} />
-      </head>
-      <body>
-        <header className="masthead">
-          <div className="wrap inner">
-            <a className="kb-mark" href="/">NSSA <span>Knowledge Base</span></a>
-            <a className="home-link" href="https://www.arpinstitute.com">arpinstitute.com &rsaquo;</a>
-          </div>
-        </header>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
 
-        <div className="wrap">
-          <div className="search-bar">
-            <form className="search-form" action="/codex/search" method="GET" role="search">
-              <input
-                className="search-input"
-                type="search"
-                name="q"
-                defaultValue={query}
-                placeholder="Search the knowledge base…"
-                autoComplete="off"
-                autoFocus
-                aria-label="Search"
-              />
-              <button className="search-btn" type="submit">Search</button>
-            </form>
-          </div>
-
-          {query.length > 1 && (
-            <p className="results-meta">
-              {results.length === 0
-                ? <>No results for <strong>&ldquo;{query}&rdquo;</strong></>
-                : <>{results.length} result{results.length !== 1 ? 's' : ''} for <strong>&ldquo;{query}&rdquo;</strong></>}
-            </p>
-          )}
-
-          {results.length > 0 && results.map(page => (
-            <a
-              key={page.id}
-              href={`/codex/${page.category}/${page.slug}`}
-              className="result-card"
-            >
-              {page.eyebrow && (
-                <p className={`result-eyebrow${page.category === 'irmaa' ? ' irmaa' : ''}`}>
-                  {page.eyebrow}
-                </p>
-              )}
-              <p className="result-title">{page.h1 || page.title}</p>
-              {page.meta_description && (
-                <p className="result-desc">{page.meta_description}</p>
-              )}
-            </a>
-          ))}
-
-          {query.length > 1 && results.length === 0 && (
-            <div className="no-results">
-              <h2>No results found</h2>
-              <p>Try a different search term, or browse by category.</p>
-              <a href="/codex/social-security">Social Security rules &rsaquo;</a>
-              &nbsp;&nbsp;·&nbsp;&nbsp;
-              <a href="/codex/irmaa">IRMAA &amp; Medicare rules &rsaquo;</a>
-            </div>
-          )}
-
-          {!query && (
-            <div className="no-results">
-              <h2>What are you looking for?</h2>
-              <p>Try searching for a topic — spousal benefits, earnings test, IRMAA appeal, WEP, and more.</p>
-              <a href="/codex/social-security">Browse Social Security &rsaquo;</a>
-              &nbsp;&nbsp;·&nbsp;&nbsp;
-              <a href="/codex/irmaa">Browse IRMAA &amp; Medicare &rsaquo;</a>
-            </div>
-          )}
+      <div className="wrap">
+        <div className="search-bar">
+          <form className="search-form" action="/codex/search" method="GET" role="search">
+            <input
+              className="search-input"
+              type="search"
+              name="q"
+              defaultValue={query}
+              placeholder="Search the knowledge base…"
+              autoComplete="off"
+              autoFocus
+              aria-label="Search"
+            />
+            <button className="search-btn" type="submit">Search</button>
+          </form>
         </div>
 
-        <footer className="foot">
-          <div className="wrap">
-            <a href="https://www.arpinstitute.com">National Social Security Advisors (NSSA&reg;)</a>
-            &nbsp;&mdash; these pages explain the rules; they are not individualized advice.
+        {query.length > 1 && (
+          <p className="results-meta">
+            {results.length === 0
+              ? <>No results for <strong>&ldquo;{query}&rdquo;</strong></>
+              : <>{results.length} result{results.length !== 1 ? 's' : ''} for <strong>&ldquo;{query}&rdquo;</strong></>}
+          </p>
+        )}
+
+        {results.length > 0 && results.map(page => (
+          <a
+            key={page.id}
+            href={`/codex/${page.category}/${page.slug}`}
+            className="result-card"
+          >
+            {page.eyebrow && (
+              <p className={`result-eyebrow${page.category === 'irmaa' ? ' irmaa' : ''}`}>
+                {page.eyebrow}
+              </p>
+            )}
+            <p className="result-title">{page.h1 || page.title}</p>
+            {page.meta_description && (
+              <p className="result-desc">{page.meta_description}</p>
+            )}
+          </a>
+        ))}
+
+        {query.length > 1 && results.length === 0 && (
+          <div className="no-results">
+            <h2>No results found</h2>
+            <p>Try a different search term, or browse by category.</p>
+            <a href="/codex/social-security">Social Security rules &rsaquo;</a>
+            &nbsp;&nbsp;·&nbsp;&nbsp;
+            <a href="/codex/irmaa">IRMAA &amp; Medicare rules &rsaquo;</a>
           </div>
-        </footer>
-      </body>
-    </html>
+        )}
+
+        {!query && (
+          <div className="no-results">
+            <h2>What are you looking for?</h2>
+            <p>Try searching for a topic — spousal benefits, earnings test, IRMAA appeal, WEP, and more.</p>
+            <a href="/codex/social-security">Browse Social Security &rsaquo;</a>
+            &nbsp;&nbsp;·&nbsp;&nbsp;
+            <a href="/codex/irmaa">Browse IRMAA &amp; Medicare &rsaquo;</a>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
