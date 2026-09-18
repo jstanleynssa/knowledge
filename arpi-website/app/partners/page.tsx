@@ -55,6 +55,7 @@ const PARTNERS = [
     logo: '/logos/lpl.png',
     logoHeight: 52,
     href: '/partners/lpl',
+    pending: true,
   },
   {
     name: 'Osaic',
@@ -64,6 +65,7 @@ const PARTNERS = [
     logo: '/logos/osaic.svg',
     logoHeight: 44,
     href: '/partners/osaic',
+    pending: true,
   },
   {
     name: 'Simplicity Group',
@@ -73,6 +75,7 @@ const PARTNERS = [
     logo: '/logos/simplicity.png',
     logoHeight: 52,
     href: '/partners/simplicity',
+    pending: true,
   },
   {
     name: 'Fidelity',
@@ -82,8 +85,11 @@ const PARTNERS = [
     logo: '/logos/fidelity.png',
     logoHeight: 64,
     href: '/partners/fidelity',
+    pending: true,
   },
 ]
+
+const VISIBLE_PARTNERS = PARTNERS.filter(p => !p.pending)
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
@@ -116,7 +122,7 @@ export default function PartnersIndexPage() {
           <div style={{ textAlign: 'center', marginBottom: 56 }}>
             <div className="section-eyebrow">Our Partners</div>
             <h2 className="section-title" style={{ marginBottom: 14 }}>
-              Seven Founding Institutional Partners
+              Our Institutional Partners
             </h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
               Each partnership gives members of that network preferred access to ARPI credentials —
@@ -129,7 +135,7 @@ export default function PartnersIndexPage() {
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: '1.5rem',
           }} className="partners-grid">
-            {PARTNERS.map(p => (
+            {VISIBLE_PARTNERS.map(p => (
               <a
                 key={p.href}
                 href={p.href}
