@@ -221,19 +221,21 @@ export default function AxiomPage() {
                       will not receive a full spousal boost if she files at age 62.
                     </div>
                     <div className="ax-answer-card">
-                      <p>The advice that the client will receive a full spousal boost if she
-                      files for Social Security benefits at age 62 and her husband files at
-                      full retirement age is incorrect.</p>
-                      <p>When the client files for Social Security benefits at age 62, she will
-                      receive a reduced retirement benefit due to early filing. If she later
-                      becomes eligible for spousal benefits when her husband files at full
-                      retirement age, the spousal benefit will also be reduced because she
-                      filed for her own benefits early. The reduction applies to both her own
-                      retirement benefit and the spousal benefit (GN 00204.035).</p>
-                      <p>Deemed filing rules require that when the client files for her own
-                      retirement benefits, she is also deemed to have filed for spousal
-                      benefits if she is eligible, which means she cannot delay the spousal
-                      benefit to receive a higher amount later (GN 00204.035).</p>
+                      <p>The advice given to the client requires clarification. If the client
+                      files for her own Social Security retirement benefits at age 62, her
+                      retirement benefit will indeed be reduced because she is filing before
+                      her full retirement age (FRA). However, the computation of benefits is
+                      based on two separate records: her own and her husband&rsquo;s.</p>
+                      <p>If the client becomes eligible for spousal benefits at her FRA, the
+                      spousal portion of her benefit will not be reduced, even though her own
+                      retirement benefit was reduced due to early filing. This means that while
+                      her personal retirement benefit is reduced for early filing, the spousal
+                      benefit she receives when she reaches FRA will be calculated without
+                      reduction, based on her husband&rsquo;s primary insurance amount (PIA)
+                      (RS 00615.500).</p>
+                      <p>Therefore, the client will receive a full spousal boost when she
+                      becomes eligible for the spousal benefit at her FRA, despite having
+                      claimed her own reduced retirement benefit early.</p>
                     </div>
 
                   </div>
