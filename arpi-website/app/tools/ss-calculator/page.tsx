@@ -35,6 +35,7 @@ interface StrategyResult {
   phases: PhaseBreakdown[]
   lifetimeTotal: number
   atAge: Record<number, number>
+  bMonthly: number  // B's own monthly (for tile display)
 }
 
 interface AnnualRow {
@@ -57,6 +58,7 @@ interface Results {
   names: { a: string; b: string }
   lifeExps: { a: number; b: number }
   annualRows: AnnualRow[]
+  ageDiff: number  // bCurrentAge - aCurrentAge, for breakeven B-age display
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -191,6 +193,14 @@ function runStrategy(
       }
     }
 
+    // Add Person B's own benefit to household total
+    if (marital === 'married' && b && bFilingAge != null && bOwn > 0) {
+      const bAge = aAge + ageDiff
+      if (bAge >= bFilingAge && bAge < lifeExpB) {
+        monthly += bOwn
+      }
+    }
+
     const colaFactor = Math.pow(1 + cola, aAge - aCurrentAge)
     running += monthly * colaFactor
 
@@ -209,6 +219,7 @@ function runStrategy(
     phases,
     lifetimeTotal: Math.round(running),
     atAge,
+    bMonthly: Math.round(bOwn),
   }
 }
 
@@ -244,11 +255,18 @@ function computeBreakeven(
       : 0
     const spousalStart = Math.max(strategy.aFilingAge, aAgeWhenBFiles)
 
-    if (aAge < strategy.aFilingAge) return 0
+    // B's own contribution while alive and after filing
+    let bContrib = 0
     if (marital && b && strategy.bFilingAge != null) {
-      if (aAge < spousalStart) return aOwn
-      if (aAge < bDeathAgeA) return aSpousal > 0 ? aOwn + aSpousal : aOwn
-      return aSurvivor > aOwn + aSpousal ? aSurvivor : aOwn + aSpousal
+      const bAge = aAge + ageDiff
+      if (bAge >= strategy.bFilingAge && bAge < lifeExpB) bContrib = bOwn
+    }
+
+    if (aAge < strategy.aFilingAge) return bContrib  // only B collecting before A files
+    if (marital && b && strategy.bFilingAge != null) {
+      if (aAge < spousalStart) return aOwn + bContrib
+      if (aAge < bDeathAgeA) return (aSpousal > 0 ? aOwn + aSpousal : aOwn) + bContrib
+      return aSurvivor > aOwn + aSpousal ? aSurvivor : aOwn + aSpousal  // B dead
     }
     return aOwn
   }
@@ -365,8 +383,17 @@ export default function SSCalculatorPage() {
         const aAge = yr + mo / 12
         if (aAge >= leA) break
         const cf = Math.pow(1 + colaRate, aAge - aCurrentAge2)
+        // A's contribution per strategy
         yrA += moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2) * cf
         yrB += moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2) * cf
+        // B's own contribution per strategy (while alive and after B's filing age)
+        if (b) {
+          const bAge = aAge + ageDiff2
+          if (bAge < leB) {
+            if (sbA != null && bAge >= sbA) yrA += bOwnA2 * cf
+            if (sbB != null && bAge >= sbB) yrB += bOwnB2 * cf
+          }
+        }
       }
       cumAnn_A += yrA
       cumAnn_B += yrB
@@ -393,6 +420,7 @@ export default function SSCalculatorPage() {
       names: { a: personA.name || 'Person A', b: personB.name || 'Person B' },
       lifeExps: { a: leA, b: leB },
       annualRows,
+      ageDiff: ageDiff2,
     })
     setErrors([])
   }, [marital, personA, personB, stratA, stratB, cola])
@@ -638,8 +666,14 @@ export default function SSCalculatorPage() {
                       <span className="ssc-phase-val">{fmt(ph.monthly)}<em>/mo</em></span>
                     </div>
                   ))}
+                  {marital === 'married' && results.stratA.bMonthly > 0 && (
+                    <div className="ssc-phase-row ssc-phase-row--partner">
+                      <span className="ssc-phase-label">{results.names.b}’s own benefit</span>
+                      <span className="ssc-phase-val">{fmt(results.stratA.bMonthly)}<em>/mo</em></span>
+                    </div>
+                  )}
                   <div className="ssc-tile-total">
-                    <span>Lifetime total</span>
+                    <span>Household total</span>
                     <span>{fmt(results.stratA.lifetimeTotal)}</span>
                   </div>
                 </div>
@@ -659,8 +693,14 @@ export default function SSCalculatorPage() {
                       <span className="ssc-phase-val">{fmt(ph.monthly)}<em>/mo</em></span>
                     </div>
                   ))}
+                  {marital === 'married' && results.stratB.bMonthly > 0 && (
+                    <div className="ssc-phase-row ssc-phase-row--partner">
+                      <span className="ssc-phase-label">{results.names.b}’s own benefit</span>
+                      <span className="ssc-phase-val">{fmt(results.stratB.bMonthly)}<em>/mo</em></span>
+                    </div>
+                  )}
                   <div className="ssc-tile-total">
-                    <span>Lifetime total</span>
+                    <span>Household total</span>
                     <span>{fmt(results.stratB.lifetimeTotal)}</span>
                   </div>
                 </div>
@@ -678,8 +718,13 @@ export default function SSCalculatorPage() {
 
                   {results.breakeven != null && (
                     <div className="ssc-breakeven">
-                      <span className="ssc-breakeven-label">Breakeven age</span>
-                      <span className="ssc-breakeven-val">{fmtAge(results.breakeven)}</span>
+                      <span className="ssc-breakeven-label">Breakeven</span>
+                      <span className="ssc-breakeven-val">
+                        {results.names.a}: {fmtAge(results.breakeven!)}
+                        {marital === 'married' && (
+                          <> &nbsp;/&nbsp; {results.names.b}: {fmtAge(results.breakeven! + results.ageDiff)}</>
+                        )}
+                      </span>
                     </div>
                   )}
                   {results.breakeven == null && (

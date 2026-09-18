@@ -3121,6 +3121,11 @@ article .prose h4 {
   font-size: 0.82rem;
   color: var(--ink-mid);
 }
+.ssc-phase-row--partner {
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+  padding-top: 12px;
+}
 .ssc-phase-val {
   font-size: 1.1rem;
   font-weight: 700;
