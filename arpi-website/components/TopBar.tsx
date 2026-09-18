@@ -1,8 +1,8 @@
 export default function TopBar() {
   return (
     <div className="top-bar">
-      Now enrolling for Q4 2026 — CELP® certification open to all financial professionals.&nbsp;
-      <a href="/credentials/celp">Learn more →</a>
+      NSSA® is now part of the Advanced Retirement Planning Institute (ARPI).&nbsp;
+      <a href="/about/nssa-arpi">Learn more →</a>
     </div>
   )
 }
