@@ -272,7 +272,7 @@ export default function SSCalculatorPage() {
   const [marital, setMarital] = useState<'single' | 'married'>('married')
   const [personA, setPersonA] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
   const [personB, setPersonB] = useState<PersonInput>({ name: '', pia: '', birthYear: '', birthMonth: '1', lifeExp: '90' })
-  const [cola, setCola] = useState('2.5')
+  const [cola, setCola] = useState('3')
   const [stratA, setStratA] = useState<StrategyInput>({ aFilingAge: '62', bFilingAge: '67' })
   const [stratB, setStratB] = useState<StrategyInput>({ aFilingAge: '67', bFilingAge: '67' })
   const [results, setResults] = useState<Results | null>(null)
