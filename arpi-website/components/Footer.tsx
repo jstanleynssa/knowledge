@@ -43,7 +43,7 @@ export default function Footer() {
               <li><a href="/axiom">AXIOM® Platform</a></li>
               <li><a href="https://members.nssapros.com" target="_blank" rel="noopener noreferrer">Member Community</a></li>
               <li><a href="/blog">Blog</a></li>
-              <li><a href="https://www.nssapros.com/directory" target="_blank" rel="noopener noreferrer">Find an Advisor</a></li>
+              <li><a href="/find-an-advisor">Find an Advisor</a></li>
             </ul>
           </div>
 
