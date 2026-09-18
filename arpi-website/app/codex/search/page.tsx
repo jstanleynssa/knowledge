@@ -90,7 +90,7 @@ export default async function SearchPage({
 
         <div className="wrap">
           <div className="search-bar">
-            <form className="search-form" action="/search" method="GET" role="search">
+            <form className="search-form" action="/codex/search" method="GET" role="search">
               <input
                 className="search-input"
                 type="search"
@@ -116,7 +116,7 @@ export default async function SearchPage({
           {results.length > 0 && results.map(page => (
             <a
               key={page.id}
-              href={`/${page.category}/${page.slug}`}
+              href={`/codex/${page.category}/${page.slug}`}
               className="result-card"
             >
               {page.eyebrow && (
@@ -135,9 +135,9 @@ export default async function SearchPage({
             <div className="no-results">
               <h2>No results found</h2>
               <p>Try a different search term, or browse by category.</p>
-              <a href="/social-security">Social Security rules &rsaquo;</a>
+              <a href="/codex/social-security">Social Security rules &rsaquo;</a>
               &nbsp;&nbsp;·&nbsp;&nbsp;
-              <a href="/irmaa">IRMAA &amp; Medicare rules &rsaquo;</a>
+              <a href="/codex/irmaa">IRMAA &amp; Medicare rules &rsaquo;</a>
             </div>
           )}
 
@@ -145,9 +145,9 @@ export default async function SearchPage({
             <div className="no-results">
               <h2>What are you looking for?</h2>
               <p>Try searching for a topic — spousal benefits, earnings test, IRMAA appeal, WEP, and more.</p>
-              <a href="/social-security">Browse Social Security &rsaquo;</a>
+              <a href="/codex/social-security">Browse Social Security &rsaquo;</a>
               &nbsp;&nbsp;·&nbsp;&nbsp;
-              <a href="/irmaa">Browse IRMAA &amp; Medicare &rsaquo;</a>
+              <a href="/codex/irmaa">Browse IRMAA &amp; Medicare &rsaquo;</a>
             </div>
           )}
         </div>
