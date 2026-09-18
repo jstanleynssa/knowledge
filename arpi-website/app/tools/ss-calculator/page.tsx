@@ -37,6 +37,16 @@ interface StrategyResult {
   atAge: Record<number, number>
 }
 
+interface AnnualRow {
+  ageA: number
+  ageB: number | null
+  bAlive: boolean
+  stratACum: number
+  stratBCum: number
+  stratAMonthly: number
+  stratBMonthly: number
+}
+
 interface Results {
   stratA: StrategyResult
   stratB: StrategyResult
@@ -46,6 +56,7 @@ interface Results {
   fra: { a: number; b: number }
   names: { a: string; b: string }
   lifeExps: { a: number; b: number }
+  annualRows: AnnualRow[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -303,6 +314,68 @@ export default function SSCalculatorPage() {
       leA, leB,
     )
 
+    // ── Annual rows for comparison table ──────────────────────────────────
+    const now2 = new Date()
+    const aCurrentAge2 = now2.getFullYear() - a.birthYear + (now2.getMonth() + 1 - a.birthMonth) / 12
+    const bCurrentAge2 = b ? now2.getFullYear() - b.birthYear + (now2.getMonth() + 1 - b.birthMonth) / 12 : null
+    const ageDiff2 = bCurrentAge2 != null ? bCurrentAge2 - aCurrentAge2 : 0
+
+    const aOwnA2 = calcOwnBenefit(a.pia, a.birthYear, saA)
+    const aOwnB2 = calcOwnBenefit(a.pia, a.birthYear, saB)
+    const aAgeWhenBFilesA2 = sbA != null ? sbA - ageDiff2 : 0
+    const aAgeWhenBFilesB2 = sbB != null ? sbB - ageDiff2 : 0
+    const aSpousalA2 = (marital === 'married' && b && sbA != null) ? calcSpousalAddon(a.pia, b.pia, a.birthYear, aAgeWhenBFilesA2) : 0
+    const aSpousalB2 = (marital === 'married' && b && sbB != null) ? calcSpousalAddon(a.pia, b.pia, a.birthYear, aAgeWhenBFilesB2) : 0
+    const spousalStartA2 = Math.max(saA, aAgeWhenBFilesA2)
+    const spousalStartB2 = Math.max(saB, aAgeWhenBFilesB2)
+    const bDeathA2 = b ? leB - ageDiff2 : leA  // A's age when B dies
+    const bOwnA2 = (marital === 'married' && b && sbA != null) ? calcOwnBenefit(b.pia, b.birthYear, sbA) : 0
+    const bOwnB2 = (marital === 'married' && b && sbB != null) ? calcOwnBenefit(b.pia, b.birthYear, sbB) : 0
+    const aSurvivorA2 = (marital === 'married' && b) ? calcSurvivorBenefit(aOwnA2 + aSpousalA2, bOwnA2, b.pia) : 0
+    const aSurvivorB2 = (marital === 'married' && b) ? calcSurvivorBenefit(aOwnB2 + aSpousalB2, bOwnB2, b.pia) : 0
+
+    const moAt = (
+      aAge: number, aOwn: number, filingAge: number,
+      spousal: number, spousalStart: number,
+      bDeath: number, survivor: number,
+    ): number => {
+      if (aAge < filingAge) return 0
+      if (marital === 'married' && b) {
+        if (aAge < spousalStart) return aOwn
+        if (aAge < bDeath) return spousal > 0 ? aOwn + spousal : aOwn
+        return Math.max(aOwn, survivor)
+      }
+      return aOwn
+    }
+
+    const annualRows: AnnualRow[] = []
+    let cumAnn_A = 0, cumAnn_B = 0
+    const startYr = Math.floor(aCurrentAge2)
+    const endYr = Math.ceil(leA)
+
+    for (let yr = startYr; yr <= endYr; yr++) {
+      let yrA = 0, yrB = 0
+      for (let mo = 0; mo < 12; mo++) {
+        const aAge = yr + mo / 12
+        if (aAge >= leA) break
+        yrA += moAt(aAge, aOwnA2, saA, aSpousalA2, spousalStartA2, bDeathA2, aSurvivorA2)
+        yrB += moAt(aAge, aOwnB2, saB, aSpousalB2, spousalStartB2, bDeathA2, aSurvivorB2)
+      }
+      cumAnn_A += yrA
+      cumAnn_B += yrB
+
+      const bAgeThisYr = b ? yr + ageDiff2 : null
+      annualRows.push({
+        ageA: yr,
+        ageB: bAgeThisYr != null ? Math.round(bAgeThisYr * 10) / 10 : null,
+        bAlive: bAgeThisYr != null ? bAgeThisYr < leB : false,
+        stratACum: Math.round(cumAnn_A),
+        stratBCum: Math.round(cumAnn_B),
+        stratAMonthly: Math.round(yrA / 12),
+        stratBMonthly: Math.round(yrB / 12),
+      })
+    }
+
     setResults({
       stratA: resA,
       stratB: resB,
@@ -312,6 +385,7 @@ export default function SSCalculatorPage() {
       fra: { a: fraA, b: fraB },
       names: { a: personA.name || 'Person A', b: personB.name || 'Person B' },
       lifeExps: { a: leA, b: leB },
+      annualRows,
     })
     setErrors([])
   }, [marital, personA, personB, stratA, stratB])
@@ -527,11 +601,13 @@ export default function SSCalculatorPage() {
               <div className="ssc-tiles-grid">
 
                 {/* Strategy A tile */}
-                <div className="ssc-result-tile ssc-result-tile--a">
+                <div className={`ssc-result-tile${results.netDiff < 0 ? ' ssc-result-tile--winner' : ''}`}>
                   <p className="ssc-tile-label">Strategy A</p>
                   <p className="ssc-tile-filing">
-                    Person A files at {stratA.aFilingAge}
-                    {marital === 'married' && ` · Person B files at ${stratA.bFilingAge}`}
+                    {marital === 'married'
+                      ? `${results.names.a} files at ${stratA.aFilingAge} and ${results.names.b} files at ${stratA.bFilingAge}`
+                      : `${results.names.a} files at ${stratA.aFilingAge}`
+                    }
                   </p>
                   {results.stratA.phases.map((ph, i) => (
                     <div key={i} className="ssc-phase-row">
@@ -546,11 +622,13 @@ export default function SSCalculatorPage() {
                 </div>
 
                 {/* Strategy B tile */}
-                <div className="ssc-result-tile ssc-result-tile--b">
+                <div className={`ssc-result-tile${results.netDiff >= 0 ? ' ssc-result-tile--winner' : ''}`}>
                   <p className="ssc-tile-label">Strategy B</p>
                   <p className="ssc-tile-filing">
-                    Person A files at {stratB.aFilingAge}
-                    {marital === 'married' && ` · Person B files at ${stratB.bFilingAge}`}
+                    {marital === 'married'
+                      ? `${results.names.a} files at ${stratB.aFilingAge} and ${results.names.b} files at ${stratB.bFilingAge}`
+                      : `${results.names.a} files at ${stratB.aFilingAge}`
+                    }
                   </p>
                   {results.stratB.phases.map((ph, i) => (
                     <div key={i} className="ssc-phase-row">
@@ -567,7 +645,10 @@ export default function SSCalculatorPage() {
                 {/* Difference tile */}
                 <div className={`ssc-result-tile ssc-result-tile--diff${results.netDiff > 0 ? ' ssc-result-tile--gain' : ' ssc-result-tile--loss'}`}>
                   <p className="ssc-tile-label">
-                    {results.netDiff >= 0 ? 'B is better by' : 'A is better by'}
+                    {results.netDiff >= 0
+                      ? `Strategy B is better by`
+                      : `Strategy A is better by`
+                    }
                   </p>
                   <p className="ssc-diff-num">{fmt(Math.abs(results.netDiff))}</p>
                   <p className="ssc-diff-sub">lifetime (to age {results.lifeExps.a})</p>
@@ -580,35 +661,53 @@ export default function SSCalculatorPage() {
                   )}
                   {results.breakeven == null && (
                     <p className="ssc-breakeven-none">
-                      Strategy B never overtakes A within the projection
+                      {results.netDiff >= 0 ? 'Strategy A' : 'Strategy B'} never overtakes within the projection
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Milestone table */}
+              {/* Annual table */}
               <div className="ssc-milestone-wrap">
-                <h2 className="ssc-section-heading">Cumulative benefits by age</h2>
+                <h2 className="ssc-section-heading">Cumulative benefits by year</h2>
                 <div className="ssc-table-wrap">
                   <table className="ssc-table">
                     <thead>
                       <tr>
-                        <th>Age</th>
-                        <th>Strategy A</th>
-                        <th>Strategy B</th>
+                        <th>{results.names.a}</th>
+                        {marital === 'married' && <th>{results.names.b}</th>}
+                        <th>Strategy A /mo</th>
+                        <th>Strategy A total</th>
+                        <th>Strategy B /mo</th>
+                        <th>Strategy B total</th>
                         <th>Difference</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {results.milestones.map(ms => {
-                        const a = results.stratA.atAge[ms] ?? 0
-                        const b = results.stratB.atAge[ms] ?? 0
-                        const diff = b - a
+                      {results.annualRows.map((row, i) => {
+                        const diff = row.stratBCum - row.stratACum
+                        const bDiesThisYear = marital === 'married' && !row.bAlive &&
+                          (i === 0 || (results.annualRows[i - 1]?.bAlive ?? true))
+                        const isLastYear = row.ageA >= Math.floor(results.lifeExps.a)
                         return (
-                          <tr key={ms}>
-                            <td className="ssc-td-age">{results.names.a} age {ms}</td>
-                            <td>{fmt(a)}</td>
-                            <td>{fmt(b)}</td>
+                          <tr key={i} className={bDiesThisYear ? 'ssc-tr-event' : isLastYear ? 'ssc-tr-last' : ''}>
+                            <td className="ssc-td-age">
+                              Age {row.ageA}
+                              {isLastYear && <span className="ssc-badge ssc-badge--a"> last year</span>}
+                            </td>
+                            {marital === 'married' && (
+                              <td className="ssc-td-age">
+                                {row.bAlive
+                                  ? `Age ${Math.floor(row.ageB ?? 0)}`
+                                  : <span className="ssc-deceased">Deceased</span>
+                                }
+                                {bDiesThisYear && <span className="ssc-badge ssc-badge--b"> dies</span>}
+                              </td>
+                            )}
+                            <td className="ssc-td-monthly">{row.stratAMonthly > 0 ? fmt(row.stratAMonthly) : '—'}</td>
+                            <td>{fmt(row.stratACum)}</td>
+                            <td className="ssc-td-monthly">{row.stratBMonthly > 0 ? fmt(row.stratBMonthly) : '—'}</td>
+                            <td>{fmt(row.stratBCum)}</td>
                             <td className={diff > 0 ? 'ssc-td-pos' : diff < 0 ? 'ssc-td-neg' : ''}>
                               {diff >= 0 ? '+' : ''}{fmt(diff)}
                             </td>

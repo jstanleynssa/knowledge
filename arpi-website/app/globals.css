@@ -3086,7 +3086,7 @@ article .prose h4 {
   border-radius: 8px;
   padding: 28px 24px;
 }
-.ssc-result-tile--b { border-top: 3px solid var(--green-mid); }
+.ssc-result-tile--winner { border-top: 3px solid var(--green-mid); }
 .ssc-result-tile--gain { background: var(--green-dark); color: var(--white); }
 .ssc-result-tile--loss { background: var(--blue-dark); color: var(--white); }
 
@@ -3205,6 +3205,13 @@ article .prose h4 {
 .ssc-td-age { font-weight: 600; color: var(--ink-mid); }
 .ssc-td-pos { color: var(--green-dark); font-weight: 600; }
 .ssc-td-neg { color: var(--red-mid); font-weight: 600; }
+.ssc-td-monthly { color: var(--ink-light); font-size: 0.85rem; }
+.ssc-tr-event td { background: #fff8e1; }
+.ssc-tr-last td { background: var(--bg-soft); }
+.ssc-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 5px; border-radius: 3px; margin-left: 4px; }
+.ssc-badge--a { background: var(--blue-xlight); color: var(--blue-dark); }
+.ssc-badge--b { background: #fff3cd; color: #7d5a00; }
+.ssc-deceased { color: var(--ink-xlight); font-style: italic; font-size: 0.82rem; }
 
 /* Disclaimer */
 .ssc-disclaimer {
