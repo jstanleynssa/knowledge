@@ -2830,3 +2830,39 @@ article .prose h4 {
     gap: 32px;
   }
 }
+
+/* ─── Partner Pages ─────────────────────────────── */
+.partner-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 64px;
+  align-items: center;
+}
+.partner-logo {
+  background: #111827;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 48px;
+  gap: 20px;
+  min-height: 240px;
+}
+.partner-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .partner-intro { grid-template-columns: 1fr; gap: 32px; }
+  .partner-logo  { padding: 36px 24px; min-height: 140px; }
+  .partner-logo img { height: 52px !important; }
+  .partner-values { grid-template-columns: 1fr; }
+  .partner-creds  { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .partner-intro { gap: 20px; }
+  .partner-logo  { padding: 24px 16px; }
+}

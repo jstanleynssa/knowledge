@@ -113,24 +113,9 @@ export default function LplPartnerPage() {
       {/* ── Partner intro ── */}
       <section style={{ padding: '80px 0', background: WHITE }}>
         <div className="container">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
-            gap: 64,
-            alignItems: 'center',
-          }}>
+          <div className="partner-intro">
             {/* Logo panel */}
-            <div style={{
-              background: '#111827',
-              borderRadius: 12,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '64px 48px',
-              gap: 20,
-              minHeight: 240,
-            }}>
+            <div className="partner-logo">
               <img
                 src="/logos/lpl.png"
                 alt="LPL Financial"
@@ -186,11 +171,7 @@ export default function LplPartnerPage() {
               Just the retirement income knowledge your clients are actually asking about.
             </p>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 24,
-          }}>
+          <div className="partner-values">
             {VALUES.map((v, i) => (
               <div key={v.title} style={{
                 background: WHITE,
@@ -231,7 +212,7 @@ export default function LplPartnerPage() {
               Each credential stands on its own. Earn one, two, or all three -- bundle pricing applies automatically.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+          <div className="partner-creds credentials-grid">
             {CREDENTIALS.map(c => (
               <div key={c.tag} className="cred-card">
                 <div className="cred-card-header">

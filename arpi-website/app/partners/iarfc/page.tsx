@@ -77,7 +77,7 @@ const VALUES = [
 
 export default function IarfcPartnerPage() {
   return (
-    <>
+    <div className="partner-page">
       <Nav />
 
       {/* ── Hero ── */}
@@ -106,7 +106,7 @@ export default function IarfcPartnerPage() {
       {/* ── Partner intro ── */}
       <section style={{ padding: '80px 0', background: WHITE }}>
         <div className="container">
-          <div style={{
+          <div className="pp-intro" style={{
             display: 'grid',
             gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
             gap: 64,
@@ -123,7 +123,7 @@ export default function IarfcPartnerPage() {
               padding: '64px 48px',
               gap: 20,
               minHeight: 240,
-            }}>
+            }} className="pp-logo">
               <img
                 src="/logos/iarfc.png"
                 alt="IARFC"
@@ -189,7 +189,7 @@ export default function IarfcPartnerPage() {
               Just the planning knowledge your clients are actually asking about.
             </p>
           </div>
-          <div style={{
+          <div className="pp-values" style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(3, 1fr)',
             gap: 24,
@@ -286,7 +286,25 @@ export default function IarfcPartnerPage() {
         </div>
       </section>
 
+      <style>{`
+        @media (max-width: 768px) {
+          .pp-intro { grid-template-columns: 1fr !important; gap: 32px !important; }
+          .pp-logo  { padding: 36px 24px !important; min-height: 120px !important; }
+          .pp-logo img { height: 52px !important; }
+          .pp-values { grid-template-columns: 1fr !important; }
+          .pp-creds  { grid-template-columns: 1fr !important; }
+          .partner-page .cta-banner-actions { flex-direction: column !important; align-items: center !important; }
+          .partner-page .cta-banner-actions a { width: 100% !important; max-width: 320px !important; text-align: center !important; }
+          .partner-page .hero { padding: 56px 0 44px !important; }
+          .partner-page .hero h1 { font-size: clamp(1.6rem, 6vw, 2.4rem) !important; }
+        }
+        @media (max-width: 480px) {
+          .partner-page .hero { padding: 44px 0 36px !important; }
+          .pp-intro { gap: 20px !important; }
+          .pp-logo  { padding: 24px 16px !important; }
+        }
+      `}</style>
       <Footer />
-    </>
+    </div>
   )
 }

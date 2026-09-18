@@ -181,24 +181,9 @@ export default function PinnaclePartnerPage() {
       {/* ── Partner intro ── */}
       <section style={{ padding: '80px 0', background: WHITE }}>
         <div className="container">
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)',
-            gap: 64,
-            alignItems: 'center',
-          }}>
+          <div className="partner-intro">
             {/* Partner logo — dark panel */}
-            <div style={{
-              background: '#111827',
-              borderRadius: 12,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '64px 48px',
-              gap: 20,
-              minHeight: 240,
-            }}>
+            <div className="partner-logo">
               <img
                 src="/logos/pinnacle.webp"
                 alt="Pinnacle Financial Services"
@@ -265,11 +250,7 @@ export default function PinnaclePartnerPage() {
               clients call first and refer to most.
             </p>
           </div>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 24,
-          }}>
+          <div className="partner-values">
             {VALUES.map((v, i) => (
               <div key={v.title} style={{
                 background: WHITE,
