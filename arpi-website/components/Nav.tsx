@@ -25,7 +25,7 @@ export default function Nav() {
           <div className="nav-inner">
             {/* Flat mobile logo — visible only on mobile, no badge drop */}
             <a href="/working-home" className="nav-logo-mobile">
-              <Image src="/assets/arpi-logo-new.png" alt="ARPI" width={48} height={48} style={{ height: 48, width: 'auto', display: 'block' }} priority />
+              <Image src="/assets/arpi-logo-mobile.png" alt="ARPI" width={734} height={100} style={{ height: 32, width: 'auto', maxWidth: 220, display: 'block' }} priority />
             </a>
 
             {/* Badge logo — desktop only */}
