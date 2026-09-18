@@ -16,7 +16,7 @@ const team = [
     name: 'Cindi Hill',
     title: 'Director of Social Security Education',
     initials: 'CH',
-    bio: 'Cindi oversees the NSSA® curriculum and continuing education, ensuring advisors receive the most current and accurate Social Security guidance.',
+    bio: 'Cindi holds one of the deeper credential stacks in retirement planning — CFP®, ChFC®, RICP®, CRPC®, ABFP®, and NSSA® — backed by 33 years at TruStage, where she led the financial planning initiative for TruStage Wealth Management Consulting Services. In that role she supported and coached credit union investment programs and their advisors nationwide on IRA and qualified plan strategy, Social Security claiming, and Medicare planning, while also building a national speaking career at industry conferences, advisor trainings, and client events across the country. In 2025 she launched CKH Consulting LLC, partnering with financial advisors on case design, advanced retirement income planning, and client-facing education. At ARPI, she oversees the NSSA® curriculum and continuing education — ensuring the guidance advisors receive reflects the most current rules, regulations, and real-world planning scenarios.',
   },
   {
     name: 'CiCi Reidy',
