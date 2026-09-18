@@ -2887,6 +2887,7 @@ article .prose h4 {
   margin-bottom: 12px;
 }
 .ssc-h1 {
+  font-family: var(--font-merriweather), Georgia, serif;
   font-size: clamp(1.8rem, 4vw, 2.6rem);
   font-weight: 700;
   color: var(--white);
