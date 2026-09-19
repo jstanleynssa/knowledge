@@ -38,6 +38,13 @@ export async function POST(req: NextRequest) {
   const supabase = createServiceClient();
   const today = new Date().toISOString().split('T')[0];
 
+  // Only approve writes to verified_answers — 'correct' just logs the reviewer note.
+  // The rewritten answer produced by /api/ask/rewrite is sent back to /api/feedback
+  // as an 'approve' once the reviewer verifies it, so that clean HTML answer is what
+  // lands in the corpus. Storing raw correction notes directly caused duplicate and
+  // low-quality entries. (Fixed 2026-09-19)
+  const willSaveToVerified = feedback_type === 'approve';
+
   // Always log to answer_feedback
   const { error: fbErr } = await supabase.from('answer_feedback').insert({
     question,
@@ -50,35 +57,24 @@ export async function POST(req: NextRequest) {
     correction_tags:   correction_tags ?? [],
     correction_note:   correction_note ?? null,
     category:          category ?? 'social-security',
-    saved_to_verified: feedback_type === 'reject' ? false : true,
+    saved_to_verified: willSaveToVerified,
     reviewer_name:     reviewer_name ?? null,
   });
   if (fbErr) console.error('feedback insert error:', fbErr.message);
 
-  // For approve or correct: save to verified_answers with embedding
-  if (feedback_type === 'approve' || feedback_type === 'correct') {
-    const finalAnswer = feedback_type === 'correct' ? (corrected_answer ?? original_answer) : original_answer;
+  // Only save to verified_answers when the reviewer explicitly approves an answer.
+  // This ensures only verified, properly-formatted HTML answers enter the corpus —
+  // not raw correction notes submitted during the suggestion step.
+  if (willSaveToVerified) {
+    const finalAnswer = original_answer;
 
     // Extract any POMS/CFR/Handbook section numbers mentioned in the correction note
     // and merge them into primary_sources so they appear as clickable citations.
     // Patterns: RS 00615.690, HI 01101.020, GN 00204.020, 20 CFR 404.313, HBK 0720, etc.
     const mergedSources = [...(primary_sources ?? [])];
-    if (feedback_type === 'correct' && correction_note) {
-      const sectionPattern = /\b(?:RS|GN|HI|SI|DI|RM|SM|MS|PR|PS|NL|TN|HBK)\s+\d{5}\.\d{3}[A-Z0-9]*|\b20\s+CFR\s+\d+\.\d+|\bHBK\s+\d+/gi;
-      const rawMatches: string[] = (correction_note.match(sectionPattern) ?? []) as string[];
-      const mentioned: string[] = [...new Set(rawMatches.map((s: string) => s.trim().replace(/\s+/g, ' ')))]
-      for (const sec of mentioned) {
-        const normalized = sec.replace(/\s+/g, ' ');
-        if (!mergedSources.some((s: { section_number: string }) => s.section_number === normalized)) {
-          // Build a POMS URL for RS/GN/HI etc.
-          const pomsMatch = normalized.match(/^([A-Z]{2})\s+(\d{5})\.(\d{3})/i);
-          const url = pomsMatch
-            ? `https://secure.ssa.gov/apps10/poms.nsf/lnx/${pomsMatch[1].toLowerCase()}${pomsMatch[2]}${pomsMatch[3]}000`
-            : '';
-          mergedSources.push({ section_number: normalized, url, tag: 'Source' });
-        }
-      }
-    }
+    // No longer extracts sections from correction_note here since 'correct'
+    // submissions no longer reach this branch. Section extraction now happens
+    // in the rewrite flow before the reviewer approves the final answer.
 
     try {
       const embRes = await openai.embeddings.create({
