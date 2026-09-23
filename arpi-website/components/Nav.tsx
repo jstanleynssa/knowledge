@@ -22,8 +22,9 @@ function ChevronDown({ size = 11 }: { size?: number }) {
 }
 
 export default function Nav() {
-  const [menuOpen, setMenuOpen]   = useState(false)
-  const [toolsOpen, setToolsOpen] = useState(false)
+  const [menuOpen, setMenuOpen]       = useState(false)
+  const [toolsOpen, setToolsOpen]     = useState(false)
+  const [coursesOpen, setCoursesOpen] = useState(false)
 
   return (
     <>
@@ -61,7 +62,41 @@ export default function Nav() {
 
             <ul className="nav-links">
               <li><a href="/about">About Us</a></li>
-              <li><a href="/credentials">Courses &amp; Certifications</a></li>
+              {/* Courses & Certifications dropdown */}
+              <li className="nav-has-dropdown">
+                <span className="nav-dropdown-trigger">
+                  Courses &amp; Certifications <ChevronDown />
+                </span>
+                <div className="nav-dropdown-panel">
+                  <a href="/credentials/nssa" className="nav-dropdown-item">
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/nssa-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                      <div className="nav-dropdown-label">NSSA®</div>
+                      <div className="nav-dropdown-desc">National Social Security Advisor</div>
+                    </div>
+                  </a>
+                  <a href="/credentials/irmaacp" className="nav-dropdown-item">
+                    <div className="nav-dropdown-icon" style={{ background: '#fce7f3' }}>
+                      <Image src="/assets/irmaa-logo.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                      <div className="nav-dropdown-label">IRMAACP®</div>
+                      <div className="nav-dropdown-desc">IRMAA Certified Planner</div>
+                    </div>
+                  </a>
+                  <a href="/credentials/celp" className="nav-dropdown-item">
+                    <div className="nav-dropdown-icon" style={{ background: '#e8f5f1' }}>
+                      <Image src="/assets/celp-logo.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    </div>
+                    <div>
+                      <div className="nav-dropdown-label">CELP®</div>
+                      <div className="nav-dropdown-desc">Certified End of Life Planner</div>
+                    </div>
+                  </a>
+                </div>
+              </li>
               <li><a href="/codex">Knowledge Base</a></li>
 
               {/* Tools dropdown */}
@@ -127,7 +162,27 @@ export default function Nav() {
           <div className="nav-mobile-inner">
             <ul className="nav-mobile-links">
               <li><a href="/about" onClick={() => setMenuOpen(false)}>About Us</a></li>
-              <li><a href="/credentials" onClick={() => setMenuOpen(false)}>Courses &amp; Certifications</a></li>
+
+              {/* Courses accordion */}
+              <li style={{ padding: 0 }}>
+                <button
+                  className="nav-mobile-group-toggle"
+                  onClick={() => setCoursesOpen(!coursesOpen)}
+                  aria-expanded={coursesOpen}
+                >
+                  Courses &amp; Certifications
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transform: coursesOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s', opacity: 0.6 }}>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+                <div className={`nav-mobile-sublinks${coursesOpen ? ' open' : ''}`}>
+                  <a href="/credentials/nssa" onClick={() => setMenuOpen(false)}>NSSA® — National Social Security Advisor</a>
+                  <a href="/credentials/irmaacp" onClick={() => setMenuOpen(false)}>IRMAACP® — IRMAA Certified Planner</a>
+                  <a href="/credentials/celp" onClick={() => setMenuOpen(false)}>CELP® — End of Life Planner</a>
+                </div>
+              </li>
               <li><a href="/codex" onClick={() => setMenuOpen(false)}>Knowledge Base</a></li>
 
               {/* Tools accordion */}
