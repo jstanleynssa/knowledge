@@ -275,15 +275,15 @@ body {
   background: var(--bg-soft);
 }
 .nav-dropdown-icon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
   flex-shrink: 0;
   margin-top: 1px;
+  overflow: hidden;
 }
 .nav-dropdown-label {
   font-size: 0.8125rem;

@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Script from 'next/script'
 import TopBar from '@/components/TopBar'
 
-const ICON_SIZE = 28
+const ICON_SIZE = 36
 
 function ChevronDown({ size = 11 }: { size?: number }) {
   return (
@@ -71,8 +71,8 @@ export default function Nav() {
                 </span>
                 <div className="nav-dropdown-panel">
                   <a href="/axiom" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: '#e8f4fb' }}>
-                      <Image src="/assets/axiom-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/axiom-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">AXIOM®</div>
@@ -80,8 +80,8 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/calculus" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: '#e8f5f1' }}>
-                      <Image src="/assets/calculus-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/calculus-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">CALCULUS</div>
@@ -89,8 +89,8 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/retirement-advisor-pro" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: '#e8edf7' }}>
-                      <Image src="/assets/rap-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/rap-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">Retirement Advisor Pro</div>
