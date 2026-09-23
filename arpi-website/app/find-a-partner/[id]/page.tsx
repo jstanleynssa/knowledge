@@ -128,17 +128,27 @@ export default async function PartnerProfilePage(
         .partner-profile-body-indent {
           margin-left: ${BODY_INDENT}px;
         }
+        .partner-body-cols {
+          display: grid;
+          grid-template-columns: 1fr 320px;
+          gap: 3rem;
+          align-items: start;
+        }
+        .partner-form-sticky {
+          position: sticky;
+          top: 2rem;
+        }
+        @media (max-width: 900px) {
+          .partner-body-cols {
+            grid-template-columns: 1fr;
+          }
+          .partner-form-sticky {
+            position: static;
+          }
+        }
         @media (max-width: 640px) {
           .partner-profile-body-indent { margin-left: 0; }
           .partner-hero-avatar { display: none !important; }
-        }
-        .pc-grid-2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 14px;
-        }
-        @media (max-width: 480px) {
-          .pc-grid-2 { grid-template-columns: 1fr; }
         }
       `}</style>
 
@@ -241,184 +251,149 @@ export default async function PartnerProfilePage(
         <section style={{ padding: '3rem 0 5rem', flex: 1 }}>
           <div className="container">
             <div className="partner-profile-body-indent">
+              <div className="partner-body-cols">
 
-              {/* ── About ── */}
-              {partner.about && (
-                <div style={{ marginBottom: '2.5rem' }}>
-                  <h2 style={{
-                    fontFamily: 'var(--font-merriweather), Georgia, serif',
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
-                    color: GRAY.dark,
-                    margin: '0 0 10px',
-                  }}>
-                    About
-                  </h2>
-                  <p style={{ fontSize: '1rem', color: GRAY.dark, lineHeight: 1.75, margin: 0 }}>
-                    {partner.about}
-                  </p>
-                </div>
-              )}
+                {/* ── Left column: content ── */}
+                <div>
+                  {/* About */}
+                  {partner.about && (
+                    <div style={{ marginBottom: '2.5rem' }}>
+                      <h2 style={{
+                        fontFamily: 'var(--font-merriweather), Georgia, serif',
+                        fontSize: '1.15rem',
+                        fontWeight: 700,
+                        color: GRAY.dark,
+                        margin: '0 0 10px',
+                      }}>
+                        About
+                      </h2>
+                      <p style={{ fontSize: '1rem', color: GRAY.dark, lineHeight: 1.75, margin: 0 }}>
+                        {partner.about}
+                      </p>
+                    </div>
+                  )}
 
-              {/* ── Detail chips ── */}
-              <div style={{
-                display: 'flex',
-                gap: '10px',
-                flexWrap: 'wrap',
-                marginBottom: '2.5rem',
-              }}>
-                <span style={{
-                  display: 'inline-block',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  borderRadius: '6px',
-                  padding: '5px 12px',
-                  background: '#f0f9ff',
-                  color: '#0369a1',
-                  border: '1px solid #bae6fd',
-                }}>
-                  {DIRECTION_LABELS[partner.referral_direction] ?? partner.referral_direction}
-                </span>
-                {partner.clients_per_year && (
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    borderRadius: '6px',
-                    padding: '5px 12px',
-                    background: GRAY.bg,
-                    color: GRAY.text,
-                  }}>
-                    {partner.clients_per_year} clients/yr
-                  </span>
-                )}
-              </div>
-
-              {/* ── Contact information ── */}
-              {(partner.email || partner.phone || website || linkedIn) && (
-                <div style={{ marginBottom: '2.5rem' }}>
-                  <h2 style={{
-                    fontFamily: 'var(--font-merriweather), Georgia, serif',
-                    fontSize: '1.15rem',
-                    fontWeight: 700,
-                    color: GRAY.dark,
-                    margin: '0 0 14px',
-                  }}>
-                    Contact Information
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {partner.email && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px', flexShrink: 0 }}>✉️</span>
-                        <a
-                          href={`mailto:${partner.email}`}
-                          style={{ fontSize: '15px', color: GREEN, fontWeight: 600, textDecoration: 'none' }}
-                        >
-                          {partner.email}
-                        </a>
-                      </div>
-                    )}
-                    {partner.phone && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px', flexShrink: 0 }}>📞</span>
-                        <a
-                          href={`tel:${partner.phone.replace(/[^+\d]/g, '')}`}
-                          style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}
-                        >
-                          {partner.phone}
-                        </a>
-                      </div>
-                    )}
-                    {website && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px', flexShrink: 0 }}>🌐</span>
-                        <a
-                          href={website.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}
-                        >
-                          {website.label}
-                        </a>
-                      </div>
-                    )}
-                    {linkedIn && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5" aria-hidden="true" style={{ flexShrink: 0 }}>
-                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                        </svg>
-                        <a
-                          href={linkedIn}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}
-                        >
-                          LinkedIn Profile
-                        </a>
-                      </div>
+                  {/* Detail chips */}
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+                    <span style={{
+                      display: 'inline-block', fontSize: '13px', fontWeight: 600,
+                      borderRadius: '6px', padding: '5px 12px',
+                      background: '#f0f9ff', color: '#0369a1', border: '1px solid #bae6fd',
+                    }}>
+                      {DIRECTION_LABELS[partner.referral_direction] ?? partner.referral_direction}
+                    </span>
+                    {partner.clients_per_year && (
+                      <span style={{
+                        display: 'inline-block', fontSize: '13px', fontWeight: 600,
+                        borderRadius: '6px', padding: '5px 12px',
+                        background: GRAY.bg, color: GRAY.text,
+                      }}>
+                        {partner.clients_per_year} clients/yr
+                      </span>
                     )}
                   </div>
-                </div>
-              )}
 
-              {/* ── Divider ── */}
-              <hr style={{ border: 'none', borderTop: `1px solid ${GRAY.border}`, margin: '0 0 2.5rem' }} />
+                  {/* Contact information */}
+                  {(partner.email || partner.phone || website || linkedIn) && (
+                    <div style={{ marginBottom: '2.5rem' }}>
+                      <h2 style={{
+                        fontFamily: 'var(--font-merriweather), Georgia, serif',
+                        fontSize: '1.15rem', fontWeight: 700, color: GRAY.dark, margin: '0 0 14px',
+                      }}>
+                        Contact Information
+                      </h2>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {partner.email && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '15px', flexShrink: 0 }}>✉️</span>
+                            <a href={`mailto:${partner.email}`}
+                              style={{ fontSize: '15px', color: GREEN, fontWeight: 600, textDecoration: 'none' }}>
+                              {partner.email}
+                            </a>
+                          </div>
+                        )}
+                        {partner.phone && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '15px', flexShrink: 0 }}>📞</span>
+                            <a href={`tel:${partner.phone.replace(/[^+\d]/g, '')}`}
+                              style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}>
+                              {partner.phone}
+                            </a>
+                          </div>
+                        )}
+                        {website && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '15px', flexShrink: 0 }}>🌐</span>
+                            <a href={website.href} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}>
+                              {website.label}
+                            </a>
+                          </div>
+                        )}
+                        {linkedIn && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="#0077b5" aria-hidden="true" style={{ flexShrink: 0 }}>
+                              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                            </svg>
+                            <a href={linkedIn} target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: '15px', color: GRAY.dark, fontWeight: 500, textDecoration: 'none' }}>
+                              LinkedIn Profile
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-              {/* ── Contact form ── */}
-              <div style={{ marginBottom: '2.5rem' }}>
-                <h2 style={{
-                  fontFamily: 'var(--font-merriweather), Georgia, serif',
-                  fontSize: '1.15rem',
-                  fontWeight: 700,
-                  color: GRAY.dark,
-                  margin: '0 0 6px',
-                }}>
-                  Send a Message
-                </h2>
-                <p style={{ fontSize: '14px', color: GRAY.text, margin: '0 0 20px' }}>
-                  Introduce yourself and describe how you'd like to collaborate.
-                  Your message goes directly to {partner.first_name}.
-                </p>
-                <PartnerContactForm partnerId={partner.id} partnerName={partner.first_name} />
-              </div>
-
-              {/* ── Network badge ── */}
-              <div style={{
-                padding: '20px 24px',
-                background: GREEN_LIGHT,
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                flexWrap: 'wrap',
-              }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, color: GREEN, fontSize: '0.9rem', marginBottom: '3px' }}>
-                    Part of the CELP® Partner Network
+                  {/* Network badge */}
+                  <div style={{
+                    padding: '18px 22px', background: GREEN_LIGHT, borderRadius: '12px',
+                    display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, color: GREEN, fontSize: '0.875rem', marginBottom: '3px' }}>
+                        Part of the CELP® Partner Network
+                      </div>
+                      <div style={{ fontSize: '0.8125rem', color: GRAY.dark }}>
+                        {name} has been approved to connect with CELP®-certified professionals.
+                      </div>
+                    </div>
+                    <a href="/find-a-partner" style={{
+                      display: 'inline-block', padding: '8px 16px', borderRadius: '8px',
+                      background: GREEN, color: 'white', fontWeight: 700, fontSize: '0.8125rem',
+                      textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'Inter, system-ui, sans-serif',
+                    }}>
+                      Browse all partners →
+                    </a>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: GRAY.dark }}>
-                    {name} has been approved to connect with CELP®-certified professionals.
+                </div>
+
+                {/* ── Right column: contact form card ── */}
+                <div className="partner-form-sticky">
+                  <div style={{
+                    background: 'white',
+                    border: `1px solid ${GRAY.border}`,
+                    borderRadius: '14px',
+                    padding: '24px',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                  }}>
+                    <h2 style={{
+                      fontFamily: 'var(--font-merriweather), Georgia, serif',
+                      fontSize: '1.05rem',
+                      fontWeight: 700,
+                      color: GRAY.dark,
+                      margin: '0 0 6px',
+                    }}>
+                      Send a Message
+                    </h2>
+                    <p style={{ fontSize: '13px', color: GRAY.text, margin: '0 0 18px', lineHeight: 1.55 }}>
+                      Your message goes directly to {partner.first_name}.
+                    </p>
+                    <PartnerContactForm partnerId={partner.id} partnerName={partner.first_name} />
                   </div>
                 </div>
-                <a
-                  href="/find-a-partner"
-                  style={{
-                    display: 'inline-block',
-                    padding: '9px 18px',
-                    borderRadius: '8px',
-                    background: GREEN,
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: '0.875rem',
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                  }}
-                >
-                  Browse all partners →
-                </a>
-              </div>
 
+              </div>
             </div>
           </div>
         </section>
