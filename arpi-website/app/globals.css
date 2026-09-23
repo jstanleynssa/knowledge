@@ -139,7 +139,7 @@ body {
 
 /* ─── Top Announcement Bar ─────────────────────── */
 .top-bar {
-  background: var(--green-900);
+  background: #1C80BC;
   color: var(--white);
   text-align: center;
   font-size: 0.8rem;
@@ -154,7 +154,7 @@ body {
   text-transform: uppercase;
   color: rgba(255,255,255,0.75);
 }
-.top-bar a { color: #b9f0d2; text-decoration: underline; }
+.top-bar a { color: #cce8f8; text-decoration: underline; }
 
 /* ─── Navigation ───────────────────────────────── */
 .nav {
@@ -223,6 +223,132 @@ body {
 }
 .nav-links a:hover { color: var(--white); }
 .nav-links a.active { color: var(--white); }
+
+/* ── Tools dropdown ── */
+.nav-has-dropdown {
+  position: relative;
+}
+/* Invisible hover bridge — prevents gap from closing the menu
+   when the cursor moves diagonally from the trigger to the panel. */
+.nav-has-dropdown::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: -16px;
+  right: -16px;
+  height: 12px;
+  background: transparent;
+}
+.nav-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.13);
+  padding: 8px;
+  min-width: 280px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 300;
+}
+.nav-has-dropdown:hover .nav-dropdown-panel,
+.nav-has-dropdown:focus-within .nav-dropdown-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-dropdown-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.12s;
+  cursor: pointer;
+}
+.nav-dropdown-item:hover {
+  background: var(--bg-soft);
+}
+.nav-dropdown-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.nav-dropdown-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.nav-dropdown-desc {
+  font-size: 0.75rem;
+  color: var(--ink-mid);
+  line-height: 1.4;
+}
+.nav-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ink-pale);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 6px 10px;
+  border-radius: 3px;
+  transition: color 0.15s;
+  white-space: nowrap;
+  cursor: default;
+  user-select: none;
+}
+.nav-has-dropdown:hover .nav-dropdown-trigger { color: var(--white); }
+.nav-dropdown-chevron {
+  transition: transform 0.15s;
+  opacity: 0.6;
+}
+.nav-has-dropdown:hover .nav-dropdown-chevron { transform: rotate(180deg); }
+
+/* Mobile Tools accordion */
+.nav-mobile-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 11px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink-pale);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.nav-mobile-group-toggle:hover { color: var(--white); }
+.nav-mobile-sublinks {
+  padding: 0 0 4px 20px;
+  display: none;
+}
+.nav-mobile-sublinks.open { display: block; }
+.nav-mobile-sublinks a {
+  display: block;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  color: var(--ink-mid);
+  text-decoration: none;
+}
+.nav-mobile-sublinks a:hover { color: var(--white); }
 .nav-actions {
   display: flex;
   align-items: center;
@@ -720,6 +846,11 @@ body {
 .bundle-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+}
+.bundle-grid--single {
+  grid-template-columns: 1fr;
+  max-width: 640px;
+  margin: 0 auto;
   gap: 24px;
   position: relative;
   z-index: 1;
@@ -1192,7 +1323,7 @@ article .prose h4 {
 }
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1.7fr 1fr 0.9fr;
+  grid-template-columns: 1.1fr 1.7fr 1fr 0.9fr 0.9fr;
   gap: 48px;
   padding-bottom: 40px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -1659,6 +1790,21 @@ article .prose h4 {
           line-height: 1.65;
         }
 
+/* ─── Advisor map hover popup animations ──────────────────────────────────────── */
+/* Map zoom-group transition — managed via CSS class, never inline style,
+   so React re-renders cannot trigger spurious transition restarts */
+.map-zoom-group {
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.map-zoom-group--dragging {
+  transition: none !important;
+}
+
+@keyframes badgePop { 0% { opacity: 0; transform: scale(0.85) translateY(4px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes badgePopOut { 0% { opacity: 1; transform: scale(1) translateY(0); } 100% { opacity: 0; transform: scale(0.9) translateY(3px); } }
+.advisor-pop { animation: badgePop 0.16s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.advisor-pop-out { animation: badgePopOut 0.16s ease-in forwards; }
+
 
 /* ─── AXIOM page ─────────────────────────────────────────── */
 #ax *, #ax *::before, #ax *::after { box-sizing: border-box; }
@@ -1847,6 +1993,11 @@ article .prose h4 {
           gap: 48px;
           align-items: start;
         }
+        /* Centered single-column problem layout */
+        .ax-problem-centered {
+          max-width: 680px;
+          margin: 0 auto;
+        }
 
         /* Chat UI — floating bubbles, no card */
         .ax-chat-card {
@@ -1858,6 +2009,21 @@ article .prose h4 {
           flex-direction: column;
           gap: 16px;
           margin-top: 80px;
+        }
+        /* Centered mode — used in Solution section */
+        .ax-chat-card--centered {
+          max-width: 720px;
+          margin: 0 auto;
+          margin-top: 0;
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.09), 0 1px 4px rgba(0,0,0,0.06);
+          overflow: hidden;
+        }
+        .ax-chat-card--centered .ax-actual-label {
+          color: var(--ink-xlight);
+          padding-bottom: 16px;
+          padding-right: 22px;
         }
         .ax-chat-q-row {
           padding: 22px 22px 0;
@@ -1978,6 +2144,26 @@ article .prose h4 {
           margin: 28px 0 0;
           line-height: 1.28;
         }
+
+        /* ── Solution section ── */
+        .ax-solution { background: #f9fafb; }
+        .ax-solution-header {
+          text-align: center;
+          max-width: 640px;
+          margin: 0 auto 48px;
+        }
+        .ax-solution-header .ax-h2 { margin: 0; }
+
+        /* ── Cost section ── */
+        .ax-cost-section { background: #1a4a66; }
+        .ax-cost-section-header {
+          text-align: center;
+          max-width: 680px;
+          margin: 0 auto 48px;
+        }
+        .ax-cost-section-header .ax-h2 { margin: 0; color: var(--white); }
+        .ax-cost-section .ax-eyebrow { color: var(--blue-light); }
+        .ax-cost-section .ax-eyebrow::before { background: var(--blue-light); }
 
         /* ── Cost tiles ── */
         .ax-cost-tiles-wrap { margin-top: 8px; }
@@ -2597,11 +2783,9 @@ article .prose h4 {
           gap: 24px;
           background: #f8fafc;
           border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 24px 28px;
-          max-width: 760px;
-          margin: 0 auto;
-          flex-wrap: wrap;
+          border-radius: 12px;
+          padding: 20px 28px;
+          margin-top: 32px;
         }
         .ax-firm-left {
           display: flex;
@@ -2660,10 +2844,18 @@ article .prose h4 {
         }
         @media (max-width: 900px) {
           .ax-hero-inner { grid-template-columns: 1fr; gap: 40px; }
-          .ax-problem-grid { grid-template-columns: 1fr; gap: 36px; }
+          .ax-problem-grid { grid-template-columns: 1fr; gap: 36px; } /* legacy — unused */
           .ax-diff-grid { grid-template-columns: 1fr; gap: 40px; }
           .ax-steps { flex-direction: column; }
           .ax-step-arrow { transform: rotate(90deg); align-self: center; padding: 4px 0; }
+        }
+        @media (max-width: 768px) {
+          .ax-pricing-horiz { grid-template-columns: 1fr; gap: 32px; }
+          .ax-firm-bar { flex-direction: column; align-items: flex-start; gap: 16px; }
+          .ax-firm-bar .btn-outline { width: 100%; text-align: center; }
+        }
+        @media (max-width: 640px) {
+          .ax-cost-tiles { grid-template-columns: 1fr; gap: 16px; }
         }
         @media (max-width: 680px) {
           .ax-pricing-grid { grid-template-columns: 1fr; }
@@ -2671,7 +2863,6 @@ article .prose h4 {
           .ax-hero { padding: 56px 0 52px; }
           .ax-section { padding: 56px 0; }
           .ax-cta-inner { flex-direction: column; align-items: flex-start; }
-          .ax-firm-bar { flex-direction: column; align-items: flex-start; }
         }
 /* ─── About Page ─────────────────────────────── */
 .about-mission-grid {
@@ -3035,6 +3226,25 @@ article .prose h4 {
   cursor: pointer;
 }
 
+/* Sex toggle buttons */
+.ssc-sex-btn {
+  padding: 5px 16px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--ink-mid);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.ssc-sex-btn--active {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+  color: #fff;
+}
+
 /* Strategy blocks */
 .ssc-strategies-grid {
   display: grid;
@@ -3219,7 +3429,7 @@ article .prose h4 {
   padding-top: 8px;
   padding-bottom: 8px;
 }
-.ssc-th-group {
+.ssc-table th.ssc-th-group {
   text-align: center;
   text-transform: none;
   letter-spacing: 0.03em;
@@ -3229,13 +3439,17 @@ article .prose h4 {
   padding-bottom: 9px;
   border-bottom: 2px solid rgba(255,255,255,0.25);
 }
-.ssc-th-group--a {
+.ssc-table th.ssc-th-group--a {
   background: var(--green-dark);
   color: #ffffff;
   border-right: 2px solid rgba(255,255,255,0.3);
 }
-.ssc-th-group--b {
+.ssc-table th.ssc-th-group--b {
   background: var(--green-dark);
+  color: #ffffff;
+}
+.ssc-table th.ssc-th-group--perf {
+  background: #000000;
   color: #ffffff;
 }
 .ssc-table td {
@@ -3249,12 +3463,35 @@ article .prose h4 {
 .ssc-td-neg { color: var(--red-mid); font-weight: 600; }
 .ssc-td-monthly { color: var(--ink-light); }
 .ssc-td-bold { font-weight: 600; }
-.ssc-tr-event td { background: #fff8e1; }
+.ssc-tr-event td { background: var(--green-xlight); }
 .ssc-tr-last td { background: var(--bg-soft); }
 .ssc-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 2px 5px; border-radius: 3px; margin-left: 4px; }
 .ssc-badge--a { background: var(--blue-xlight); color: var(--blue-dark); }
 .ssc-badge--b { background: #fff3cd; color: #7d5a00; }
 .ssc-deceased { color: var(--ink-xlight); font-style: italic; font-size: 0.82rem; }
+
+/* ── Married-mode table: strategy group sub-headers & separators ── */
+.ssc-th-sub {
+  text-align: center;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 8px;
+  font-size: 0.60rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-light);
+}
+.ssc-th-sub--sep {
+  border-right: 2px solid var(--border);
+}
+.ssc-th-diff {
+  vertical-align: middle;
+  text-align: center;
+}
+.ssc-td-group-sep {
+  border-right: 2px solid var(--border);
+}
 
 /* Disclaimer */
 /* ── NSSA→ARPI announcement credential cards ── */
@@ -3319,4 +3556,281 @@ article .prose h4 {
 @media (max-width: 600px) {
   .ssc-hero { padding: 40px 0 36px; }
   .ssc-field--row { flex-direction: column; }
+}
+
+/* ─── SS Cumulative Chart ──────────────────────────────────────────────────── */
+.ssc-chart-wrap {
+  margin: 40px 0 32px;
+}
+.ssc-chart-wrap .ssc-section-heading {
+  margin-bottom: 4px;
+}
+.ssc-chart-sub {
+  font-size: 0.85rem;
+  color: var(--ink-light);
+  margin-bottom: 20px;
+}
+.ssc-chart-tooltip {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+  min-width: 180px;
+}
+.ssc-chart-tooltip-age {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.ssc-chart-tooltip-row {
+  font-size: 0.85rem;
+  margin-bottom: 2px;
+}
+.ssc-chart-no-cross {
+  font-size: 0.82rem;
+  color: var(--ink-light);
+  text-align: center;
+  margin-top: 8px;
+}
+@media (max-width: 600px) {
+  .ssc-chart-wrap { margin: 28px 0 20px; }
+}
+
+/* ─── SS Calculator — Print / Save as PDF ───────────────────────────────── */
+
+/* Print button: visible on screen, hidden on print */
+.ssc-print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: 1.5px solid var(--ink-light);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-mid);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  margin-top: 18px;
+}
+.ssc-print-btn:hover {
+  border-color: var(--ink-pale);
+  color: var(--ink);
+  background: rgba(0,0,0,0.03);
+}
+
+/* Print header + footer: hidden on screen, shown on print */
+@media screen {
+  .ssc-print-header { display: none; }
+  .ssc-print-footer { display: none; }
+  .ssc-print-logo   { display: none; }
+}
+
+/* ── Print layout ────────────────────────────────────────────── */
+@page {
+  size: landscape;
+  margin: 0.75in 0.75in 1in; /* extra bottom margin for fixed footer */
+}
+
+@media print {
+  /* Hide screen-only chrome */
+  .nav,
+  .footer,
+  .ssc-hero,
+  .ssc-form-section,
+  .ssc-print-btn,
+  .ssc-cola-badge,
+  .top-bar,
+  .rss-ticker-bar {
+    display: none !important;
+  }
+
+  /* Clean white background */
+  body, html {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  .ssc-page, .ssc-results-section {
+    background: #fff !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* ── Branded print header ── */
+  .ssc-print-header {
+    display: block !important;
+    margin-bottom: 20pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .ssc-print-header-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    background: #2a6b54 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    padding: 10pt 16pt;
+    border-radius: 4pt 4pt 0 0;
+  }
+  .ssc-print-logo {
+    display: block !important;
+    height: 36pt;
+    width: auto;
+  }
+  .ssc-print-header-title {
+    color: #fff !important;
+    font-size: 14pt;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .ssc-print-header-meta {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6pt 16pt 8pt;
+    border: 1pt solid #2a6b54;
+    border-top: none;
+    border-radius: 0 0 4pt 4pt;
+    background: #f0f5f2 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .ssc-print-scenario {
+    font-size: 9pt;
+    color: #111;
+  }
+  .ssc-print-date {
+    font-size: 8pt;
+    color: #6b7280;
+  }
+
+  /* ── Summary tiles ── */
+  .ssc-tiles-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  .ssc-result-tile {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    flex: 1 1 0 !important;
+    border: 1px solid #ddd !important;
+    border-left: 4px solid #2a6b54 !important;
+    border-radius: 6px !important;
+    padding: 14px 16px !important;
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .ssc-tile-label { color: #2a6b54 !important; }
+  .ssc-tile-total {
+    font-size: 1.1rem !important;
+  }
+
+  /* ── Diff tile: force white-on-color text to dark for print ── */
+  .ssc-result-tile--gain,
+  .ssc-result-tile--loss {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  .ssc-diff-num { color: #111 !important; }
+  .ssc-diff-sub { color: #555 !important; }
+  .ssc-breakeven {
+    background: #f0f5f2 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .ssc-breakeven-label { color: #2a6b54 !important; }
+  .ssc-breakeven-val { color: #111 !important; }
+  .ssc-breakeven-none { color: #555 !important; }
+
+  /* ── Chart — keep together; push disclaimer to next page ── */
+  .ssc-chart-wrap {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 24pt;
+  }
+  .ssc-disclaimer {
+    page-break-before: always;
+    break-before: page;
+    font-size: 0.78rem !important;
+    color: #555 !important;
+  }
+
+  /* ── Table ── */
+  .ssc-table-wrap {
+    overflow: visible !important;
+  }
+  .ssc-table {
+    font-size: 0.85rem !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1px solid #bbb !important;
+  }
+  .ssc-table th,
+  .ssc-table td {
+    border: 1px solid #ccc !important;
+    padding: 4px 7px !important;
+  }
+  /* Sub-header row: neutral */
+  .ssc-table thead th {
+    background: #f3f4f6 !important;
+    color: #111 !important;
+  }
+  /* Strategy group headers: keep ARPI green */
+  .ssc-table thead th.ssc-th-group--a,
+  .ssc-table thead th.ssc-th-group--b {
+    background: #2a6b54 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  /* Performance header: keep black */
+  .ssc-table thead th.ssc-th-group--perf {
+    background: #111827 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Milestone section heading */
+  .ssc-section-heading {
+    font-size: 1rem !important;
+    color: #111 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  /* ── Fixed page footer ── */
+  .ssc-print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9pt;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 4pt;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

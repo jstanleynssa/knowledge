@@ -65,7 +65,7 @@ export default function Footer() {
               <li><a href="/axiom">AXIOM® Platform</a></li>
               <li><a href="/calculus">CALCULUS Calculator</a></li>
               <li><a href="/tools/ss-calculator">SS Strategy Calculator</a></li>
-              <li><a href="/tools/retirement-advisor-pro">Retirement Advisor Pro</a></li>
+              <li><a href="/retirement-advisor-pro">Retirement Advisor Pro</a></li>
             </ul>
           </div>
 
