@@ -282,21 +282,13 @@ export default function CalculusPage() {
 
               <div className="ax-hero-right">
                 <div className="ax-stat-card">
-                  <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ marginBottom: 24 }}>
                     <Image
                       src="/assets/calculus-full-badge.png"
                       alt="CALCULUS"
-                      width={80}
-                      height={80}
-                      style={{ width: 80, height: 80, flexShrink: 0 }}
-                      priority
-                    />
-                    <Image
-                      src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
-                      alt=""
-                      width={180}
-                      height={72}
-                      style={{ width: 180, height: 'auto' }}
+                      width={120}
+                      height={120}
+                      style={{ width: 120, height: 120 }}
                       priority
                     />
                   </div>

@@ -107,7 +107,7 @@ export default function Nav() {
                 <div className="nav-dropdown-panel">
                   <a href="/axiom" className="nav-dropdown-item">
                     <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
-                      <Image src="/assets/axiom-full-badge.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                      <Image src="/assets/axiom-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">AXIOM®</div>
@@ -116,7 +116,7 @@ export default function Nav() {
                   </a>
                   <a href="/calculus" className="nav-dropdown-item">
                     <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
-                      <Image src="/assets/calculus-full-badge.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                      <Image src="/assets/calculus-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">CALCULUS</div>
