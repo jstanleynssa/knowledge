@@ -15,6 +15,7 @@ import OpenAI from 'openai';
 import { hybridRetrieve, ALL_SOURCES, type RetrievedSection } from '@/scripts/retrieval/hybrid';
 import { verifyClaims } from '@/scripts/draft/verify';
 import { createServiceClient } from '@/lib/supabase';
+import { getVerifiedContext } from '@/lib/verified-context';
 import type { PrimarySource } from '@/lib/types';
 
 // Lazy singleton — avoids module-level instantiation during build
@@ -111,60 +112,8 @@ async function multiQueryRetrieve(queries: string[], topKPerQuery = 8): Promise<
 }
 
 // ── [3] Verified answers retrieval ────────────────────────────────────────────
-
-async function getVerifiedContext(question: string, category: string, embedding?: number[]): Promise<string> {
-  try {
-    // Use pre-computed embedding when available — avoids a redundant OpenAI round-trip
-    const emb = embedding ?? (await getOpenAI().embeddings.create({ model: 'text-embedding-3-small', input: question })).data[0].embedding;
-
-    const supabase = createServiceClient();
-
-    // Search verified_answers across BOTH categories — SSA-44/IRMAA questions are
-    // frequently misclassified as 'social-security' by the query interpreter because
-    // the form is issued by SSA. Filtering by category here caused correct answers
-    // to be invisible. The corpus is small so cross-category search is cheap and safe.
-    // Run both category lookups in parallel
-    const otherCategory = category === 'irmaa' ? 'social-security' : 'irmaa';
-    const [{ data: allHits }, { data: otherHits }] = await Promise.all([
-      supabase.rpc('match_verified_answers', {
-        query_embedding: emb,
-        match_count: 5,
-        match_threshold: 0.70,
-        filter_category: category,
-      }),
-      supabase.rpc('match_verified_answers', {
-        query_embedding: emb,
-        match_count: 5,
-        match_threshold: 0.70,
-        filter_category: otherCategory,
-      }),
-    ]);
-
-    const combined = [...(allHits ?? []), ...(otherHits ?? [])]
-      .sort((a: any, b: any) => b.similarity - a.similarity)
-      .slice(0, 3);
-
-    if (combined.length > 0) {
-      return '\n\n--- VERIFIED ANSWERS (confirmed correct by expert reviewers) ---\n' +
-        combined.map((va: any) => `Q: ${va.question}\nA: ${va.answer}`).join('\n\n---\n');
-    }
-
-    // Fallback: pull from published reference pages (both categories)
-    const { data: pages } = await supabase
-      .from('reference_pages')
-      .select('title, h1, quick_answer, primary_sources')
-      .eq('status', 'published')
-      .in('category', [category, otherCategory])
-      .limit(4);
-
-    if (!pages || pages.length === 0) return '';
-
-    return '\n\n--- VERIFIED REFERENCE PAGES (approved by expert reviewers) ---\n' +
-      pages.map(p => `Title: ${p.h1 || p.title}\n${p.quick_answer}`).join('\n\n---\n');
-  } catch {
-    return '';
-  }
-}
+// Imported from @/lib/verified-context — shared with the CODEX page generation pipeline.
+// See lib/verified-context.ts for implementation.
 
 // ── [4] Grounded answer ───────────────────────────────────────────────────────
 

@@ -179,7 +179,10 @@ async function keywordSearch(query: string, topK: number, sourcesFilter: SourceT
       for (const row of (ftsData ?? []) as FtsResult[]) {
         if (!row.section_number) continue;
         const srcType = classifySection(row.section_number);
-        if (srcType && !sourcesFilter.includes(srcType)) continue;
+        // Reject unrecognized source types (null) as well as types outside the filter.
+        // Previously: `if (srcType && !sourcesFilter.includes(srcType))` — a null srcType
+        // bypassed the filter entirely, letting CMSPDF: flu-guide PDFs leak into SS pages.
+        if (!srcType || !sourcesFilter.includes(srcType)) continue;
         results.set(row.section_number, row);
       }
     }

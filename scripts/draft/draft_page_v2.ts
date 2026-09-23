@@ -25,6 +25,7 @@ import OpenAI from 'openai';
 import { createServiceClient } from '@/lib/supabase';
 import { hybridRetrieve, SS_SOURCES, IRMAA_SOURCES, RETIREMENT_POMS_CHAPTERS, type RetrievedSection, type SourceType } from '../retrieval/hybrid';
 import { verifyClaims, type DraftFields } from './verify';
+import { getVerifiedContext } from '@/lib/verified-context';
 import type { Category, BodySection, FaqItem, PrimarySource } from '@/lib/types';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -66,7 +67,7 @@ let _pomsChaptersInclude: string[] | undefined;
 const SYSTEM_PROMPT = `You are a technical writer producing a Social Security reference page for the NSSA Knowledge Base.
 
 NON-NEGOTIABLE RULES:
-1. Write ONLY from the source text provided below. Do not add information from your own training.
+1. Write ONLY from the source text and expert-verified corrections provided below. Verified corrections (labeled "VERIFIED ANSWERS") take priority over conflicting raw POMS text — they represent human expert review and override any source document that contradicts them. Do not add information from your own training.
 2. STATE OPERATIVE SPECIFICS. For every rule, state the actual value from the source — the specific fraction, percentage, dollar amount, age, or threshold. Never substitute vague language ("specified fractions," "a precise formula," "a detailed chart," "the applicable reduction") for the actual number. If the number is in the source, write it. If it isn't, see Rule 3.
 3. GROUND EVERY SPECIFIC; NEVER IMPORT ONE. Every number or fraction you state MUST appear verbatim in the provided source passages. Do NOT use a figure from your own knowledge, even if you believe it is correct. If you are about to write a number not present in the sources, STOP and flag it instead.
 4. GAPS ARE REQUIRED, VALUED OUTPUT. If the sources lack an operative value, do NOT invent one and do NOT write evasive filler. State what the source DOES establish, then flag: [SOURCE GAP: {description of missing value}]. A flagged gap is success. Hidden-gap filler is failure.
@@ -128,6 +129,7 @@ const MAX_SECTION_CHARS = 15000;
 function buildUserPrompt(
   pageTitle: string,
   sections: RetrievedSection[],
+  verifiedContext: string,
 ): string {
   const sourceBlock = sections
     .map(s => {
@@ -140,14 +142,20 @@ function buildUserPrompt(
 
   const validSectionNumbers = sections.map(s => `  - ${s.section_number}`).join('\n');
 
+  // Verified context (if any) is prepended before raw sources so the model sees
+  // expert corrections first. It is labeled clearly as taking priority.
+  const verifiedBlock = verifiedContext
+    ? `${verifiedContext}\n\n`
+    : '';
+
   return `Draft a reference page titled: "${pageTitle}"
 CATEGORY: ${category}
 TOPIC: ${topic}
 
 VALID SECTION NUMBERS — use these exact strings in primary_sources[].section_number. No other values are permitted:
 ${validSectionNumbers}
-
-Use ONLY the following source sections. Cite section numbers exactly as shown above (full string, character-for-character).
+${verifiedBlock}
+Use ONLY the following source sections (and the verified answers above, if any). Cite section numbers exactly as shown above (full string, character-for-character).
 ${sourceBlock}
 
 Produce the JSON output per the schema. Flag any [SOURCE GAP] where operative values are missing from the sources.`;
@@ -199,6 +207,20 @@ async function main(): Promise<{ id: string; status: string }> {
     : category === 'social-security' ? [...RETIREMENT_POMS_CHAPTERS] : [];
   const { sections, trace } = await hybridRetrieve(topic!, { topK, sourcesFilter, pomsChaptersInclude });
 
+  // ── [1b] Verified answers context ─────────────────────────────────────────
+  // Runs in parallel with retrieval but depends on its completion for the query.
+  // Expert-verified corrections override conflicting raw POMS text in the draft.
+  // Query with the page TITLE (not the broad topic description) — the title is
+  // a specific, search-engine-style phrase that matches the verified_answers corpus
+  // much better than a multi-sentence topic instruction block.
+  console.log('Fetching verified context…');
+  const verifiedContext = await getVerifiedContext(title!, category);
+  if (verifiedContext) {
+    console.log(`  ✓ Verified context found (${verifiedContext.length} chars)`);
+  } else {
+    console.log('  — No verified context matched (threshold 0.70)');
+  }
+
   console.log(`\nRetrieved ${sections.length} sections:`);
   sections.forEach((s, i) => {
     console.log(`  ${i + 1}. ${s.section_number} (score: ${s.score.toFixed(4)}, vec: ${s.debug.vector_rank ?? '—'}, kw: ${s.debug.keyword_rank ?? '—'})`);
@@ -243,7 +265,7 @@ async function main(): Promise<{ id: string; status: string }> {
     max_tokens: 4096,
     messages: [
       { role: 'system', content: SYSTEM_PROMPT },
-      { role: 'user', content: buildUserPrompt(title!, sections) },
+      { role: 'user', content: buildUserPrompt(title!, sections, verifiedContext) },
     ],
   });
 
