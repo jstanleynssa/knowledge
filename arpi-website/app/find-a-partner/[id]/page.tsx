@@ -345,27 +345,6 @@ export default async function PartnerProfilePage(
                     </div>
                   )}
 
-                  {/* Network badge */}
-                  <div style={{
-                    padding: '18px 22px', background: GREEN_LIGHT, borderRadius: '12px',
-                    display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, color: GREEN, fontSize: '0.875rem', marginBottom: '3px' }}>
-                        Part of the CELP® Partner Network
-                      </div>
-                      <div style={{ fontSize: '0.8125rem', color: GRAY.dark }}>
-                        {name} has been approved to connect with CELP®-certified professionals.
-                      </div>
-                    </div>
-                    <a href="/find-a-partner" style={{
-                      display: 'inline-block', padding: '8px 16px', borderRadius: '8px',
-                      background: GREEN, color: 'white', fontWeight: 700, fontSize: '0.8125rem',
-                      textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'Inter, system-ui, sans-serif',
-                    }}>
-                      Browse all partners →
-                    </a>
-                  </div>
                 </div>
 
                 {/* ── Right column: contact form card ── */}
@@ -394,6 +373,30 @@ export default async function PartnerProfilePage(
                 </div>
 
               </div>
+
+              {/* ── Network badge — full width below both columns ── */}
+              <div style={{
+                marginTop: '2.5rem',
+                padding: '18px 22px', background: GREEN_LIGHT, borderRadius: '12px',
+                display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap',
+              }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: GREEN, fontSize: '0.875rem', marginBottom: '3px' }}>
+                    Part of the CELP® Partner Network
+                  </div>
+                  <div style={{ fontSize: '0.8125rem', color: GRAY.dark }}>
+                    {name} has been approved to connect with CELP®-certified professionals.
+                  </div>
+                </div>
+                <a href="/find-a-partner" style={{
+                  display: 'inline-block', padding: '8px 16px', borderRadius: '8px',
+                  background: GREEN, color: 'white', fontWeight: 700, fontSize: '0.8125rem',
+                  textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'Inter, system-ui, sans-serif',
+                }}>
+                  Browse all partners →
+                </a>
+              </div>
+
             </div>
           </div>
         </section>
