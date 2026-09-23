@@ -122,6 +122,9 @@ export default function CalculusPage() {
           #calc .ax-yes--green { background: var(--calc-xlight); color: var(--calc-green); }
           #calc .ax-feat-check { color: var(--calc-xlight); }
 
+          /* Green stat card */
+          #calc .ax-stat-card { background: rgba(42,107,84,0.25); border-color: rgba(42,107,84,0.45); }
+          #calc .ax-corpus-tags span { background: rgba(42,107,84,0.25); border-color: rgba(42,107,84,0.3); }
           /* Blue → green overrides for all inherited ax-* elements */
           #calc .ax-step-icon { background: var(--calc-xlight); color: var(--calc-green); }
           #calc .ax-corpus-icon { background: var(--calc-xlight); color: var(--calc-green); }
@@ -279,13 +282,21 @@ export default function CalculusPage() {
 
               <div className="ax-hero-right">
                 <div className="ax-stat-card">
-                  <div style={{ marginBottom: 24 }}>
+                  <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <Image
+                      src="/assets/calculus-full-badge.png"
+                      alt="CALCULUS"
+                      width={80}
+                      height={80}
+                      style={{ width: 80, height: 80, flexShrink: 0 }}
+                      priority
+                    />
                     <Image
                       src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
-                      alt="CALCULUS"
-                      width={200}
-                      height={80}
-                      style={{ width: 200, height: 'auto', display: 'block' }}
+                      alt=""
+                      width={180}
+                      height={72}
+                      style={{ width: 180, height: 'auto' }}
                       priority
                     />
                   </div>

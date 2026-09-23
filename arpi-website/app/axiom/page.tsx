@@ -139,13 +139,21 @@ export default function AxiomPage() {
               </div>
               <div className="ax-hero-right">
                 <div className="ax-stat-card">
-                  <div className="ax-stat-logo">
+                  <div className="ax-stat-logo" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <Image
+                      src="/assets/axiom-full-badge.png"
+                      alt=""
+                      width={80}
+                      height={80}
+                      style={{ width: 80, height: 80, flexShrink: 0 }}
+                      priority
+                    />
                     <Image
                       src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-logo.png"
                       alt="AXIOM®"
-                      width={400}
-                      height={154}
-                      style={{ objectFit: 'contain', height: 154, width: 'auto' }}
+                      width={300}
+                      height={116}
+                      style={{ objectFit: 'contain', height: 116, width: 'auto' }}
                       priority
                     />
                   </div>
