@@ -18,7 +18,8 @@
 // state / ZIP / cleared). Clicks on dots and states are suppressed when the
 // pointer moved more than DRAG_THRESHOLD px during the interaction.
 
-import { useMemo, useState, useRef, useEffect, useCallback } from 'react'
+import { useMemo, useState, useRef, useEffect, useCallback, memo } from 'react'
+import { createPortal } from 'react-dom'
 import { feature } from 'topojson-client'
 import { geoAlbersUsa, geoPath } from 'd3-geo'
 import { stateCode } from '@/lib/geo'
@@ -26,6 +27,18 @@ import usTopo from '@/lib/us-states.json'
 
 const NSSA  = { light: '#8ECAEE', medium: '#1C80BC', dark: '#13405E' }
 const IRMAA = { light: '#fce7f3', medium: '#9d174d', dark: '#7f1424' }
+const GRAY  = { text: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb', dark: '#1f2937' }
+
+function Silhouette({ size }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: '#e2e5ea', flexShrink: 0, overflow: 'hidden', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} aria-hidden="true">
+      <svg viewBox="0 0 64 64" width={size} height={size} style={{ display: 'block' }}>
+        <circle cx="32" cy="24" r="13" fill="#b9bec7" />
+        <path d="M9 60c0-13 10.3-21 23-21s23 8 23 21z" fill="#b9bec7" />
+      </svg>
+    </div>
+  )
+}
 
 const MAP_W = 975, MAP_H = 610
 
@@ -57,14 +70,41 @@ function dotColor(a, designation, overrideColor) {
   return a.nssa && a.irmaa ? '#7B4F9E' : a.irmaa ? IRMAA.medium : NSSA.medium
 }
 
-export default function AdvisorMap({
+function AdvisorMap({
   mapView, zoomNudge, mapZoomed, mapMarkers, allMarkers, passesDesignation,
   designation, dotColorOverride,
-  stateFilter, stateList, setStateFilter, setHovered,
-  showPreview, hidePreview, onMarkerClick,
+  stateFilter, stateList, setStateFilter,
+  onMarkerClick,
+  // Optional: base path for the hover-popup profile link.
+  // Defaults to '/find-an-advisor' (NSSA advisor directory).
+  // Pass '/find-a-partner' for the CELP partner directory.
+  profileBase,
 }) {
+  const resolvedProfileBase = profileBase ?? '/find-an-advisor'
   const zoom = Math.min(Math.max(mapView.zoom * zoomNudge, 1), 16)
   const z = Math.pow(zoom, 0.7)
+
+  // ── Hover / popup state ───────────────────────────────────────────────────
+  const [hovered, setHovered] = useState(null)   // { advisor, x, y } in viewport coords
+  const [popState, setPopState] = useState('in') // 'in' | 'out' | 'steady'
+  const dismissTimer = useRef(null)
+
+  const showPreview = useCallback((advisor, x, y) => {
+    if (dismissTimer.current) { clearTimeout(dismissTimer.current); dismissTimer.current = null }
+    setPopState('in')
+    setHovered({ advisor, x, y })
+  }, [])
+
+  const hidePreview = useCallback(() => {
+    setPopState('out')
+    if (dismissTimer.current) clearTimeout(dismissTimer.current)
+    dismissTimer.current = setTimeout(() => { setHovered(null); setPopState('in'); dismissTimer.current = null }, 300)
+  }, [])
+
+  const stabilizePreview = useCallback(() => {
+    if (dismissTimer.current) { clearTimeout(dismissTimer.current); dismissTimer.current = null }
+    setPopState('steady')
+  }, [])
 
   // ── Drag state ────────────────────────────────────────────────────────────
   // dragOffset: accumulated pan in SVG coordinate space (persists across drags).
@@ -95,6 +135,8 @@ export default function AdvisorMap({
     if (prevViewKey.current !== viewKey) {
       setDragOffset({ x: 0, y: 0 })
       setHasDragged(false)
+      setHovered(null)
+      if (dismissTimer.current) { clearTimeout(dismissTimer.current); dismissTimer.current = null }
       prevViewKey.current = viewKey
     }
   }, [viewKey])
@@ -127,6 +169,8 @@ export default function AdvisorMap({
     }
     dragging.current  = false
     wasDragged.current = false
+    // Suppress transition during drag so the map moves 1:1 with pointer
+    svgRef.current?.querySelector('.map-zoom-group')?.classList.add('map-zoom-group--dragging')
   }, [dragOffset])
 
   const handlePointerMove = useCallback((e) => {
@@ -157,6 +201,8 @@ export default function AdvisorMap({
     e.currentTarget.releasePointerCapture(e.pointerId)
     dragStart.current = null
     dragging.current  = false
+    // Restore transition after drag ends
+    svgRef.current?.querySelector('.map-zoom-group')?.classList.remove('map-zoom-group--dragging')
     // wasDragged.current stays true until the next pointerDown so the click
     // handler (which fires after pointerUp) can suppress itself.
   }, [])
@@ -168,7 +214,6 @@ export default function AdvisorMap({
     const py = (c && isFinite(c[1])) ? c[1] : MAP_H / 2
     const tx = MAP_W / 2 - px * zoom + dragOffset.x * zoom
     const ty = MAP_H / 2 - py * zoom + dragOffset.y * zoom
-    console.log(`[TRANSFORM] center=(${c ? c[0].toFixed(0) : 'null'}, ${c ? c[1].toFixed(0) : 'null'}), zoom=${zoom.toFixed(2)}, translate=(${tx.toFixed(0)}, ${ty.toFixed(0)}), SVG viewBox=0 0 ${MAP_W} ${MAP_H}`)
     return `translate(${tx} ${ty}) scale(${zoom})`
   }, [mapView.center, zoom, dragOffset])
 
@@ -185,31 +230,10 @@ export default function AdvisorMap({
       projected.push({ a, px: p[0], py: p[1] })
     }
     
-    // Debug: always log projection stats
-    console.log(`[PROJECTION] Total projected markers: ${projected.length}`)
-    const hiAdvisors = projected.filter(m => {
-      const a = m.a
-      return a.coords.lat > 18 && a.coords.lat < 23 && a.coords.lng < -155 && a.coords.lng > -161
-    })
-    console.log(`[HAWAII] Found ${hiAdvisors.length} advisors in Hawaii region`)
-    hiAdvisors.forEach((m, idx) => {
-      console.log(`  [HI-${idx}] ${m.a.name || m.a.slug} @ (${m.a.coords.lat.toFixed(4)}, ${m.a.coords.lng.toFixed(4)}) → SVG (${m.px.toFixed(0)}, ${m.py.toFixed(0)})`)
-    })
-    
-    // Log first 5 and last 5 advisors
-    console.log('[SAMPLE ADVISORS]', projected.slice(0, 5).map(m => ({
-      name: m.a.name || m.a.slug,
-      lat: m.a.coords.lat.toFixed(2),
-      lng: m.a.coords.lng.toFixed(2),
-      svg: `(${m.px.toFixed(0)}, ${m.py.toFixed(0)})`
-    })))
-
     // Cluster radius in SVG units — dots closer than this are fanned out.
-    // Dividing by z keeps the threshold consistent across zoom levels.
-    // Measured distance between Honolulu & Pearl City, HI: 6.94 SVG units at zoomed level.
-    // Using 4 / z to ensure they're always separated across all zoom levels.
-    const CLUSTER_RADIUS = 4 / z
-    console.log(`[Clustering] CLUSTER_RADIUS=${CLUSTER_RADIUS.toFixed(2)} SVG units (z=${z.toFixed(3)}, zoom=${zoom})`)
+    // Fixed in projection coordinate space (not zoom-scaled) so clustered dot
+    // positions don't shift as the zoom animates.
+    const CLUSTER_RADIUS = 6
     
     const assigned = new Array(projected.length).fill(-1)
     const groups = []
@@ -223,16 +247,6 @@ export default function AdvisorMap({
         const dy = projected[i].py - projected[j].py
         const distance = Math.sqrt(dx * dx + dy * dy)
         
-        // Debug: Log Hawaii advisors
-        const iInHI = projected[i].a.coords.lat > 18 && projected[i].a.coords.lat < 23 && projected[i].a.coords.lng < -155 && projected[i].a.coords.lng > -161
-        const jInHI = projected[j].a.coords.lat > 18 && projected[j].a.coords.lat < 23 && projected[j].a.coords.lng < -155 && projected[j].a.coords.lng > -161
-        
-        if (iInHI && jInHI) {
-          console.log(
-            `[HI PAIR] ${projected[i].a.name} vs ${projected[j].a.name}: distance=${distance.toFixed(3)}, threshold=${CLUSTER_RADIUS.toFixed(3)} → ${distance < CLUSTER_RADIUS ? 'CLUSTER' : 'SEPARATE'}`
-          )
-        }
-        
         if (distance < CLUSTER_RADIUS) {
           group.push(j)
           assigned[j] = groups.length
@@ -243,14 +257,10 @@ export default function AdvisorMap({
     }
 
     const out = []
-    const fanRadius = 8 / z  // How far each dot fans from the centroid
+    const FAN_RADIUS = 12  // Fan distance in SVG coordinate space (zoom-independent)
     for (const group of groups) {
       if (group.length === 1) {
         const m = projected[group[0]]
-        // Debug: log Hawaii markers
-        if (m.a.coords.lat > 18 && m.a.coords.lat < 23 && m.a.coords.lng < -155 && m.a.coords.lng > -161) {
-          console.log(`[HI OUTPUT] ${m.a.name || m.a.slug}: NSSA=${m.a.nssa}, IRMAA=${m.a.irmaa}`)
-        }
         out.push({ a: m.a, x: m.px, y: m.py })
         continue
       }
@@ -263,15 +273,60 @@ export default function AdvisorMap({
         const angle = (2 * Math.PI * i) / group.length - Math.PI / 2
         out.push({
           a: projected[idx].a,
-          x: cx + fanRadius * Math.cos(angle),
-          y: cy + fanRadius * Math.sin(angle),
+          x: cx + FAN_RADIUS * Math.cos(angle),
+          y: cy + FAN_RADIUS * Math.sin(angle),
         })
       })
     }
     return out
-  }, [activeMarkers, z])
+  }, [activeMarkers])
+
+  const popup = hovered?.advisor ? createPortal(
+    <a
+      href={`${resolvedProfileBase}/${hovered.advisor.slug}`}
+      tabIndex={-1}
+      className={popState === 'out' ? 'advisor-pop-out' : popState === 'in' ? 'advisor-pop' : ''}
+      onMouseEnter={stabilizePreview}
+      onMouseLeave={hidePreview}
+      style={{
+        position: 'fixed',
+        left: hovered.x + 14,
+        top: hovered.y - 10,
+        zIndex: 9999,
+        background: 'white',
+        textDecoration: 'none',
+        color: 'inherit',
+        border: `1px solid ${GRAY.border}`,
+        borderRadius: '10px',
+        boxShadow: '0 8px 24px rgba(0,0,0,0.14)',
+        padding: '10px 12px',
+        width: '240px',
+        display: 'block',
+        transformOrigin: 'top left',
+        cursor: 'pointer',
+        ...(popState === 'steady' ? { opacity: 1, transform: 'scale(1) translateY(0)' } : null),
+        ...(hovered.x > window.innerWidth - 270 ? {
+          transform: (popState === 'steady' ? 'scale(1) translateY(0) ' : '') + 'translateX(calc(-100% - 28px))'
+        } : null),
+      }}
+    >
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        {hovered.advisor.photo
+          ? <><img src={hovered.advisor.photo} alt="" width="44" height="44" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={(e) => { const fb = e.currentTarget.nextElementSibling; e.currentTarget.style.display = 'none'; if (fb) fb.style.display = 'flex' }} /><div style={{ display: 'none' }}><Silhouette size={44} /></div></>
+          : <Silhouette size={44} />}
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 700, fontSize: '14px', color: GRAY.dark, lineHeight: 1.2 }}>{hovered.advisor.name}</div>
+          {hovered.advisor.title && <div style={{ fontSize: '12px', color: GRAY.text, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hovered.advisor.title}</div>}
+          {(hovered.advisor.city || hovered.advisor.stateCode) && <div style={{ fontSize: '12px', color: GRAY.text }}>{[hovered.advisor.city, hovered.advisor.stateCode].filter(Boolean).join(', ')}</div>}
+          <div style={{ fontSize: '11px', color: NSSA.medium, marginTop: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>View profile <span style={{ fontSize: '13px' }}>→</span></div>
+        </div>
+      </div>
+    </a>,
+    document.body
+  ) : null
 
   return (
+    <>
     <svg
       ref={svgRef}
       viewBox={`0 0 ${MAP_W} ${MAP_H}`}
@@ -292,11 +347,6 @@ export default function AdvisorMap({
       <g
         className="map-zoom-group"
         transform={transform}
-        style={{
-          // CSS transition only when NOT actively dragging — during a drag we
-          // update on every pointermove so the animation would lag behind.
-          transition: dragging.current ? 'none' : 'transform 0.7s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
       >
         {/* States */}
         {STATE_FEATURES.map(s => {
@@ -328,10 +378,6 @@ export default function AdvisorMap({
           const visible = passesDesignation(a)
           const radius = (mapZoomed ? 5 : 4) / z
           const color = dotColor(a, designation, dotColorOverride)
-          // Debug: log Hawaii markers
-          if (a.coords.lat > 18 && a.coords.lat < 23 && a.coords.lng < -155 && a.coords.lng > -161) {
-            console.log(`[HI RENDER] ${a.name || a.slug}: visible=${visible}, x=${x.toFixed(1)}, y=${y.toFixed(1)}, r=${radius.toFixed(2)}, color=${color}, mapZoomed=${mapZoomed}, opacity=${visible ? 0.85 : 0}`)
-          }
           return (
             <circle
               key={a.slug}
@@ -353,9 +399,7 @@ export default function AdvisorMap({
                 : undefined}
               onMouseEnter={visible && mapZoomed ? (e) => {
                 if (dragging.current) return
-                const svg = e.currentTarget.ownerSVGElement
-                const rect = svg.parentElement.getBoundingClientRect()
-                showPreview(a, e.clientX - rect.left, e.clientY - rect.top)
+                showPreview(a, e.clientX, e.clientY)
               } : undefined}
               onMouseLeave={visible && mapZoomed ? hidePreview : undefined}
             />
@@ -363,5 +407,9 @@ export default function AdvisorMap({
         })}
       </g>
     </svg>
+    {popup}
+    </>
   )
 }
+
+export default memo(AdvisorMap)
