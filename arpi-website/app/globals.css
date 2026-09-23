@@ -1364,6 +1364,13 @@ article .prose h4 {
 .footer-col ul li { margin-bottom: 6px; }
 .footer-col ul li a { font-size: 0.82rem; color: var(--ink-light); transition: color 0.15s; }
 .footer-col ul li a:hover { color: var(--ink-pale); }
+/* Two-line tool links in footer */
+.footer-col ul.footer-tools-list li { margin-bottom: 14px; }
+.footer-tool-link { display: flex; flex-direction: column; gap: 2px; }
+.footer-tool-name { font-size: 0.82rem; font-weight: 600; color: var(--ink-light); transition: color 0.15s; }
+.footer-tool-desc { font-size: 0.74rem; color: var(--ink-mid); line-height: 1.4; transition: color 0.15s; }
+.footer-tool-link:hover .footer-tool-name { color: var(--ink-pale); }
+.footer-tool-link:hover .footer-tool-desc { color: var(--ink-light); }
 .footer-bottom-bar {
   display: flex;
   align-items: center;

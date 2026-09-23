@@ -61,11 +61,31 @@ export default function Footer() {
           {/* Tools */}
           <div className="footer-col">
             <div className="footer-col-label">Tools</div>
-            <ul>
-              <li><a href="/axiom">AXIOM® Platform</a></li>
-              <li><a href="/calculus">CALCULUS Calculator</a></li>
-              <li><a href="/tools/ss-calculator">SS Strategy Calculator</a></li>
-              <li><a href="/retirement-advisor-pro">Retirement Advisor Pro</a></li>
+            <ul className="footer-tools-list">
+              <li>
+                <a href="/axiom" className="footer-tool-link">
+                  <span className="footer-tool-name">AXIOM®</span>
+                  <span className="footer-tool-desc">Social Security &amp; Medicare Answers</span>
+                </a>
+              </li>
+              <li>
+                <a href="/calculus" className="footer-tool-link">
+                  <span className="footer-tool-name">CALCULUS®</span>
+                  <span className="footer-tool-desc">Social Security Break Even Calculator</span>
+                </a>
+              </li>
+              <li>
+                <a href="/codex" className="footer-tool-link">
+                  <span className="footer-tool-name">CODEX®</span>
+                  <span className="footer-tool-desc">Social Security &amp; Medicare Knowledge Base</span>
+                </a>
+              </li>
+              <li>
+                <a href="/retirement-advisor-pro" className="footer-tool-link">
+                  <span className="footer-tool-name">Retirement Advisor Pro®</span>
+                  <span className="footer-tool-desc">Full SS and IRMAA Software</span>
+                </a>
+              </li>
             </ul>
           </div>
 
