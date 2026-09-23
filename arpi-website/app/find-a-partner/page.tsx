@@ -13,6 +13,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { STATE_NAMES, TERRITORY_CODES } from '@/lib/geo'
 import { getStateView } from '@/lib/stateView'
 import { REFERRAL_PARTNERS } from '@/lib/celp-referral-partners'
+import { buildPartnerSlugIndex } from '@/lib/slug'
 
 // Client-only map (react-simple-maps / d3-geo are not SSR-safe in this config).
 const AdvisorMap = dynamic(() => import('@/components/directory/AdvisorMap'), {
@@ -93,13 +94,13 @@ interface PartnerRow extends Partner {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function transformPartner(p: Partner): PartnerRow {
+function transformPartner(p: Partner, slug: string): PartnerRow {
   const stateCode = p.state ? p.state.trim().toUpperCase() : null
   const coords =
     p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null
   return {
     ...p,
-    slug: String(p.id),
+    slug,
     stateCode,
     coords,
     name: `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim(),
@@ -162,7 +163,9 @@ export default function PartnersPage() {
       .then(r => r.json())
       .then((d: { partners?: Partner[]; error?: string }) => {
         if (d.partners) {
-          setPartners(d.partners.map(transformPartner))
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const { byId } = (buildPartnerSlugIndex as any)(d.partners) as { byId: Map<string, string> }
+          setPartners(d.partners.map(p => transformPartner(p, byId.get(p.id) ?? String(p.id))))
         } else {
           setLoadError(d.error ?? 'Failed to load partners.')
         }
@@ -1064,7 +1067,7 @@ export default function PartnersPage() {
 
                           {/* View Profile button */}
                           <a
-                            href={`/find-a-partner/${p.id}`}
+                            href={`/find-a-partner/${p.slug}`}
                             style={{
                               display: 'inline-block',
                               marginTop: p.about ? 0 : '8px',
