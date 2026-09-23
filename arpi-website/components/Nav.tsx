@@ -69,7 +69,7 @@ export default function Nav() {
                 </span>
                 <div className="nav-dropdown-panel">
                   <a href="/credentials/nssa" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent', borderRadius: 0, overflow: 'visible' }}>
                       <Image src="/assets/nssa-cert.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
@@ -78,7 +78,7 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/credentials/irmaacp" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent', borderRadius: 0, overflow: 'visible' }}>
                       <Image src="/assets/irmaa-certificate.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
@@ -87,7 +87,7 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/credentials/celp" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent', borderRadius: 0, overflow: 'visible' }}>
                       <Image src="/assets/celp-certificate.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
