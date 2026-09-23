@@ -119,7 +119,7 @@ export default function Nav() {
                       <Image src="/assets/calculus-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
-                      <div className="nav-dropdown-label">CALCULUS</div>
+                      <div className="nav-dropdown-label">CALCULUS®</div>
                       <div className="nav-dropdown-desc">Social Security breakeven calculator with spousal math</div>
                     </div>
                   </a>
@@ -128,7 +128,7 @@ export default function Nav() {
                       <Image src="/assets/rap-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
-                      <div className="nav-dropdown-label">Retirement Advisor Pro</div>
+                      <div className="nav-dropdown-label">Retirement Advisor Pro®</div>
                       <div className="nav-dropdown-desc">Full IRMAA, SS &amp; Roth conversion planning software</div>
                     </div>
                   </a>

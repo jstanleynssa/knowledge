@@ -287,7 +287,7 @@ export default function CalculusPage() {
                     alt="CALCULUS"
                     width={260}
                     height={104}
-                    style={{ width: 260, height: 'auto' }}
+                    style={{ width: '100%', height: 'auto' }}
                     priority
                   />
                 </div>

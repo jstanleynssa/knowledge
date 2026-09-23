@@ -144,7 +144,7 @@ export default function AxiomPage() {
                     alt="AXIOM®"
                     width={260}
                     height={104}
-                    style={{ width: 260, height: 'auto' }}
+                    style={{ width: '100%', height: 'auto' }}
                     priority
                   />
                 </div>
