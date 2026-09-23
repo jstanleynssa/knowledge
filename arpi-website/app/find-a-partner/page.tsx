@@ -58,7 +58,7 @@ const DIRECTION_LABELS: Record<string, string> = {
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface Partner {
-  id: number
+  id: string
   role_id: string
   role_label: string
   first_name: string

@@ -15,13 +15,15 @@ function admin() {
   )
 }
 
+// UUID v4 pattern
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const numericId = Number(id)
-  if (!Number.isInteger(numericId) || numericId <= 0) {
+  if (!UUID_RE.test(id)) {
     return NextResponse.json({ error: 'Not found.' }, { status: 404 })
   }
 
@@ -33,7 +35,7 @@ export async function GET(
       .select(
         'id, role_id, role_label, first_name, last_name, organization, city, state, zip, lat, lng, clients_per_year, referral_direction, about, website, linkedin'
       )
-      .eq('id', numericId)
+      .eq('id', id)
       .eq('status', 'approved')
       .maybeSingle()
 

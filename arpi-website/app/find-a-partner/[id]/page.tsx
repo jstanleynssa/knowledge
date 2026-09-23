@@ -10,7 +10,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // ── Types ─────────────────────────────────────────────────────────────────
 interface Partner {
-  id: number
+  id: string
   role_id: string
   role_label: string
   first_name: string
@@ -50,9 +50,10 @@ function admin() {
   )
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 async function getPartner(id: string): Promise<Partner | null> {
-  const numericId = Number(id)
-  if (!Number.isInteger(numericId) || numericId <= 0) return null
+  if (!UUID_RE.test(id)) return null
 
   const supabase = admin()
   const { data, error } = await supabase
@@ -60,7 +61,7 @@ async function getPartner(id: string): Promise<Partner | null> {
     .select(
       'id, role_id, role_label, first_name, last_name, organization, city, state, zip, clients_per_year, referral_direction, about, website, linkedin'
     )
-    .eq('id', numericId)
+    .eq('id', id)
     .eq('status', 'approved')
     .maybeSingle()
 
