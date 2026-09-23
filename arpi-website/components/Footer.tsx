@@ -27,11 +27,21 @@ export default function Footer() {
           <div className="footer-col footer-col-credentials">
             <div className="footer-col-label">Credentials</div>
             <ul>
-              <li><a href="/credentials/nssa">NSSA® — National Social Security Advisor</a></li>
-              <li><a href="/credentials/irmaacp">IRMAACP™ — IRMAA Certified Planner</a></li>
-              <li><a href="/credentials/celp">CELP® — Certified End-of-Life Planner</a></li>
+              <li><a href="/credentials/nssa" style={{ display: 'block' }}>
+                <span style={{ display: 'block' }}>NSSA®</span>
+                <span style={{ display: 'block', fontSize: '0.78rem', opacity: 0.65, fontWeight: 400, marginTop: 1 }}>National Social Security Advisor</span>
+              </a></li>
+              <li><a href="/credentials/irmaacp" style={{ display: 'block' }}>
+                <span style={{ display: 'block' }}>IRMAACP™</span>
+                <span style={{ display: 'block', fontSize: '0.78rem', opacity: 0.65, fontWeight: 400, marginTop: 1 }}>IRMAA Certified Planner</span>
+              </a></li>
+              <li><a href="/credentials/celp" style={{ display: 'block' }}>
+                <span style={{ display: 'block' }}>CELP®</span>
+                <span style={{ display: 'block', fontSize: '0.78rem', opacity: 0.65, fontWeight: 400, marginTop: 1 }}>Certified End-of-Life Planner</span>
+              </a></li>
               <li><a href="/credentials">Compare Credentials</a></li>
               <li><a href="/ce-credits">CE Credit Information</a></li>
+              <li><a href="/enroll">Enroll</a></li>
             </ul>
           </div>
 
@@ -40,10 +50,22 @@ export default function Footer() {
             <div className="footer-col-label">Resources</div>
             <ul>
               <li><a href="/codex">Knowledge Base</a></li>
-              <li><a href="/axiom">AXIOM® Platform</a></li>
+
               <li><a href="https://members.nssapros.com" target="_blank" rel="noopener noreferrer">Member Community</a></li>
-              <li><a href="/blog">Blog</a></li>
+              <li><a href="/blog">Retirement Insights</a></li>
               <li><a href="/find-an-advisor">Find an Advisor</a></li>
+              <li><a href="/find-a-partner">CELP Referral Network</a></li>
+            </ul>
+          </div>
+
+          {/* Tools */}
+          <div className="footer-col">
+            <div className="footer-col-label">Tools</div>
+            <ul>
+              <li><a href="/axiom">AXIOM® Platform</a></li>
+              <li><a href="/calculus">CALCULUS Calculator</a></li>
+              <li><a href="/tools/ss-calculator">SS Strategy Calculator</a></li>
+              <li><a href="/tools/retirement-advisor-pro">Retirement Advisor Pro</a></li>
             </ul>
           </div>
 
