@@ -129,7 +129,7 @@ export default function AxiomPage() {
                 </p>
                 <div className="ax-hero-actions">
                   <a href="#how-it-works" className="btn-primary">See How It Works</a>
-                  <a href="/contact" className="btn-outline-dark">Get Early Access — Q4 2026</a>
+                  <a href="/contact" className="btn-outline-dark">Start 7-Day Free Trial</a>
                 </div>
                 <div className="ax-trust-row">
                   <span className="ax-trust-pill"><IconShield size={13} /> Grounded in federal law</span>
@@ -140,8 +140,14 @@ export default function AxiomPage() {
               <div className="ax-hero-right">
                 <div className="ax-stat-card">
                   <div className="ax-stat-logo">
-                    <Image src="/assets/axiom-logo-white.png" alt="AXIOM®" width={400} height={154}
-                      style={{ objectFit: 'contain', height: 154, width: 'auto', opacity: 0.9 }} priority />
+                    <Image
+                      src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-logo.png"
+                      alt="AXIOM®"
+                      width={400}
+                      height={154}
+                      style={{ objectFit: 'contain', height: 154, width: 'auto' }}
+                      priority
+                    />
                   </div>
                   <div className="ax-stat-grid">
                     <div className="ax-stat">
@@ -170,83 +176,91 @@ export default function AxiomPage() {
           </div>
         </section>
 
-        {/* ── The Problem ── */}
+        {/* ── Section A: The Problem ── */}
         <section className="ax-section ax-problem">
           <div className="container">
-            <div className="ax-problem-grid">
-              <div className="ax-problem-left">
-                <p className="ax-eyebrow">The Problem</p>
-                <h2 className="ax-h2">The SSA office isn’t always right. Your client, and your reputation, is paying the price.</h2>
-                <p className="ax-body">
-                  Social Security rules are dense, interconnected, and frequently misapplied —
-                  even by SSA employees. When a client acts on incorrect guidance, the financial
-                  damage compounds every single month for the rest of their life.
-                </p>
-                <p className="ax-body">
-                  Until now, verifying the correct answer required a 35-year SSA veteran, a
-                  deep dive into POMS, or an expensive consultation. AXIOM makes that expertise
-                  available on demand, for any scenario, in seconds.
-                </p>
-                <p className="ax-cost-label">The cost of acting on this advice?</p>
-                <p className="ax-cost-summary">
-                  By filing at 62, she locks in a permanent 30% reduction on her own benefit.
-                  Her spousal add-on is also reduced — but only by 16.7%, applied to the $400
-                  excess over her own PIA when her husband files at 67 (she&rsquo;s 65, just
-                  24 months before her FRA). The net lifetime loss compared to waiting: <strong>$71,700</strong>.
-                </p>
-              </div>
+            <div className="ax-problem-centered">
+              <p className="ax-eyebrow">The Problem</p>
+              <h2 className="ax-h2">The SSA office isn't always right. Your client, and your reputation, is paying the price.</h2>
+              <p className="ax-body">
+                Social Security rules are dense, interconnected, and frequently misapplied —
+                even by SSA employees. When a client acts on incorrect guidance, the financial
+                damage compounds every single month for the rest of their life.
+              </p>
+              <p className="ax-body">
+                Until now, verifying the correct answer required countless hours on the phone
+                with the Social Security Administration, hours researching POMS, or an expensive
+                consultation. AXIOM makes that expertise available on demand, for any scenario,
+                in seconds.
+              </p>
+            </div>
+          </div>
+        </section>
 
-              {/* AXIOM chat UI — no bubble backgrounds, colored text only */}
-              <div className="ax-chat-card">
-
-                {/* User question */}
-                <div className="ax-chat-q-row">
-                  <div className="ax-chat-q-bubble">
-                    I have a client who is 62 and considering filing early. Her husband is 64
-                    and is the higher income earner and is not planning to file until FRA. The
-                    Social Security office is telling her that she will still benefit from a full
-                    spousal boost, even if she claims early and her own benefit is reduced.
-                    Is this accurate?
-                  </div>
-                </div>
-
-
-                {/* AXIOM response */}
-                <div className="ax-chat-a-row">
-                  <div className="ax-chat-avatar">A</div>
-                  <div className="ax-chat-a-body">
-                    <div className="ax-incorrect-badge">
-                      <span className="ax-x">×</span>{' '}
-                      <strong>Incorrect</strong>{' — '}The advice is incorrect because the client
-                      will not receive a full spousal boost if she files at age 62.
-                    </div>
-                    <div className="ax-answer-card">
-                      <p>The advice given to the client requires clarification. If the client
-                      files for her own Social Security retirement benefits at age 62, her
-                      retirement benefit will indeed be reduced because she is filing before
-                      her full retirement age (FRA). However, the computation of benefits is
-                      based on two separate records: her own and her husband&rsquo;s.</p>
-                      <p>If the client becomes eligible for spousal benefits at her FRA, the
-                      spousal portion of her benefit will not be reduced, even though her own
-                      retirement benefit was reduced due to early filing. This means that while
-                      her personal retirement benefit is reduced for early filing, the spousal
-                      benefit she receives when she reaches FRA will be calculated without
-                      reduction, based on her husband&rsquo;s primary insurance amount (PIA)
-                      (RS 00615.500).</p>
-                      <p>Therefore, the client will receive a full spousal boost when she
-                      becomes eligible for the spousal benefit at her FRA, despite having
-                      claimed her own reduced retirement benefit early.</p>
-                    </div>
-
-                  </div>
-                </div>
-              <p className="ax-actual-label">Actual AXIOM response</p>
-
-              </div>
+        {/* ── Section B: The Solution: AXIOM ── */}
+        <section className="ax-section ax-solution">
+          <div className="container">
+            <div className="ax-solution-header">
+              <p className="ax-eyebrow">The Solution</p>
+              <h2 className="ax-h2">Ask AXIOM. Get the answer, grounded in federal law.</h2>
             </div>
 
-            {/* ── 4 cost tiles — full width ── */}
-            <div className="ax-cost-tiles-wrap">
+            {/* AXIOM chat UI — centered */}
+            <div className="ax-chat-card ax-chat-card--centered">
+
+              {/* User question */}
+              <div className="ax-chat-q-row">
+                <div className="ax-chat-q-bubble">
+                  I have a client who is 62 and considering filing early. Her husband is 64
+                  and is the higher income earner and is not planning to file until FRA. The
+                  Social Security office is telling her that she will still benefit from a full
+                  spousal boost, even if she claims early and her own benefit is reduced.
+                  Is this accurate?
+                </div>
+              </div>
+
+              {/* AXIOM response */}
+              <div className="ax-chat-a-row">
+                <div className="ax-chat-avatar">A</div>
+                <div className="ax-chat-a-body">
+                  <div className="ax-incorrect-badge">
+                    <span className="ax-x">×</span>{' '}
+                    <strong>Incorrect</strong>{' — '}The advice is incorrect because the client
+                    will not receive a full spousal boost if she files at age 62.
+                  </div>
+                  <div className="ax-answer-card">
+                    <p>The advice given to the client requires clarification. If the client
+                    files for her own Social Security retirement benefits at age 62, her
+                    retirement benefit will indeed be reduced because she is filing before
+                    her full retirement age (FRA). However, the computation of benefits is
+                    based on two separate records: her own and her husband&rsquo;s.</p>
+                    <p>If the client becomes eligible for spousal benefits at her FRA, the
+                    spousal portion of her benefit will not be reduced, even though her own
+                    retirement benefit was reduced due to early filing. This means that while
+                    her personal retirement benefit is reduced for early filing, the spousal
+                    benefit she receives when she reaches FRA will be calculated without
+                    reduction, based on her husband&rsquo;s primary insurance amount (PIA)
+                    (RS 00615.500).</p>
+                    <p>Therefore, the client will receive a full spousal boost when she
+                    becomes eligible for the spousal benefit at her FRA, despite having
+                    claimed her own reduced retirement benefit early.</p>
+                  </div>
+                </div>
+              </div>
+              <p className="ax-actual-label">Actual AXIOM response</p>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section C: Cost of Bad Advice ── */}
+        <section className="ax-section ax-cost-section">
+          <div className="container">
+            <div className="ax-cost-section-header">
+              <p className="ax-eyebrow">The Cost of Getting It Wrong</p>
+              <h2 className="ax-h2">Acting on incorrect SSA guidance costs your clients — permanently.</h2>
+            </div>
+
             <div className="ax-cost-tiles">
 
               <div className="ax-cost-tile">
@@ -330,8 +344,6 @@ export default function AxiomPage() {
               </div>
 
             </div>
-            </div>
-
           </div>
         </section>
 
@@ -500,16 +512,6 @@ export default function AxiomPage() {
                     <li key={i} style={{ color: 'rgba(255,255,255,0.9)' }}><span className="ax-feat-check" style={{ color: '#fff' }}><IconCheck size={13} /></span>{f}</li>
                   ))}
                 </ul>
-                <div className="ax-firm-bar" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
-                  <div className="ax-firm-left">
-                    <div className="ax-firm-icon" style={{ color: '#fff', background: 'rgba(255,255,255,0.15)' }}><IconUsers /></div>
-                    <div>
-                      <strong style={{ color: '#fff' }}>Team &amp; Firm Access</strong>
-                      <p style={{ color: 'rgba(255,255,255,0.75)' }}>3+ seats? We offer volume pricing for RIA firms, insurance agencies, and CPA practices.</p>
-                    </div>
-                  </div>
-                  <a href="/contact" className="btn-outline">Contact Us</a>
-                </div>
               </div>
 
               {/* Right — price + CTA */}
@@ -538,18 +540,28 @@ export default function AxiomPage() {
                   )}
 
                   <a href="/contact" className="ax-plan-cta ax-plan-cta--primary">
-                    {PLANS[0].cta}
+                    Start 7-Day Free Trial
                   </a>
-                  <p className="ax-plan-fine">Beta launching Q4 2026 · early access available now</p>
+                  <p className="ax-plan-fine">7 days free — then {annual ? `$${PLANS[0].annual}/year` : `$${PLANS[0].monthly}/month`}. Cancel any time.</p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
-                    <span>Your card is not charged until day 8</span>
+                    <span>No charge until day 8</span>
                   </div>
 
                 </div>
               </div>
 
+            </div>
+            <div className="ax-firm-bar" style={{ background: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.2)' }}>
+              <div className="ax-firm-left">
+                <div className="ax-firm-icon" style={{ color: '#fff', background: 'rgba(255,255,255,0.15)' }}><IconUsers /></div>
+                <div>
+                  <strong style={{ color: '#fff' }}>Team &amp; Firm Access</strong>
+                  <p style={{ color: 'rgba(255,255,255,0.75)' }}>3+ seats? We offer volume pricing for RIA firms, insurance agencies, and CPA practices.</p>
+                </div>
+              </div>
+              <a href="/contact" className="btn-outline">Contact Us</a>
             </div>
           </div>
         </section>
@@ -558,10 +570,10 @@ export default function AxiomPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">AXIOM is launching Q4 2026.</h2>
-              <p className="ax-cta-sub">Beta access is available now for ARPI credential holders. Contact us to get on the early access list.</p>
+              <h2 className="ax-cta-h">Try AXIOM free for 7 days.</h2>
+              <p className="ax-cta-sub">No charge until day 8. Available now for ARPI credential holders.</p>
             </div>
-            <a href="/contact" className="btn-primary ax-cta-btn">Get Early Access</a>
+            <a href="/contact" className="btn-primary ax-cta-btn">Start 7-Day Free Trial</a>
           </div>
         </section>
 

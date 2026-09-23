@@ -5,6 +5,7 @@
 // Reuses ax-* CSS classes from globals.css; #calc scope overrides blue → green.
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
@@ -121,24 +122,16 @@ export default function CalculusPage() {
           #calc .ax-yes--green { background: var(--calc-xlight); color: var(--calc-green); }
           #calc .ax-feat-check { color: var(--calc-xlight); }
 
-          /* Stat card wordmark */
-          .calc-wordmark {
-            font-family: 'Inter', system-ui, sans-serif;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.04em;
-            color: white;
-            line-height: 1;
-            margin-bottom: 4px;
-          }
-          .calc-wordmark-sub {
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-            color: rgba(255,255,255,0.5);
-            margin-bottom: 28px;
-          }
+          /* Blue → green overrides for all inherited ax-* elements */
+          #calc .ax-step-icon { background: var(--calc-xlight); color: var(--calc-green); }
+          #calc .ax-corpus-icon { background: var(--calc-xlight); color: var(--calc-green); }
+          #calc .ax-corpus-stat { color: var(--calc-green); }
+          #calc .ax-plan-cta--primary { background: var(--calc-green); border-color: var(--calc-green); }
+          #calc .ax-plan-cta--primary:hover { background: var(--calc-dark); border-color: var(--calc-dark); }
+          #calc .ax-diff-check { background: var(--calc-xlight); color: var(--calc-green); }
+          #calc .ax-yes--green { background: var(--calc-xlight); color: var(--calc-green); }
+          #calc .ax-toggle-btn--on { background: var(--calc-green); border-color: var(--calc-green); color: white; }
+          #calc .ax-save-chip { background: rgba(255,255,255,0.2); }
 
           /* Strategy comparison card */
           .calc-demo-card {
@@ -273,7 +266,7 @@ export default function CalculusPage() {
                 </p>
                 <div className="ax-hero-actions">
                   <a href={TOOL_URL} className="btn-primary" target="_blank" rel="noopener noreferrer">
-                    Start Using CALCULUS →
+                    Start 7-Day Free Trial →
                   </a>
                   <a href="#how-it-works" className="btn-outline-dark">See How It Works</a>
                 </div>
@@ -286,8 +279,16 @@ export default function CalculusPage() {
 
               <div className="ax-hero-right">
                 <div className="ax-stat-card">
-                  <div className="calc-wordmark">CALCULUS</div>
-                  <div className="calc-wordmark-sub">Social Security Breakeven Calculator</div>
+                  <div style={{ marginBottom: 24 }}>
+                    <Image
+                      src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
+                      alt="CALCULUS"
+                      width={200}
+                      height={80}
+                      style={{ width: 200, height: 'auto', display: 'block' }}
+                      priority
+                    />
+                  </div>
                   <div className="ax-stat-grid">
                     <div className="ax-stat">
                       <span className="ax-stat-n">2</span>
@@ -638,13 +639,13 @@ export default function CalculusPage() {
                   )}
 
                   <a href={TOOL_URL} className="ax-plan-cta ax-plan-cta--primary" target="_blank" rel="noopener noreferrer">
-                    Start Using CALCULUS
+                    Start 7-Day Free Trial
                   </a>
-                  <p className="ax-plan-fine">Access starts immediately after subscribing</p>
+                  <p className="ax-plan-fine">7 days free — then {annual ? `$${ANNUAL}/year` : `$${MONTHLY}/month`}. Cancel any time.</p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
-                    <span>Cancel any time</span>
+                    <span>No charge until day 8</span>
                   </div>
                 </div>
               </div>
@@ -669,13 +670,13 @@ export default function CalculusPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">CALCULUS is live and ready to use.</h2>
+              <h2 className="ax-cta-h">Try CALCULUS free for 7 days.</h2>
               <p className="ax-cta-sub">
-                Subscribe today and run your first breakeven comparison in under two minutes.
+                No charge until day 8. Run your first breakeven comparison in under two minutes.
               </p>
             </div>
             <a href={TOOL_URL} className="btn-primary ax-cta-btn" target="_blank" rel="noopener noreferrer">
-              Start Using CALCULUS →
+              Start 7-Day Free Trial →
             </a>
           </div>
         </section>
