@@ -284,11 +284,11 @@ export default function CalculusPage() {
                 <div className="ax-stat-card">
                   <div style={{ marginBottom: 24 }}>
                     <Image
-                      src="/assets/calculus-full-badge.png"
+                      src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
                       alt="CALCULUS"
-                      width={120}
-                      height={120}
-                      style={{ width: 120, height: 120 }}
+                      width={260}
+                      height={104}
+                      style={{ width: 260, height: 'auto' }}
                       priority
                     />
                   </div>
