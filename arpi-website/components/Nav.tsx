@@ -70,7 +70,7 @@ export default function Nav() {
                 <div className="nav-dropdown-panel">
                   <a href="/credentials/nssa" className="nav-dropdown-item">
                     <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
-                      <Image src="/assets/nssa-round-icon.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                      <Image src="/assets/nssa-cert.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">NSSA®</div>
@@ -78,8 +78,8 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/credentials/irmaacp" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: '#fce7f3' }}>
-                      <Image src="/assets/irmaa-logo.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/irmaa-certificate.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">IRMAACP®</div>
@@ -87,8 +87,8 @@ export default function Nav() {
                     </div>
                   </a>
                   <a href="/credentials/celp" className="nav-dropdown-item">
-                    <div className="nav-dropdown-icon" style={{ background: '#e8f5f1' }}>
-                      <Image src="/assets/celp-logo.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
+                    <div className="nav-dropdown-icon" style={{ background: 'transparent' }}>
+                      <Image src="/assets/celp-certificate.png" alt="" width={ICON_SIZE} height={ICON_SIZE} style={{ width: ICON_SIZE, height: ICON_SIZE, objectFit: 'contain' }} />
                     </div>
                     <div>
                       <div className="nav-dropdown-label">CELP®</div>
