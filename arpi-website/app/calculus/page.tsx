@@ -285,9 +285,10 @@ export default function CalculusPage() {
                   <Image
                     src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
                     alt="CALCULUS"
-                    width={260}
-                    height={104}
+                    width={957}
+                    height={383}
                     style={{ width: '100%', height: 'auto' }}
+                    unoptimized
                     priority
                   />
                 </div>

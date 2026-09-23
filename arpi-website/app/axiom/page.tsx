@@ -142,9 +142,10 @@ export default function AxiomPage() {
                   <Image
                     src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-logo.png"
                     alt="AXIOM®"
-                    width={260}
-                    height={104}
+                    width={957}
+                    height={383}
                     style={{ width: '100%', height: 'auto' }}
+                    unoptimized
                     priority
                   />
                 </div>
