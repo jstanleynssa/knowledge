@@ -7,7 +7,7 @@ export default function Hero() {
         <div className="hero-grid">
           <div className="hero-content">
             <div className="hero-eyebrow">Advanced Retirement Planning Institute</div>
-            <h1>Join a Community of<br />Trusted Professionals</h1>
+            <h1>Join a Community<br />of Trusted<br />Professionals</h1>
             <p className="hero-sub">
               ARPI credentials are just the beginning. Earn your NSSA®, IRMAACP™, or CELP® designation
               and gain lifetime access to an active community of like-minded professionals, annually
