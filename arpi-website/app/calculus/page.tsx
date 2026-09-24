@@ -9,9 +9,12 @@ import Image from 'next/image'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
-const MONTHLY        = 19
-const ANNUAL         = 195
-const ANNUAL_MONTHLY = 16   // $195 / 12, rounded down
+const MONTHLY        = 39
+const ANNUAL         = 349
+const ANNUAL_MONTHLY = 29   // $349 / 12, rounded down
+
+const MEMBER_MONTHLY = 29   // NSSA/IRMAACP credential holders
+const MEMBER_ANNUAL  = 299
 
 const TOOL_URL = 'https://calculus.arpinstitute.com'
 
@@ -105,7 +108,7 @@ const schemaApp = {
   url: 'https://calculus.arpinstitute.com',
   offers: {
     '@type': 'Offer',
-    price: '19.00',
+    price: '39.00',
     priceCurrency: 'USD',
     availability: 'https://schema.org/InStock',
     seller: {
@@ -163,7 +166,7 @@ const schemaFaq = {
       name: 'Is CALCULUS free to try?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. CALCULUS offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $19/month or $195/year ($16/month). Cancel any time from your dashboard.',
+        text: 'Yes. CALCULUS offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $39/month or $349/year ($29/month). Active NSSA® and IRMAACP® credential holders receive a discounted rate of $29/month or $299/year. Cancel any time from your dashboard.',
       },
     },
     {
@@ -685,12 +688,13 @@ export default function CalculusPage() {
                 </p>
                 <ul className="ax-plan-features">
                   {[
-                    'Unlimited client scenarios',
+                    'Unlimited saved scenarios, organized by client',
                     'Two-strategy side-by-side comparison',
+                    'White-label branded PDF reports',
                     'SSA 2023 Period Life Tables + health tiers',
-                    'Full spousal benefit calculation',
-                    'Save and reload unlimited scenarios',
-                    'Print / PDF output',
+                    'Full spousal & survivor benefit calculation',
+                    'Day-of-birth precision (SSA POMS compliant)',
+                    'Annual COLA modeling',
                   ].map((f, i) => (
                     <li key={i} style={{ color: 'rgba(255,255,255,0.9)' }}>
                       <span className="ax-feat-check" style={{ color: 'rgba(255,255,255,0.9)' }}><IconCheck size={13} /></span>
@@ -713,7 +717,7 @@ export default function CalculusPage() {
                       className={`ax-toggle-btn${annual ? ' ax-toggle-btn--on' : ''}`}
                       onClick={() => setAnnual(true)}
                     >
-                      Annual <span className="ax-save-chip">Save 2 months</span>
+                      Annual <span className="ax-save-chip">Save 3 months</span>
                     </button>
                   </div>
 
@@ -731,9 +735,18 @@ export default function CalculusPage() {
                   </div>
                   <p className="ax-plan-fine">Early access opens Q4 2026. <a href="/contact" style={{ color: 'inherit', textDecoration: 'underline' }}>Get notified →</a></p>
 
+                  <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(255,255,255,0.08)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)' }}>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                      NSSA® &amp; IRMAACP® credential holders
+                    </p>
+                    <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.72)' }}>
+                      ${MEMBER_MONTHLY}/mo or ${MEMBER_ANNUAL}/yr — verify at checkout
+                    </p>
+                  </div>
+
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
-                    <span>No charge until day 8</span>
+                    <span>7-day free trial · no charge until day 8</span>
                   </div>
                 </div>
               </div>
@@ -749,7 +762,7 @@ export default function CalculusPage() {
                   </p>
                 </div>
               </div>
-              <a href="/contact" className="btn-outline">Contact Us</a>
+              <a href="/contact?subject=CALCULUS+%E2%80%94+Team+%26+Firm+Access" className="btn-outline">Contact Us</a>
             </div>
           </div>
         </section>

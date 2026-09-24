@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
@@ -10,12 +11,14 @@ const SUBJECTS = [
   'CE Credit & Reporting',
   'Partnership / B2B Inquiry',
   'AXIOM Platform',
+  'CALCULUS — Team & Firm Access',
   'Media & Press',
   'Other',
 ]
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const searchParams = useSearchParams()
+  const [form, setForm] = useState({ name: '', email: '', subject: searchParams.get('subject') ?? '', message: '' })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
