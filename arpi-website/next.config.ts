@@ -8,16 +8,14 @@ const nextConfig: NextConfig = {
         destination: '/retirement-advisor-pro',
         permanent: true,
       },
-    ]
-  },
-  async rewrites() {
-    return [
       {
         source: '/codex/admin/:path*',
         destination: 'https://knowledge.arpinstitute.com/codex/admin/:path*',
+        permanent: false,
       },
     ]
   },
+
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'eqipvrcmugnvkextqmym.supabase.co' },
