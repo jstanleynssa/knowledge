@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 const OG_IMAGE = 'https://arpinstitute.com/assets/axiom-offer.png'
 
 export const metadata: Metadata = {
-  title: 'Social Security & Medicare Regulatory Intelligence for Financial Advisors | AXIOM',
+  title: { absolute: 'Social Security & Medicare Regulatory Intelligence for Financial Advisors | AXIOM' },
   description:
     'Get instant, citation-backed answers to Social Security and Medicare regulatory questions — grounded in POMS, CFR, CMS, and Medicare.gov. Built for financial advisors. Try free for 7 days.',
   keywords: [

@@ -28,9 +28,9 @@ export const metadata: Metadata = {
     'Earn your NSSA®, IRMAACP™, or CELP® designation and join a community of trusted financial professionals with lifetime access to annually updated courses.',
   metadataBase: new URL('https://arpinstitute.com'),
   robots: {
-    index: false,
-    follow: false,
-    googleBot: { index: false, follow: false },
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
   },
   openGraph: {
     type: 'website',
@@ -60,11 +60,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Organization',
-              name: 'ARPI — Advanced Retirement Planning Institute',
+              name: 'Advanced Retirement Planning Institute',
+              alternateName: 'ARPI',
               url: 'https://arpinstitute.com',
               logo: 'https://arpinstitute.com/assets/arpi-logo.png',
-              description: 'Professional credentials for financial advisors — NSSA®, IRMAACP™, and CELP®.',
+              description: 'Professional certifications and tools for financial advisors specializing in Social Security, Medicare, IRMAA, and retirement planning — NSSA®, IRMAACP™, and CELP®.',
               sameAs: ['https://www.linkedin.com/company/arpinstitute'],
+              hasOfferCatalog: {
+                '@type': 'OfferCatalog',
+                name: 'Professional Credentials',
+                itemListElement: [
+                  { '@type': 'Offer', itemOffered: { '@type': 'Course', name: 'NSSA® — National Social Security Advisor', url: 'https://arpinstitute.com/credentials/nssa' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Course', name: 'IRMAACP™ — IRMAA Certified Planner', url: 'https://arpinstitute.com/credentials/irmaacp' } },
+                  { '@type': 'Offer', itemOffered: { '@type': 'Course', name: 'CELP® — Certified End-of-Life Planner', url: 'https://arpinstitute.com/credentials/celp' } },
+                ],
+              },
             })
           }}
         />

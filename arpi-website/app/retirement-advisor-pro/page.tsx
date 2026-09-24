@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'IRMAA, Social Security & Roth Conversion Planning Software for Financial Advisors | Retirement Advisor Pro',
+  title: { absolute: 'IRMAA, Social Security & Roth Conversion Planning Software for Financial Advisors | Retirement Advisor Pro' },
   description:
     'Retirement Advisor Pro is ARPI’s recommended planning software for financial advisors — covering IRMAA modeling, Social Security optimization, and Roth conversion scheduling. NSSA® and IRMAACP™ holders receive 20% off.',
   keywords: [

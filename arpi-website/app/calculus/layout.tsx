@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 const OG_IMAGE = 'https://arpinstitute.com/assets/calculus-offer.png'
 
 export const metadata: Metadata = {
-  title: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS',
+  title: { absolute: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS' },
   description:
     'Calculate the exact Social Security breakeven age for any client. Two filing strategies compared side-by-side with SSA Period Life Tables and correct spousal benefit math. Try free for 7 days.',
   keywords: [

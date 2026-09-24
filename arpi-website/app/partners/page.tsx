@@ -3,9 +3,33 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Institutional Partners | ARPI',
+  title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
   description:
-    'ARPI partners with leading financial advisor networks, broker-dealers, IMOs, and professional associations to offer their members preferred access to rigorous retirement planning credentials.',
+    'ARPI partners with leading financial advisor networks, broker-dealers, IMOs, and professional associations to offer their members preferred access to Social Security, Medicare, and retirement planning credentials.',
+  keywords: [
+    'financial advisor network credentials',
+    'broker dealer retirement planning training',
+    'IMO social security certification',
+    'institutional retirement planning credentials',
+    'social security training partnership',
+    'Medicare training partnership',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/partners' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
+    description: 'ARPI partners with leading financial advisor networks, broker-dealers, IMOs, and associations to offer preferred access to Social Security, Medicare, and retirement planning credentials.',
+    url: 'https://arpinstitute.com/partners',
+    images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-new.png', width: 1200, height: 630, alt: 'ARPI Institutional Partners' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
+    description: 'ARPI partners with financial advisor networks, broker-dealers, and IMOs to provide Social Security and Medicare credentials.',
+    images: ['https://arpinstitute.com/assets/arpi-logo-new.png'],
+  },
+  robots: { index: true, follow: true },
 }
 
 const GREEN     = 'var(--green-dark)'

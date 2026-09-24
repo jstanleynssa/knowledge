@@ -3,9 +3,36 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'CE Credit Information',
+  title: 'CE Credits — Social Security & Medicare Insurance CE Approvals by State',
   description:
-    'ARPI credentials offer CE hours for Insurance, CFP Board, and CPE requirements. View state-by-state Insurance CE approval status for NSSA® and IRMAACP™.',
+    'View state-by-state Insurance CE approval status for NSSA® and IRMAACP™ courses. CFP Board CE and CPE hours available in all states. Updated July 2026.',
+  keywords: [
+    'social security CE credits',
+    'NSSA CE credits',
+    'IRMAACP CE credits',
+    'Medicare CE credits financial advisors',
+    'insurance CE social security',
+    'CFP CE social security',
+    'CPE social security Medicare',
+    'social security CE approval by state',
+    'Medicare insurance CE',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/ce-credits' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'CE Credits — Social Security & Medicare Insurance CE Approvals by State',
+    description: 'State-by-state Insurance CE approval status for NSSA® and IRMAACP™. CFP Board CE and CPE hours available nationwide.',
+    url: 'https://arpinstitute.com/ce-credits',
+    images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-new.png', width: 1200, height: 630, alt: 'ARPI CE Credit Approvals' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CE Credits — Social Security & Medicare Insurance CE Approvals by State',
+    description: 'State-by-state Insurance CE approval status for NSSA® and IRMAACP™ courses.',
+    images: ['https://arpinstitute.com/assets/arpi-logo-new.png'],
+  },
+  robots: { index: true, follow: true },
 }
 
 // ─── State approval data (source: SSP Self Study Course Approvals, July 2026) ─

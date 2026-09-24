@@ -6,12 +6,37 @@ import { createPublicClient } from '@/lib/codex-supabase';
 export const dynamic = 'force-dynamic';
 
 export const metadata = {
-  title: 'ARPI Knowledge Base — Social Security & IRMAA Reference',
+  title: 'Social Security & Medicare Rules Reference — POMS, IRMAA & CFR Lookup',
   description:
-    'Authoritative Social Security and IRMAA rules for financial advisors and retirees — verified against SSA POMS, CFR, CMS, and Medicare.gov. Search claiming rules, spousal benefits, WEP, GPO, IRMAA, and more.',
-  alternates: {
-    canonical: 'https://arpinstitute.com/codex',
+    'Authoritative Social Security and Medicare rules for financial advisors — verified against SSA POMS, CFR, CMS, and Medicare.gov. Search claiming rules, spousal benefits, WEP, GPO, IRMAA surcharges, and more.',
+  keywords: [
+    'social security POMS lookup',
+    'IRMAA rules reference',
+    'Medicare rules for financial advisors',
+    'social security claiming rules',
+    'spousal benefits rules',
+    'WEP GPO rules',
+    'social security regulation reference',
+    'IRMAA surcharge rules',
+    'Medicare CFR lookup',
+    'social security knowledge base',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/codex' },
+  openGraph: {
+    type: 'website',
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'Social Security & Medicare Rules Reference — POMS, IRMAA & CFR Lookup',
+    description: 'Authoritative Social Security and Medicare rules verified against SSA POMS, CFR, CMS, and Medicare.gov. Search claiming rules, spousal benefits, WEP, GPO, IRMAA, and more.',
+    url: 'https://arpinstitute.com/codex',
+    images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-new.png', width: 1200, height: 630, alt: 'ARPI Knowledge Base — Social Security & Medicare Reference' }],
   },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Social Security & Medicare Rules Reference — POMS, IRMAA & CFR Lookup',
+    description: 'Authoritative Social Security and Medicare rules for financial advisors. Verified against SSA POMS, CFR, CMS, and Medicare.gov.',
+    images: ['https://arpinstitute.com/assets/arpi-logo-new.png'],
+  },
+  robots: { index: true, follow: true },
 };
 
 const NAVY      = 'var(--green-dark)';
