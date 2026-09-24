@@ -17,9 +17,9 @@ export default function Footer() {
               1763 Columbia Road NW<br />Ste 175 PMB 481983<br />Washington, DC 20009
             </p>
             <div className="footer-social">
-              <a className="footer-social-icon" href="#" title="LinkedIn">in</a>
-              <a className="footer-social-icon" href="#" title="Twitter/X">𝕏</a>
-              <a className="footer-social-icon" href="#" title="Facebook">f</a>
+              <a className="footer-social-icon" href="https://www.linkedin.com/company/nssapros/" title="LinkedIn" target="_blank" rel="noopener noreferrer">in</a>
+              <a className="footer-social-icon" href="https://x.com/arpinstitute" title="Twitter/X" target="_blank" rel="noopener noreferrer">𝕏</a>
+              <a className="footer-social-icon" href="https://www.facebook.com/nssapros" title="Facebook" target="_blank" rel="noopener noreferrer">f</a>
             </div>
           </div>
 
