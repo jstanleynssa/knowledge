@@ -18,7 +18,7 @@ const SUBJECTS = [
 
 export default function ContactPage() {
   const searchParams = useSearchParams()
-  const [form, setForm] = useState({ name: '', email: '', subject: searchParams.get('subject') ?? '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: searchParams?.get('subject') ?? '', message: '' })
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
