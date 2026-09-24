@@ -1,2 +1,9 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+# Block internal/utility routes
+Disallow: /working-home
+Disallow: /api/
+Disallow: /_next/
+
+Sitemap: https://arpinstitute.com/sitemap.xml
