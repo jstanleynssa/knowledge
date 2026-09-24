@@ -13,12 +13,33 @@ export const metadata = {
   title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
   description:
     'Earn the IRMAACP™ credential — the definitive Medicare planning certification. Learn to project IRMAA surcharges, build appeals, and implement income strategies that save high-value clients thousands every year.',
+  keywords: [
+    'IRMAA certification financial advisors',
+    'IRMAA planning certification',
+    'Medicare IRMAA training',
+    'IRMAACP certification',
+    'IRMAA surcharge course',
+    'Medicare planning certification',
+    'IRMAA appeals training',
+    'IRMAA certified planner',
+    'Medicare surcharge advisor',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/credentials/irmaacp' },
   openGraph: {
-    title: 'IRMAACP™ Certification — Medicare & IRMAA Planning',
-    description: 'The definitive IRMAA planning credential. Project surcharges, build successful appeals, and implement income strategies for high-value clients.',
+    type: 'website' as const,
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
+    description: 'The definitive IRMAA planning credential. Project surcharges, build successful appeals, and implement income strategies that save high-value clients thousands every year.',
     url: 'https://arpinstitute.com/credentials/irmaacp',
-    images: [{ url: 'https://arpinstitute.com/assets/course-hero-irmaacp.jpg', width: 1200, height: 630 }],
+    images: [{ url: 'https://arpinstitute.com/assets/course-hero-irmaacp.jpg', width: 1200, height: 630, alt: 'IRMAACP™ Certification — Medicare & IRMAA Planning' }],
   },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
+    description: 'The definitive IRMAA planning credential. Project surcharges, build successful appeals, and save high-value clients thousands every year.',
+    images: ['https://arpinstitute.com/assets/course-hero-irmaacp.jpg'],
+  },
+  robots: { index: true, follow: true },
 }
 
 // ─── Brand tokens ────────────────────────────────────────────
@@ -500,6 +521,16 @@ export default function IRMAACPPage() {
         provider: { '@type': 'Organization', name: 'ARPI — Advanced Retirement Planning Institute', url: 'https://arpinstitute.com' },
         educationalCredentialAwarded: 'IRMAACP™ — IRMAA Certified Planner designation',
         numberOfCredits: CE_IRMAACP,
+        inLanguage: 'en',
+        audience: { '@type': 'EducationalAudience', educationalRole: 'Financial Advisor' },
+        teaches: [
+          'IRMAA surcharge calculation and two-year lookback',
+          'Medicare Part B and Part D premium planning',
+          'Income strategies to minimize IRMAA surcharges',
+          'Life-changing event appeals process',
+          'Medicare bracket management',
+          'IRMAA planning for high-income clients',
+        ],
         hasCourseInstance: {
           '@type': 'CourseInstance',
           courseMode: 'online',

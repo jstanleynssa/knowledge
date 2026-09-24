@@ -13,12 +13,33 @@ export const metadata = {
   title: 'NSSA® Certification — Social Security Training for Financial Professionals',
   description:
     `Earn the NSSA® credential — the gold standard in Social Security planning. Trusted by 5,000+ advisors nationwide. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
+  keywords: [
+    'social security certification for financial advisors',
+    'social security advisor certification',
+    'social security training financial professionals',
+    'national social security advisor',
+    'NSSA certification',
+    'social security planning course',
+    'social security CE credits',
+    'social security credential',
+    'social security designation',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/credentials/nssa' },
   openGraph: {
-    title: 'NSSA® Certification — Social Security Planning',
-    description: 'The gold standard in Social Security planning for financial advisors. 6 CE hours. Built by practitioners.',
+    type: 'website' as const,
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'NSSA® Certification — Social Security Training for Financial Professionals',
+    description: `Earn the NSSA® credential — the gold standard in Social Security planning. Trusted by 5,000+ advisors nationwide. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
     url: 'https://arpinstitute.com/credentials/nssa',
-    images: [{ url: 'https://arpinstitute.com/assets/course-hero-nssa.jpg', width: 1200, height: 630 }],
+    images: [{ url: 'https://arpinstitute.com/assets/course-hero-nssa.jpg', width: 1200, height: 630, alt: 'NSSA® Certification — Social Security Training' }],
   },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'NSSA® Certification — Social Security Training for Financial Professionals',
+    description: `The gold standard in Social Security planning for financial advisors. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
+    images: ['https://arpinstitute.com/assets/course-hero-nssa.jpg'],
+  },
+  robots: { index: true, follow: true },
 }
 
 // ─── Brand tokens ────────────────────────────────────────────
@@ -484,6 +505,16 @@ export default function NSSAPage() {
         provider: { '@type': 'Organization', name: 'ARPI — Advanced Retirement Planning Institute', url: 'https://arpinstitute.com' },
         educationalCredentialAwarded: 'NSSA® — National Social Security Advisor designation',
         numberOfCredits: CE_NSSA,
+        inLanguage: 'en',
+        audience: { '@type': 'EducationalAudience', educationalRole: 'Financial Advisor' },
+        teaches: [
+          'Social Security claiming strategies',
+          'Spousal and survivor benefit planning',
+          'Social Security disability benefits',
+          'Medicare and Social Security coordination',
+          'Advanced filing strategies and breakeven analysis',
+          'Social Security taxation',
+        ],
         hasCourseInstance: {
           '@type': 'CourseInstance',
           courseMode: 'online',

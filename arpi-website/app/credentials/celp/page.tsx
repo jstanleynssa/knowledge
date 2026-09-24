@@ -12,15 +12,36 @@ import ReferralInteractive from '@/components/credentials/ReferralInteractive'
 import CelpTwoTracks from '@/components/credentials/CelpTwoTracks'
 
 export const metadata = {
-  title: 'CELP® Certification — Certified End-of-Life Planner',
+  title: 'CELP® Certification — Certified End-of-Life Planner for Financial Professionals',
   description:
     'Earn the CELP® credential — the definitive end-of-life planning certification. Build a new practice or deepen existing client relationships by mastering the financial, legal, and family coordination work most families desperately need.',
+  keywords: [
+    'end of life planning certification',
+    'certified end of life planner',
+    'CELP certification',
+    'end of life financial planning course',
+    'estate settlement certification',
+    'survivor coordination training',
+    'legacy planning certification',
+    'end of life advisor certification',
+    'financial advisor end of life training',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/credentials/celp' },
   openGraph: {
-    title: 'CELP® Certification — End-of-Life Planning',
-    description: 'The credential for end-of-life financial coordination. 10 modules, CE credits filed for you, and a built-in referral ecosystem across estate law, hospice, and senior living.',
+    type: 'website' as const,
+    siteName: 'Advanced Retirement Planning Institute',
+    title: 'CELP® Certification — Certified End-of-Life Planner for Financial Professionals',
+    description: 'The definitive end-of-life planning certification. 10 modules, CE credits filed for you, and a built-in referral ecosystem across estate law, hospice, and senior living.',
     url: 'https://arpinstitute.com/credentials/celp',
-    images: [{ url: 'https://arpinstitute.com/assets/course-hero-celp.jpg', width: 1200, height: 630 }],
+    images: [{ url: 'https://arpinstitute.com/assets/course-hero-celp.jpg', width: 1200, height: 630, alt: 'CELP® Certification — Certified End-of-Life Planner' }],
   },
+  twitter: {
+    card: 'summary_large_image' as const,
+    title: 'CELP® Certification — Certified End-of-Life Planner for Financial Professionals',
+    description: 'The definitive end-of-life planning certification for financial professionals. 10 modules, CE credits filed for you, and a built-in referral ecosystem.',
+    images: ['https://arpinstitute.com/assets/course-hero-celp.jpg'],
+  },
+  robots: { index: true, follow: true },
 }
 
 // ─── Brand tokens ────────────────────────────────────────────
@@ -592,7 +613,17 @@ export default function CELPPage() {
         url: 'https://arpinstitute.com/credentials/celp',
         provider: { '@type': 'Organization', name: 'ARPI — Advanced Retirement Planning Institute', url: 'https://arpinstitute.com' },
         educationalCredentialAwarded: 'CELP® — Certified End-of-Life Planner designation',
-hasCourseInstance: {
+        inLanguage: 'en',
+        audience: { '@type': 'EducationalAudience', educationalRole: 'Financial Advisor' },
+        teaches: [
+          'End-of-life financial planning',
+          'Estate settlement and coordination',
+          'Survivor and family financial guidance',
+          'Legacy planning',
+          'Family communication and coordination strategies',
+          'Medicare and long-term care planning',
+        ],
+        hasCourseInstance: {
           '@type': 'CourseInstance',
           courseMode: 'online',
           offers: { '@type': 'Offer', price: String(TUITION_CELP), priceCurrency: 'USD', availability: 'https://schema.org/PreOrder', url: 'https://arpinstitute.com/credentials/celp#apply' },
