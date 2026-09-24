@@ -93,6 +93,90 @@ function IconTrendingUp({ size = 22 }: { size?: number }) {
   )
 }
 
+// ─── Schema ───────────────────────────────────────────────────────────────────
+const schemaApp = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'CALCULUS',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  description:
+    'A purpose-built Social Security breakeven calculator for financial advisors. Compare two filing strategies side-by-side with SSA Period Life Tables, correct spousal benefit math, and unlimited saved scenarios.',
+  url: 'https://calculus.arpinstitute.com',
+  offers: {
+    '@type': 'Offer',
+    price: '19.00',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    seller: {
+      '@type': 'Organization',
+      name: 'Advanced Retirement Planning Institute',
+      url: 'https://arpinstitute.com',
+    },
+  },
+  creator: {
+    '@type': 'Organization',
+    name: 'Advanced Retirement Planning Institute',
+    url: 'https://arpinstitute.com',
+  },
+  featureList: [
+    'Two-strategy side-by-side Social Security comparison',
+    'SSA 2023 Period Life Tables with health tier adjustments',
+    'Correct spousal benefit reduction calculation',
+    'Unlimited saved client scenarios',
+    'Print-ready PDF output',
+    'Cumulative benefit chart',
+    'Year-by-year breakeven table',
+  ],
+}
+
+const schemaFaq = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is a Social Security breakeven calculator?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'A Social Security breakeven calculator compares two filing strategies — typically filing early vs. waiting — and shows the exact age at which the cumulative benefit of the later strategy surpasses the head start from filing early. CALCULUS does this with SSA 2023 Period Life Tables and actuarially correct spousal benefit math.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How do I calculate the Social Security breakeven age?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The Social Security breakeven age is the point where the cumulative lifetime benefit of a later filing strategy overtakes the benefit of filing earlier. CALCULUS calculates this automatically using SSA Period Life Tables, health tier adjustments, and full spousal benefit formulas — and shows the crossover down to the month.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Does CALCULUS handle spousal Social Security benefits?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. CALCULUS correctly calculates spousal benefit reduction based on when the lower earner actually claims the spousal benefit — not when the higher earner files. Most calculators get this wrong, which can shift the breakeven age by years and lead clients to the wrong filing decision.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is CALCULUS free to try?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. CALCULUS offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $19/month or $195/year ($16/month). Cancel any time from your dashboard.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Who is CALCULUS built for?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'CALCULUS is purpose-built for financial advisors who need to present defensible, data-driven Social Security filing recommendations to clients. It was created by the team behind NSSA® and IRMAACP® — the leading credentials for Social Security planning specialists.',
+      },
+    },
+  ],
+}
+
 // ─── Page ──────────────────────────────────────────────────────────────────────
 export default function CalculusPage() {
   const [annual, setAnnual] = useState(false)
@@ -101,6 +185,8 @@ export default function CalculusPage() {
     <>
       <Nav />
       <main id="calc">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaApp) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaFaq) }} />
 
         {/* ── Scoped green palette + page-specific overrides ── */}
         <style>{`
@@ -325,19 +411,19 @@ export default function CalculusPage() {
           <div className="container">
             <div className="ax-problem-centered">
               <p className="ax-eyebrow">The Problem</p>
-              <h2 className="ax-h2">Most Social Security calculators get the spousal math wrong — and the error compounds for life.</h2>
+              <h2 className="ax-h2">Most Social Security tools take longer to learn than the client meeting itself.</h2>
               <p className="ax-body">
-                The decision of when to claim Social Security is one of the most financially
-                consequential choices your client will ever make. File five years early and you
-                lock in a permanent reduction. Wait five years and you lock in a permanent increase.
-                Neither can be undone.
+                Full retirement planning suites. Integrated projections. Tax modules. Monte Carlo
+                simulations. They're powerful — and for most advisors, complete overkill when all
+                you need is a breakeven. The learning curve is steep, the interface is dense, and
+                by the time you find the right screen, you've lost the room.
               </p>
               <p className="ax-body">
-                The SSA's online calculator doesn't model two strategies side by side. Generic
-                spreadsheets miss the nuance: spousal benefit reduction is calculated based on
-                when the lower earner actually claims the spousal benefit — not when the higher
-                earner files. Get that wrong, and the breakeven calculation is off by years. Your
-                client makes the wrong call. Permanently.
+                The math is complicated. So is the decision. File too early and you lock in a
+                permanent reduction. Wait too long and you leave years of income on the table.
+                Either way, the filing date is permanent. CALCULUS handles the math so you can
+                focus on the decision — simple, accurate, ready in two minutes, without the
+                training manual.
               </p>
             </div>
           </div>
