@@ -26,14 +26,14 @@ export const metadata: Metadata = {
     description:
       'ARPI’s recommended planning software for financial advisors. IRMAA modeling, Social Security optimization, Roth conversion scheduling. Exclusive 20% discount for NSSA® and IRMAACP™ holders.',
     siteName: 'Advanced Retirement Planning Institute',
-    images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-website.png', width: 1200, height: 630, alt: 'Retirement Advisor Pro — Recommended by ARPI' }],
+    images: [{ url: 'https://arpinstitute.com/assets/retirement-advisor-pro-social.png', width: 1200, height: 630, alt: 'Retirement Advisor Pro — Recommended by ARPI' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'IRMAA, Social Security & Roth Conversion Planning Software | Retirement Advisor Pro',
     description:
       'IRMAA modeling, Social Security optimization, and Roth conversion scheduling for financial advisors. Exclusive discount for NSSA® and IRMAACP™ holders.',
-    images: ['https://arpinstitute.com/assets/arpi-logo-website.png'],
+    images: ['https://arpinstitute.com/assets/retirement-advisor-pro-social.png'],
   },
   robots: { index: true, follow: true },
 }
