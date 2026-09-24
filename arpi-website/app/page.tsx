@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-export { default } from './_coming-soon'
+export { default } from './working-home/page'
 
 export const metadata: Metadata = {
   title: { absolute: 'Social Security, Medicare & Retirement Planning Certifications for Financial Advisors | ARPI' },
