@@ -106,6 +106,90 @@ const PLANS = [
   },
 ]
 
+// ─── Schema ──────────────────────────────────────────────────────────────────
+const schemaApp = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'AXIOM',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  description:
+    'An AI-powered regulatory intelligence tool for financial advisors. AXIOM answers Social Security and Medicare questions with citations to the exact federal regulation — POMS, CFR, CMS, and Medicare.gov.',
+  url: 'https://axiom.arpinstitute.com',
+  offers: {
+    '@type': 'Offer',
+    price: '29.00',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    seller: {
+      '@type': 'Organization',
+      name: 'Advanced Retirement Planning Institute',
+      url: 'https://arpinstitute.com',
+    },
+  },
+  creator: {
+    '@type': 'Organization',
+    name: 'Advanced Retirement Planning Institute',
+    url: 'https://arpinstitute.com',
+  },
+  featureList: [
+    'Unlimited situational queries — no per-question fees',
+    'Full POMS, CFR, CMS, and Medicare.gov corpus',
+    'Every answer cited to the exact regulation',
+    'Plain-language and technical response modes',
+    'Query history and saved cases',
+    'Regulation updates as published',
+    'E&O documentation trail',
+  ],
+}
+
+const schemaFaq = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'What is AXIOM?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'AXIOM is an AI-powered regulatory intelligence tool built for financial advisors. It answers Social Security and Medicare questions with citations to the exact federal regulation — drawing from POMS, the Code of Federal Regulations, CMS guidance, and Medicare.gov.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'How is AXIOM different from a general AI tool like ChatGPT?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'AXIOM is trained on and restricted to federal Social Security and Medicare regulatory sources — POMS, CFR, CMS, and Medicare.gov. Every answer is cited to the exact regulation. General AI tools like ChatGPT are not grounded in these sources and frequently produce incorrect regulatory answers.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What sources does AXIOM draw from?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'AXIOM draws from four federal corpora: the SSA Program Operations Manual System (POMS), the Code of Federal Regulations (CFR), CMS guidance, and Medicare.gov — over 40,000 source documents and 1.1 million indexed passages.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is AXIOM free to try?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. AXIOM offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $29/month or $295/year. Cancel any time from your dashboard.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Who is AXIOM built for?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'AXIOM is built for financial advisors, insurance professionals, and Social Security specialists who need accurate, defensible answers to regulatory questions — and need to document the source behind every recommendation.',
+      },
+    },
+  ],
+}
+
 export default function AxiomPage() {
   const [annual, setAnnual] = useState(false)
 
@@ -113,6 +197,8 @@ export default function AxiomPage() {
     <>
       <Nav />
       <main id="ax">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaApp) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaFaq) }} />
 
         {/* ── Hero ── */}
         <section className="ax-hero">
