@@ -3,9 +3,123 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Retirement Advisor Pro | Recommended Tools | ARPI',
+  title: 'IRMAA, Social Security & Roth Conversion Planning Software for Financial Advisors | Retirement Advisor Pro',
   description:
-    'ARPI recommends Retirement Advisor Pro — comprehensive IRMAA, Social Security, and Roth conversion planning software for financial professionals. NSSA® and IRMAACP™ holders receive an exclusive discount.',
+    'Retirement Advisor Pro is ARPI’s recommended planning software for financial advisors — covering IRMAA modeling, Social Security optimization, and Roth conversion scheduling. NSSA® and IRMAACP™ holders receive 20% off.',
+  keywords: [
+    'IRMAA planning software',
+    'IRMAA calculator financial advisors',
+    'social security planning software',
+    'social security optimization software',
+    'Roth conversion modeling software',
+    'retirement planning software financial advisors',
+    'Medicare planning software',
+    'IRMAA surcharge calculator',
+    'social security claiming strategy software',
+    'financial advisor retirement software',
+  ],
+  alternates: { canonical: 'https://arpinstitute.com/retirement-advisor-pro' },
+  openGraph: {
+    type: 'website',
+    url: 'https://arpinstitute.com/retirement-advisor-pro',
+    title: 'IRMAA, Social Security & Roth Conversion Planning Software | Retirement Advisor Pro',
+    description:
+      'ARPI’s recommended planning software for financial advisors. IRMAA modeling, Social Security optimization, Roth conversion scheduling. Exclusive 20% discount for NSSA® and IRMAACP™ holders.',
+    siteName: 'Advanced Retirement Planning Institute',
+    images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-website.png', width: 1200, height: 630, alt: 'Retirement Advisor Pro — Recommended by ARPI' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IRMAA, Social Security & Roth Conversion Planning Software | Retirement Advisor Pro',
+    description:
+      'IRMAA modeling, Social Security optimization, and Roth conversion scheduling for financial advisors. Exclusive discount for NSSA® and IRMAACP™ holders.',
+    images: ['https://arpinstitute.com/assets/arpi-logo-website.png'],
+  },
+  robots: { index: true, follow: true },
+}
+
+// ─── Schema ──────────────────────────────────────────────────────────────────
+const schemaApp = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Retirement Advisor Pro',
+  applicationCategory: 'FinanceApplication',
+  operatingSystem: 'Web',
+  description:
+    'Comprehensive retirement planning software for financial advisors covering IRMAA modeling with two-year lookback, Social Security claiming optimization, Roth conversion scheduling, and client-ready branded reports.',
+  url: 'https://www.retirementadvisorpro.com/nssa',
+  offers: {
+    '@type': 'Offer',
+    price: '960.00',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    seller: {
+      '@type': 'Organization',
+      name: 'Retirement Advisor Pro',
+      url: 'https://www.retirementadvisorpro.com',
+    },
+  },
+  featureList: [
+    'IRMAA modeling with two-year lookback',
+    'Roth conversion scheduling and tax impact analysis',
+    'Social Security claiming optimization',
+    'Survivor and filing-status transition analysis',
+    'Client-ready reports under your firm’s logo',
+    'Presentation mode for live client meetings',
+    'Onboarding session included',
+  ],
+  endorser: {
+    '@type': 'Organization',
+    name: 'Advanced Retirement Planning Institute',
+    url: 'https://arpinstitute.com',
+  },
+}
+
+const schemaFaq = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Why does ARPI recommend Retirement Advisor Pro?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'ARPI evaluated the planning tools available to financial professionals and Retirement Advisor Pro stands out for the depth of its IRMAA modeling, Social Security optimization, and Roth conversion scheduling. It’s a natural complement to the expertise NSSA® and IRMAACP™ holders develop — the software helps you put that knowledge to work efficiently for every client.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is Retirement Advisor Pro built specifically for NSSA and IRMAACP holders?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No — it’s built for any financial professional who serves clients navigating retirement income, Medicare, and Social Security decisions. ARPI endorses it because it is an exceptionally good fit for what credential holders do. The platform offers an exclusive 20% discount for NSSA® and IRMAACP™ holders.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'What is included in the Retirement Advisor Pro annual plan?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'The annual plan includes IRMAA modeling with the two-year lookback, Roth conversion scheduling and tax impact analysis, Social Security claiming optimization, survivor and filing-status transition analysis, client-ready reports under your firm’s logo, presentation mode for live client meetings, an onboarding session, and a rate locked for the life of your subscription.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Is there a setup fee for Retirement Advisor Pro?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'No setup fees. Every plan includes onboarding and training to get you running on a real client case quickly.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: 'Can I see Retirement Advisor Pro in action before committing?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: 'Yes. Retirement Advisor Pro offers a case design option where their team builds out a full client case with you, brands it to your firm, and walks you through the client meeting — a good way to experience the platform end to end before going solo.',
+      },
+    },
+  ],
 }
 
 const PARTNER_URL = 'https://www.retirementadvisorpro.com/nssa'
@@ -124,6 +238,8 @@ export default function RetirementAdvisorProPage() {
     <>
       <Nav />
       <main>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaApp) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaFaq) }} />
 
         {/* ── Hero ── */}
         <section className="hero" style={{ padding: '72px 0 64px' }}>
