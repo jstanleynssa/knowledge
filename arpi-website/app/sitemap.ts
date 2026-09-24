@@ -123,7 +123,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .from('celp_partners')
     .select('id, organization, city, state, approved_at')
     .eq('status', 'approved')
-    .not('approved_at', 'is', null)  // exclude seed/sample records
+    .not('is_sample', 'eq', true)  // exclude seed/sample records
   ) as unknown as { data: { id: string; organization: string | null; city: string | null; state: string | null; approved_at: string | null }[] | null }
 
   const { byId: partnerById } = buildPartnerSlugIndex(partners ?? [])

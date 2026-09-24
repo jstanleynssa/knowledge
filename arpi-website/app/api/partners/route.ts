@@ -25,7 +25,7 @@ export async function GET() {
         'id, role_id, role_label, first_name, last_name, organization, street_address, city, state, zip, lat, lng, clients_per_year, referral_direction, about'
       )
       .eq('status', 'approved')
-      .not('approved_at', 'is', null)  // exclude seed/sample records
+      .not('is_sample', 'eq', true)  // exclude seed/sample records
       .order('organization', { ascending: true })
 
     if (error) {

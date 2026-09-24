@@ -93,7 +93,7 @@ async function getAllApprovedPartners(): Promise<Partner[]> {
       'clients_per_year, referral_direction, about, website, linkedin, phone, email'
     )
     .eq('status', 'approved')
-    .not('approved_at', 'is', null)  // exclude seed/sample records
+    .not('is_sample', 'eq', true)  // exclude seed/sample records
     .order('organization', { ascending: true })
   if (error || !data) return []
   return data as unknown as Partner[]
