@@ -119,12 +119,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   // ── CELP partner network profiles ──────────────────────────────────────────
-  const { data: partners } = await supabase
+  const { data: partners } = (await supabase
     .from('celp_partners')
     .select('id, organization, city, state, approved_at')
     .eq('status', 'approved')
     .not('approved_at', 'is', null)  // exclude seed/sample records
-    as unknown as { data: { id: string; organization: string | null; city: string | null; state: string | null; approved_at: string | null }[] | null }
+  ) as unknown as { data: { id: string; organization: string | null; city: string | null; state: string | null; approved_at: string | null }[] | null }
 
   const { byId: partnerById } = buildPartnerSlugIndex(partners ?? [])
 
