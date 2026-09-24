@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NSSA_PROFESSIONS } from '@/lib/nssa-professions'
 import { IRMAACP_PROFESSIONS } from '@/lib/irmaacp-professions'
 import { PROFESSIONS as CELP_PROFESSIONS } from '@/lib/celp-professions'
-import { buildSlugIndex } from '@/lib/slug'
+import { buildSlugIndex, buildPartnerSlugIndex } from '@/lib/slug'
 
 export const revalidate = 86400 // regenerate every 24 hours
 
@@ -47,10 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url('/contact',       0.6, 'monthly'),
     url('/press',         0.5, 'monthly'),
     url('/careers',            0.5, 'monthly'),
-    url('/partners/iarfc',     0.7, 'monthly'),
-    url('/partners/win-group', 0.7, 'monthly'),
-    url('/partners/pinnacle',  0.7, 'monthly'),
-    url('/partners/lpl',       0.7, 'monthly'),
+    url('/find-a-partner',  0.8, 'weekly'),
     url('/privacy',       0.3, 'yearly'),
     url('/terms',         0.3, 'yearly'),
     ...(AXIOM_ENABLED ? [url('/axiom', 0.8, 'monthly')] : []),
@@ -121,11 +118,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return url(`/find-an-advisor/${slug}`, 0.5, 'monthly', member?.enrolled_at?.split('T')[0])
   })
 
+  // ── CELP partner network profiles ──────────────────────────────────────────
+  const { data: partners } = await supabase
+    .from('celp_partners')
+    .select('id, organization, city, state, approved_at')
+    .eq('status', 'approved') as unknown as { data: { id: string; organization: string | null; city: string | null; state: string | null; approved_at: string | null }[] | null }
+
+  const { byId: partnerById } = buildPartnerSlugIndex(partners ?? [])
+
+  const partnerPages: MetadataRoute.Sitemap = (partners ?? []).map(p => {
+    const slug = partnerById.get(p.id)!
+    return url(`/find-a-partner/${slug}`, 0.6, 'monthly', p.approved_at?.split('T')[0])
+  })
+
   return [
     ...staticPages,
     ...credentialPages,
     ...codexPages,
     ...blogPages,
     ...directoryPages,
+    ...partnerPages,
   ]
 }
