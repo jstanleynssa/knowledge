@@ -28,7 +28,7 @@ const COURSES = [
       'Spousal, survivor & disability benefits',
       '35-year SSA veteran on faculty',
     ],
-    singleHref: 'https://www.nssapros.com/offers/kUmSJWNr/checkout', // update to arpinstitute.com offer URL when Kajabi domain flips
+    singleHref: 'https://academy.arpinstitute.com/offers/kUmSJWNr/checkout',
   },
   {
     id: 'irmaacp',
@@ -46,7 +46,7 @@ const COURSES = [
       'Life-changing event appeals strategy',
       'Income planning for high-value clients',
     ],
-    singleHref: 'https://www.nssapros.com/offers/BqKACKXA/checkout', // update to arpinstitute.com offer URL when Kajabi domain flips
+    singleHref: 'https://academy.arpinstitute.com/offers/BqKACKXA/checkout',
   },
   {
     id: 'celp',
@@ -108,14 +108,14 @@ const VISION_MAP: Record<string, { headline: string; body: string }> = {
 // ─── Pricing — sourced from lib/pricing.ts ──────────────────
 const TUITION = TUITION_MAP
 const CERT    = CERT_MAP
-const BUNDLE_HREF = 'https://www.nssapros.com/offers/Pi9xowh2/checkout'  // NSSA + IRMAACP bundle
+const BUNDLE_HREF = 'https://academy.arpinstitute.com/offers/Pi9xowh2/checkout'
 
 // Standalone exam, cert & membership — for customers who purchased course only
 // Use these links in support/sales when someone missed the upsell at checkout
 const EXAM_HREF: Record<string, string> = {
-  nssa:           'https://www.nssapros.com/offers/GJSX238b/checkout',
-  irmaacp:        'https://www.nssapros.com/offers/zTVaDFF4/checkout',
-  'nssa+irmaacp': 'https://www.nssapros.com/offers/5qRbtokg/checkout',
+  nssa:           'https://academy.arpinstitute.com/offers/GJSX238b/checkout',
+  irmaacp:        'https://academy.arpinstitute.com/offers/zTVaDFF4/checkout',
+  'nssa+irmaacp': 'https://academy.arpinstitute.com/offers/5qRbtokg/checkout',
 }
 
 function getCtaHref(selected: string[]) {
@@ -159,6 +159,7 @@ export default function EnrollClient({
   const isPartner = !!(searchParams?.get('partner'))
   const getInitial = (): string[] => {
     if (defaultCourse === 'all') return ENROLLABLE_IDS
+    if (defaultCourse === 'nssa-irmaacp') return ['nssa', 'irmaacp']
     const validId = ENROLLABLE_IDS.find(id => id === defaultCourse)
     return [validId ?? 'nssa']
   }
