@@ -140,7 +140,7 @@ export default function Nav() {
             </ul>
 
             <div className="nav-actions">
-              <a href="#" className="nav-login">Log In</a>
+              <a href="https://academy.arpinstitute.com/login" className="nav-login">Log In</a>
               <a href="/enroll" className="nav-enroll">Enroll Now</a>
             </div>
 
@@ -210,7 +210,7 @@ export default function Nav() {
               <li><a href="/contact" onClick={() => setMenuOpen(false)}>Contact Us</a></li>
             </ul>
             <div className="nav-mobile-actions">
-              <a href="#" className="nav-login">Log In</a>
+              <a href="https://academy.arpinstitute.com/login" className="nav-login">Log In</a>
               <a href="/enroll" className="nav-enroll">Enroll Now</a>
             </div>
           </div>
