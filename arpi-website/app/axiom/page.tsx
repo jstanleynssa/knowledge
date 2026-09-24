@@ -215,7 +215,7 @@ export default function AxiomPage() {
                 </p>
                 <div className="ax-hero-actions">
                   <a href="#how-it-works" className="btn-primary">See How It Works</a>
-                  <a href="/contact" className="btn-outline-dark">Start 7-Day Free Trial</a>
+                  <span className="btn-outline-dark" style={{ cursor: 'default', opacity: 0.85 }}>Launching Q4 2026</span>
                 </div>
                 <div className="ax-trust-row">
                   <span className="ax-trust-pill"><IconShield size={13} /> Grounded in federal law</span>
@@ -626,10 +626,10 @@ export default function AxiomPage() {
                     <p className="ax-plan-annual-note">Billed ${PLANS[0].annual}/year</p>
                   )}
 
-                  <a href="/contact" className="ax-plan-cta ax-plan-cta--primary">
-                    Start 7-Day Free Trial
-                  </a>
-                  <p className="ax-plan-fine">7 days free — then {annual ? `$${PLANS[0].annual}/year` : `$${PLANS[0].monthly}/month`}. Cancel any time.</p>
+                  <div className="ax-plan-cta ax-plan-cta--primary" style={{ textAlign: 'center', cursor: 'default', opacity: 0.85 }}>
+                    Launching Q4 2026
+                  </div>
+                  <p className="ax-plan-fine">Early access opens Q4 2026. <a href="/contact" style={{ color: 'inherit', textDecoration: 'underline' }}>Get notified →</a></p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
@@ -657,10 +657,10 @@ export default function AxiomPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">Try AXIOM free for 7 days.</h2>
-              <p className="ax-cta-sub">No charge until day 8. Available now for ARPI credential holders.</p>
+              <h2 className="ax-cta-h">AXIOM launches Q4 2026.</h2>
+              <p className="ax-cta-sub">Early access for ARPI credential holders. Get notified when it's live.</p>
             </div>
-            <a href="/contact" className="btn-primary ax-cta-btn">Start 7-Day Free Trial</a>
+            <a href="/contact" className="btn-primary ax-cta-btn">Get Notified</a>
           </div>
         </section>
 

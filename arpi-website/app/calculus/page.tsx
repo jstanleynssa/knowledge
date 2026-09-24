@@ -354,9 +354,7 @@ export default function CalculusPage() {
                   built in. Spousal benefit math that's actually correct.
                 </p>
                 <div className="ax-hero-actions">
-                  <a href={TOOL_URL} className="btn-primary" target="_blank" rel="noopener noreferrer">
-                    Start 7-Day Free Trial →
-                  </a>
+                  <span className="btn-primary" style={{ cursor: 'default', opacity: 0.85 }}>Launching Q4 2026</span>
                   <a href="#how-it-works" className="btn-outline-dark">See How It Works</a>
                 </div>
                 <div className="ax-trust-row">
@@ -728,10 +726,10 @@ export default function CalculusPage() {
                     <p className="ax-plan-annual-note">Billed ${ANNUAL}/year</p>
                   )}
 
-                  <a href={TOOL_URL} className="ax-plan-cta ax-plan-cta--primary" target="_blank" rel="noopener noreferrer">
-                    Start 7-Day Free Trial
-                  </a>
-                  <p className="ax-plan-fine">7 days free — then {annual ? `$${ANNUAL}/year` : `$${MONTHLY}/month`}. Cancel any time.</p>
+                  <div className="ax-plan-cta ax-plan-cta--primary" style={{ textAlign: 'center', cursor: 'default', opacity: 0.85 }}>
+                    Launching Q4 2026
+                  </div>
+                  <p className="ax-plan-fine">Early access opens Q4 2026. <a href="/contact" style={{ color: 'inherit', textDecoration: 'underline' }}>Get notified →</a></p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
@@ -760,14 +758,12 @@ export default function CalculusPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">Try CALCULUS free for 7 days.</h2>
+              <h2 className="ax-cta-h">CALCULUS launches Q4 2026.</h2>
               <p className="ax-cta-sub">
-                No charge until day 8. Run your first breakeven comparison in under two minutes.
+                Early access for ARPI credential holders. Get notified when it’s live.
               </p>
             </div>
-            <a href={TOOL_URL} className="btn-primary ax-cta-btn" target="_blank" rel="noopener noreferrer">
-              Start 7-Day Free Trial →
-            </a>
+            <a href="/contact" className="btn-primary ax-cta-btn">Get Notified</a>
           </div>
         </section>
 
