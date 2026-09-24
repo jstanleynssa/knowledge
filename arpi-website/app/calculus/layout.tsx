@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-const OG_IMAGE = 'https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-og.png'
+const OG_IMAGE = 'https://arpinstitute.com/assets/calculus-offer.png'
 
 export const metadata: Metadata = {
   title: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS',
