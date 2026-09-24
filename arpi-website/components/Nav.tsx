@@ -42,13 +42,13 @@ export default function Nav() {
           <div className="nav-inner">
 
             {/* Mobile logo */}
-            <a href="/working-home" className="nav-logo-mobile">
+            <a href="/" className="nav-logo-mobile">
               <Image src="/assets/arpi-logo-mobile.png" alt="ARPI" width={734} height={100}
                 style={{ height: 32, width: 'auto', maxWidth: 220, display: 'block' }} priority />
             </a>
 
             {/* Desktop badge logo */}
-            <a href="/working-home" className="nav-logo"
+            <a href="/" className="nav-logo"
               style={{ overflow: 'visible', position: 'relative', top: '23px', zIndex: 101 }}>
               <div style={{
                 background: '#2a6b54', padding: '15px 10px', height: '135px',
