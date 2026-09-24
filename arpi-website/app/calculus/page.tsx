@@ -354,8 +354,8 @@ export default function CalculusPage() {
                   built in. Spousal benefit math that's actually correct.
                 </p>
                 <div className="ax-hero-actions">
-                  <span className="btn-primary" style={{ cursor: 'default', opacity: 0.85 }}>Launching Q4 2026</span>
-                  <a href="#how-it-works" className="btn-outline-dark">See How It Works</a>
+                  <a href="#how-it-works" className="btn-primary">See How It Works</a>
+                  <span className="btn-outline-dark" style={{ cursor: 'default', opacity: 0.85 }}>Launching Q4 2026</span>
                 </div>
                 <div className="ax-trust-row">
                   <span className="ax-trust-pill"><IconShield size={13} /> SSA Period Life Tables</span>
