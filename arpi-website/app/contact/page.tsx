@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
@@ -17,8 +16,13 @@ const SUBJECTS = [
 ]
 
 export default function ContactPage() {
-  const searchParams = useSearchParams()
-  const [form, setForm] = useState({ name: '', email: '', subject: searchParams?.get('subject') ?? '', message: '' })
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const subject = params.get('subject')
+    if (subject && SUBJECTS.includes(subject)) setForm(f => ({ ...f, subject }))
+  }, [])
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(null)
