@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      {
+        source: '/codex/admin/:path*',
+        destination: 'https://knowledge.arpinstitute.com/codex/admin/:path*',
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'eqipvrcmugnvkextqmym.supabase.co' },
