@@ -310,6 +310,7 @@ export default function NSSAPage() {
               src="/assets/course-hero-nssa.jpg"
               alt="Financial advisor at desktop with blue screen"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               priority
             />
@@ -433,6 +434,7 @@ export default function NSSAPage() {
                     alt="NSSA advisor at desktop"
                     width={600}
                     height={300}
+                    loading="lazy"
                     style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
                   />
                 </div>

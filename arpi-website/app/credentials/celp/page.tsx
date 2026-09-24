@@ -368,6 +368,7 @@ export default function CELPPage() {
               src="/assets/course-hero-celp.jpg"
               alt="Financial professional on laptop"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               priority
             />
@@ -553,7 +554,7 @@ export default function CELPPage() {
               </div>
               <div className="pricing-right">
                 <div className="pricing-hero-img">
-                  <Image src="/assets/course-hero-celp.jpg" alt="CELP advisor" width={600} height={300} style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }} />
+                  <Image src="/assets/course-hero-celp.jpg" alt="CELP advisor" width={600} height={300} loading="lazy" style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }} />
                 </div>
                 <div className="pricing-right-body">
                   <div className="pricing-rows">

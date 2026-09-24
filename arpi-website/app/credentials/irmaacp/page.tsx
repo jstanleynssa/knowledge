@@ -326,6 +326,7 @@ export default function IRMAACPPage() {
               src="/assets/course-hero-irmaacp.jpg"
               alt="Financial advisor at desktop with red screen"
               fill
+              sizes="(max-width: 768px) 100vw, 50vw"
               style={{ objectFit: 'cover' }}
               priority
             />
@@ -449,6 +450,7 @@ export default function IRMAACPPage() {
                     alt="IRMAACP advisor at desktop"
                     width={600}
                     height={300}
+                    loading="lazy"
                     style={{ objectFit: 'cover', width: '100%', height: '100%', display: 'block' }}
                   />
                 </div>

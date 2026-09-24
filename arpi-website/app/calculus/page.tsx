@@ -369,12 +369,12 @@ export default function CalculusPage() {
               <div className="ax-hero-right">
                 <div style={{ marginBottom: 20 }}>
                   <Image
-                    src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/calculus-logo.png"
+                    src="/assets/calculus-full-badge.png"
                     alt="CALCULUS"
                     width={957}
-                    height={383}
+                    height={300}
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     style={{ width: '100%', height: 'auto' }}
-                    unoptimized
                     priority
                   />
                 </div>

@@ -16,7 +16,9 @@ const merriweather = Merriweather({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-merriweather',
-  display: 'swap',
+  display: 'optional',
+  preload: true,
+  adjustFontFallback: true,
 })
 
 export const metadata: Metadata = {
