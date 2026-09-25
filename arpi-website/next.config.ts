@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     const BLOG_APP = 'https://blog-ten-rho-41.vercel.app'
     return [
+      { source: '/blog/admin',         destination: `${BLOG_APP}/blog/admin/review` },
       { source: '/blog/admin/:path*', destination: `${BLOG_APP}/blog/admin/:path*` },
       { source: '/blog/api/:path*',   destination: `${BLOG_APP}/blog/api/:path*` },
       { source: '/blog/auth/:path*',  destination: `${BLOG_APP}/blog/auth/:path*` },
