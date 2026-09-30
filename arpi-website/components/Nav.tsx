@@ -25,6 +25,16 @@ export default function Nav() {
   const [menuOpen, setMenuOpen]       = useState(false)
   const [toolsOpen, setToolsOpen]     = useState(false)
   const [coursesOpen, setCoursesOpen] = useState(false)
+  const [menuTop, setMenuTop]         = useState(88)
+
+  function openMenu() {
+    const nav = document.querySelector('nav.nav')
+    if (nav) {
+      const bottom = nav.getBoundingClientRect().bottom
+      setMenuTop(bottom > 0 ? bottom : 88)
+    }
+    setMenuOpen(true)
+  }
 
   return (
     <>
@@ -35,7 +45,7 @@ export default function Nav() {
         style={{ background: '#111827', borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         dangerouslySetInnerHTML={{ __html: '<rssapp-ticker id="_z6e6o2d8DQByeZOn"></rssapp-ticker>' }}
       />
-      <Script src="https://widget.rss.app/v1/ticker.js" strategy="afterInteractive" />
+      <Script src="https://widget.rss.app/v1/ticker.js" strategy="lazyOnload" />
 
       <nav className="nav">
         <div className="container">
@@ -148,7 +158,7 @@ export default function Nav() {
               className={`nav-hamburger${menuOpen ? ' open' : ''}`}
               aria-label="Open menu"
               aria-expanded={menuOpen}
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={() => menuOpen ? setMenuOpen(false) : openMenu()}
             >
               <span /><span /><span />
             </button>
@@ -157,7 +167,7 @@ export default function Nav() {
       </nav>
 
       {/* Mobile menu */}
-      <div className={`nav-mobile${menuOpen ? ' open' : ''}`} aria-hidden={!menuOpen}>
+      <div className={`nav-mobile${menuOpen ? ' open' : ''}`} aria-hidden={!menuOpen} style={{ top: menuTop }}>
         <div className="container">
           <div className="nav-mobile-inner">
             <ul className="nav-mobile-links">
