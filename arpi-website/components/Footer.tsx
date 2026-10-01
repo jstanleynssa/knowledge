@@ -17,9 +17,9 @@ export default function Footer() {
               1763 Columbia Road NW<br />Ste 175 PMB 481983<br />Washington, DC 20009
             </p>
             <div className="footer-social">
-              <a className="footer-social-icon" href="https://www.linkedin.com/company/nssapros/" title="LinkedIn" target="_blank" rel="noopener noreferrer">in</a>
+              <a className="footer-social-icon" href="https://www.linkedin.com/company/arpinstitute/" title="LinkedIn" target="_blank" rel="noopener noreferrer">in</a>
               <a className="footer-social-icon" href="https://x.com/arpinstitute" title="Twitter/X" target="_blank" rel="noopener noreferrer">𝕏</a>
-              <a className="footer-social-icon" href="https://www.facebook.com/nssapros" title="Facebook" target="_blank" rel="noopener noreferrer">f</a>
+              <a className="footer-social-icon" href="https://www.facebook.com/arpinstitute/" title="Facebook" target="_blank" rel="noopener noreferrer">f</a>
             </div>
           </div>
 
@@ -51,7 +51,7 @@ export default function Footer() {
             <ul>
               <li><a href="/codex">Knowledge Base</a></li>
 
-              <li><a href="https://members.nssapros.com" target="_blank" rel="noopener noreferrer">Member Community</a></li>
+              <li><a href="https://members.arpinstitute.com" target="_blank" rel="noopener noreferrer">Member Community</a></li>
               <li><a href="/blog">Retirement Insights</a></li>
               <li><a href="/find-an-advisor">Find an Advisor</a></li>
               <li><a href="/find-a-partner">CELP Referral Network</a></li>
