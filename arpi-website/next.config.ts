@@ -16,13 +16,19 @@ const nextConfig: NextConfig = {
       {
         source: '/tools/retirement-advisor-pro',
         destination: '/retirement-advisor-pro',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/codex/admin/:path*',
         destination: 'https://knowledge.arpinstitute.com/codex/admin/:path*',
-        permanent: false,
+        statusCode: 301,
       },
+      // /membership → /enroll (linked from homepage, page doesn't exist)
+      { source: '/membership', destination: '/enroll', statusCode: 301 },
+      // /find-nssa → /find-an-advisor (legacy NSSA path)
+      { source: '/find-nssa', destination: '/find-an-advisor', statusCode: 301 },
+      // State browse pages don't exist but are linked from advisor profiles
+      { source: '/find-an-advisor/advisors/:state', destination: '/find-an-advisor', statusCode: 301 },
     ]
   },
 
