@@ -11,7 +11,7 @@ export const metadata = {
   description:
     'Authoritative Social Security and IRMAA rules for financial advisors and retirees — verified against SSA POMS, CFR, CMS, and Medicare.gov. Search claiming rules, spousal benefits, WEP, GPO, IRMAA, and more.',
   alternates: {
-    canonical: 'https://www.nssapros.com/codex',
+    canonical: 'https://arpinstitute.com/codex',
   },
 };
 
@@ -176,7 +176,7 @@ export default async function HomePage() {
       <footer className="foot">
         <div className="wrap">
           A reference resource from{' '}
-          <a href="https://www.nssapros.com">National Social Security Advisors (NSSA&reg;)</a>
+          <a href="https://arpinstitute.com">National Social Security Advisors (NSSA&reg;)</a>
           , the nation&apos;s first Social Security certification program for financial professionals, founded 2013.
           &nbsp;These pages explain the rules; they are not individualized advice.
         </div>

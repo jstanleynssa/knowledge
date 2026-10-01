@@ -84,7 +84,7 @@ export default async function SearchPage({
         <header className="masthead">
           <div className="wrap inner">
             <a className="kb-mark" href="/">NSSA <span>Knowledge Base</span></a>
-            <a className="home-link" href="https://www.nssapros.com">nssapros.com &rsaquo;</a>
+            <a className="home-link" href="https://arpinstitute.com">arpinstitute.com &rsaquo;</a>
           </div>
         </header>
 
@@ -154,7 +154,7 @@ export default async function SearchPage({
 
         <footer className="foot">
           <div className="wrap">
-            <a href="https://www.nssapros.com">National Social Security Advisors (NSSA&reg;)</a>
+            <a href="https://arpinstitute.com">National Social Security Advisors (NSSA&reg;)</a>
             &nbsp;&mdash; these pages explain the rules; they are not individualized advice.
           </div>
         </footer>

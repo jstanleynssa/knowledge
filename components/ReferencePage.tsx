@@ -458,11 +458,11 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
       })
     : null;
 
-  const ctaUrl = `https://www.nssapros.com/directory/?utm_source=knowledge&utm_medium=referral&utm_campaign=kb_cta&utm_content=${page.slug}`;
+  const ctaUrl = `https://arpinstitute.com/find-an-advisor?utm_source=knowledge&utm_medium=referral&utm_campaign=kb_cta&utm_content=${page.slug}`;
 
   // ── CTA: anchor text pools (varied per page render for SEO anchor diversity) ──
-  const SS_URL   = 'https://www.nssapros.com/social-security-training';
-  const IRMAA_URL = 'https://www.nssapros.com/irmaa-medicare-training-course';
+  const SS_URL   = 'https://arpinstitute.com/credentials/nssa';
+  const IRMAA_URL = 'https://arpinstitute.com/credentials/irmaacp';
 
   // Each entry is a fn(action, url) → full HTML sentence so sentence structure
   // can vary naturally around the anchor text.
@@ -553,26 +553,26 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
         dateModified: page.date_modified ?? page.date_published,
         author: {
           '@type': 'Organization',
-          name: 'National Social Security Advisors (NSSA)',
-          url: 'https://www.nssapros.com',
+          name: 'Advanced Retirement Planning Institute (ARPI)',
+          url: 'https://arpinstitute.com',
         },
         publisher: {
           '@type': 'Organization',
-          name: 'National Social Security Advisors (NSSA)',
-          url: 'https://www.nssapros.com',
+          name: 'Advanced Retirement Planning Institute (ARPI)',
+          url: 'https://arpinstitute.com',
           foundingDate: '2013',
           sameAs: [
             'https://www.linkedin.com/company/nssapros/',
             'https://x.com/nssapros',
             'https://www.youtube.com/@nssapros',
             'https://www.credly.com/org/nssa',
-            'https://www.nssapros.com/codex',
+            'https://arpinstitute.com/codex',
           ],
         },
         isPartOf: {
           '@type': 'WebSite',
           name: 'NSSA Knowledge Base',
-          url: 'https://www.nssapros.com/codex',
+          url: 'https://arpinstitute.com/codex',
         },
       },
       {
@@ -586,9 +586,9 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
       {
         '@type': 'BreadcrumbList',
         itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Knowledge Base', item: 'https://www.nssapros.com/codex' },
-          { '@type': 'ListItem', position: 2, name: categoryLabel, item: `https://www.nssapros.com/codex${categoryPath}` },
-          { '@type': 'ListItem', position: 3, name: page.title, item: `https://www.nssapros.com/codex${categoryPath}/${page.slug}` },
+          { '@type': 'ListItem', position: 1, name: 'Knowledge Base', item: 'https://arpinstitute.com/codex' },
+          { '@type': 'ListItem', position: 2, name: categoryLabel, item: `https://arpinstitute.com/codex${categoryPath}` },
+          { '@type': 'ListItem', position: 3, name: page.title, item: `https://arpinstitute.com/codex${categoryPath}/${page.slug}` },
         ],
       },
     ],
@@ -653,7 +653,7 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
         )}
         <header style={{borderBottom:'1px solid #e5e7eb',background:'#fff',position:'sticky',top:0,zIndex:50}}>
           <div style={{maxWidth:1152,margin:'0 auto',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
-            <a href="https://www.nssapros.com" style={{flexShrink:0}}>
+            <a href="https://arpinstitute.com" style={{flexShrink:0}}>
               <img
                 src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/blog/nssa-logo.png"
                 alt="NSSA Professionals"
@@ -662,12 +662,12 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
             </a>
             <nav style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
               {[
-                ['About Us','https://www.nssapros.com/about'],
-                ['Social Security Training','https://www.nssapros.com/social-security-training'],
-                ['IRMAA Medicare Training','https://www.nssapros.com/irmaa-medicare-training-course'],
-                ['Find an Advisor','https://www.nssapros.com/directory'],
-                ['Contact Us','https://www.nssapros.com/contact'],
-                ['Log In','https://www.nssapros.com/login'],
+                ['About Us','https://arpinstitute.com/about'],
+                ['Social Security Training','https://arpinstitute.com/credentials/nssa'],
+                ['IRMAA Medicare Training','https://arpinstitute.com/credentials/irmaacp'],
+                ['Find an Advisor','https://arpinstitute.com/find-an-advisor'],
+                ['Contact Us','https://arpinstitute.com/contact'],
+                ['Log In','https://academy.arpinstitute.com/login'],
               ].map(([label,href]) => (
                 <a key={label} href={href} style={{fontSize:14,color:'#4b5563',textDecoration:'none',whiteSpace:'nowrap'}}>{label}</a>
               ))}
@@ -676,11 +676,11 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
         </header>
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <a href="https://www.nssapros.com/codex">Knowledge Base</a>
+            <a href="https://arpinstitute.com/codex">Knowledge Base</a>
             <span className="sep">/</span>
-            <a href={`https://www.nssapros.com/codex${categoryPath}`}>{categoryLabel}</a>
+            <a href={`https://arpinstitute.com/codex${categoryPath}`}>{categoryLabel}</a>
             {page.eyebrow && (
-              <><span className="sep">/</span><a href={`https://www.nssapros.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
+              <><span className="sep">/</span><a href={`https://arpinstitute.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
             )}
             <span className="sep">/</span>
             {page.title}
@@ -758,9 +758,9 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
               <span>&copy; 2026</span>
             </div>
             <div className="foot-links">
-              <a href="https://www.nssapros.com/social-security-training" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
-              <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
-              <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
+              <a href="https://arpinstitute.com/credentials/nssa" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
+              <a href="https://arpinstitute.com/credentials/irmaacp" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
+              <a href="https://arpinstitute.com/find-an-advisor" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
             </div>
             <div className="foot-disc">
               National Social Security Advisors (NSSA&reg;) is the nation&apos;s first Social Security certification
@@ -782,13 +782,13 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>{page.seo_title}</title>
         <meta name="description" content={page.meta_description} />
-        <link rel="canonical" href={`https://www.nssapros.com/codex${categoryPath}/${page.slug}`} />
+        <link rel="canonical" href={`https://arpinstitute.com/codex${categoryPath}/${page.slug}`} />
 
         {/* OpenGraph */}
         <meta property="og:type" content="article" />
         <meta property="og:title" content={page.title} />
         <meta property="og:description" content={page.meta_description} />
-        <meta property="og:url" content={`https://www.nssapros.com/codex${categoryPath}/${page.slug}`} />
+        <meta property="og:url" content={`https://arpinstitute.com/codex${categoryPath}/${page.slug}`} />
         <meta property="og:site_name" content="NSSA Knowledge Base" />
         {page.og_image_url && <meta property="og:image" content={page.og_image_url} />}
 
@@ -838,7 +838,7 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
         )}
         <header style={{borderBottom:'1px solid #e5e7eb',background:'#fff',position:'sticky',top:0,zIndex:50}}>
           <div style={{maxWidth:1152,margin:'0 auto',padding:'12px 24px',display:'flex',alignItems:'center',justifyContent:'space-between',gap:16}}>
-            <a href="https://www.nssapros.com" style={{flexShrink:0}}>
+            <a href="https://arpinstitute.com" style={{flexShrink:0}}>
               <img
                 src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/blog/nssa-logo.png"
                 alt="NSSA Professionals"
@@ -847,12 +847,12 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
             </a>
             <nav style={{display:'flex',alignItems:'center',gap:20,flexWrap:'wrap'}}>
               {[
-                ['About Us','https://www.nssapros.com/about'],
-                ['Social Security Training','https://www.nssapros.com/social-security-training'],
-                ['IRMAA Medicare Training','https://www.nssapros.com/irmaa-medicare-training-course'],
-                ['Find an Advisor','https://www.nssapros.com/directory'],
-                ['Contact Us','https://www.nssapros.com/contact'],
-                ['Log In','https://www.nssapros.com/login'],
+                ['About Us','https://arpinstitute.com/about'],
+                ['Social Security Training','https://arpinstitute.com/credentials/nssa'],
+                ['IRMAA Medicare Training','https://arpinstitute.com/credentials/irmaacp'],
+                ['Find an Advisor','https://arpinstitute.com/find-an-advisor'],
+                ['Contact Us','https://arpinstitute.com/contact'],
+                ['Log In','https://academy.arpinstitute.com/login'],
               ].map(([label,href]) => (
                 <a key={label} href={href} style={{fontSize:14,color:'#4b5563',textDecoration:'none',whiteSpace:'nowrap'}}>{label}</a>
               ))}
@@ -862,11 +862,11 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
 
         <div className="wrap">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <a href="https://www.nssapros.com/codex">Knowledge Base</a>
+            <a href="https://arpinstitute.com/codex">Knowledge Base</a>
             <span className="sep">/</span>
-            <a href={`https://www.nssapros.com/codex${categoryPath}`}>{categoryLabel}</a>
+            <a href={`https://arpinstitute.com/codex${categoryPath}`}>{categoryLabel}</a>
             {page.eyebrow && (
-              <><span className="sep">/</span><a href={`https://www.nssapros.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
+              <><span className="sep">/</span><a href={`https://arpinstitute.com/codex${categoryPath}?topic=${encodeURIComponent(page.eyebrow)}`}>{page.eyebrow}</a></>
             )}
             <span className="sep">/</span>
             {page.title}
@@ -958,9 +958,9 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
               <span>&copy; 2026</span>
             </div>
             <div className="foot-links">
-              <a href="https://www.nssapros.com/social-security-training" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
-              <a href="https://www.nssapros.com/irmaa-medicare-training-course" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
-              <a href="https://www.nssapros.com/directory" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
+              <a href="https://arpinstitute.com/credentials/nssa" target="_blank" rel="noopener">Social Security Certification &rsaquo;</a>
+              <a href="https://arpinstitute.com/credentials/irmaacp" target="_blank" rel="noopener">IRMAA Certification &rsaquo;</a>
+              <a href="https://arpinstitute.com/find-an-advisor" target="_blank" rel="noopener">Find an Advisor &rsaquo;</a>
             </div>
             <div className="foot-disc">
               National Social Security Advisors (NSSA&reg;) is the nation&apos;s first Social Security certification
