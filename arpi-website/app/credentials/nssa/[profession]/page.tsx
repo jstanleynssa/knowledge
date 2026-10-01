@@ -3,10 +3,13 @@ import type { Metadata } from 'next'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { NSSA_PROFESSIONS, getNssaProfessionById } from '@/lib/nssa-professions'
+import { seoTitle } from '@/lib/seo'
 
-// ─── Static generation ────────────────────────────────────────
+// ─── ISR: generate on first request, cache 24 h — no pre-built pages at deploy ───
+export const revalidate = 86400
+
 export function generateStaticParams() {
-  return NSSA_PROFESSIONS.map((p) => ({ profession: p.id }))
+  return []
 }
 
 // ─── Per-page metadata ────────────────────────────────────────
@@ -19,8 +22,9 @@ export async function generateMetadata({
   const p = getNssaProfessionById(profession)
   if (!p) return { title: 'Not Found' }
   return {
-    title: `NSSA® for ${p.label} — Social Security Planning`,
+    title: seoTitle(`NSSA® for ${p.label} — Social Security Planning`),
     description: `${p.headline} ${p.body.slice(0, 155)}…`,
+    alternates: { canonical: `/credentials/nssa/${profession}` },
   }
 }
 

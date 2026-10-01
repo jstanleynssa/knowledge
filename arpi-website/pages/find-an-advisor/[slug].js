@@ -135,16 +135,9 @@ async function fetchDirectoryMembers() {
 }
 
 export async function getStaticPaths() {
-  const members = await fetchDirectoryMembers()
-  const { byEmail } = buildSlugIndex(members)
-
-  // Pre-build first 50 paths only — the rest render on demand via fallback:blocking.
-  // This keeps Vercel build times reasonable; ISR caches on-demand renders for 1 day.
-  const paths = [...byEmail.values()].slice(0, 50).map(slug => ({ params: { slug } }))
-
-  // fallback:'blocking' still renders any not-yet-built slug on demand (e.g. a
-  // newly-certified advisor before the next rebuild), then caches it.
-  return { paths, fallback: 'blocking' }
+  // No pages pre-built at deploy — all slugs render on first request and are
+  // cached via ISR (revalidate: 86400 in getStaticProps). Keeps build fast.
+  return { paths: [], fallback: 'blocking' }
 }
 
 export async function getStaticProps({ params }) {
@@ -309,8 +302,28 @@ export default function AdvisorProfile({ member, slug }) {
     { label: name, href: null }, // current page
   ]
 
-  // Page title — matches H1 format, capped at 60 chars.
-  const pageTitle = h1.length <= 60 ? h1 : truncateAtWord(h1, 60)
+  // Page title — capped by estimated pixel width (~575px budget) rather than
+  // raw char count. ® and ™ glyphs render ~8px wider than a regular character
+  // at Google's SERP font size, so a 60-char limit undershoots for dual-cert
+  // advisors whose titles carry both special chars.
+  function estimateTitlePx(s) {
+    let px = 0
+    for (const ch of s) {
+      if (ch === '®' || ch === '™') px += 19
+      else if (ch === ' ') px += 6
+      else if ('il|1!;:.,'.includes(ch)) px += 6
+      else if ('mwMW'.includes(ch)) px += 17
+      else px += 11
+    }
+    return px
+  }
+  const TITLE_PX = 575
+  const h1NoLoc = h1.includes(' · ') ? h1.slice(0, h1.lastIndexOf(' · ')) : h1
+  const pageTitle = estimateTitlePx(h1) <= TITLE_PX
+    ? h1
+    : estimateTitlePx(h1NoLoc) <= TITLE_PX
+      ? h1NoLoc
+      : truncateAtWord(h1NoLoc, 50)
 
   // Meta description ≤ 155 chars.
   const metaDesc = paragraphs[0]

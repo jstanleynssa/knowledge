@@ -3,10 +3,13 @@ import type { Metadata } from 'next'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import { PROFESSIONS, getProfessionById } from '@/lib/celp-professions'
+import { seoTitle } from '@/lib/seo'
 
-// ─── Static generation ────────────────────────────────────────
+// ─── ISR: generate on first request, cache 24 h — no pre-built pages at deploy ───
+export const revalidate = 86400
+
 export function generateStaticParams() {
-  return PROFESSIONS.map((p) => ({ profession: p.id }))
+  return []
 }
 
 // ─── Per-page metadata ────────────────────────────────────────
@@ -19,8 +22,9 @@ export async function generateMetadata({
   const p = getProfessionById(profession)
   if (!p) return { title: 'Not Found' }
   return {
-    title: `CELP® for ${p.label} — Certified End-of-Life Planner`,
+    title: seoTitle(`CELP® for ${p.label} — Certified End-of-Life Planner`),
     description: `${p.headline} ${p.body.slice(0, 155)}…`,
+    alternates: { canonical: `/credentials/celp/${profession}` },
   }
 }
 
