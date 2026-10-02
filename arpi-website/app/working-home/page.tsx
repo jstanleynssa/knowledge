@@ -14,6 +14,8 @@ import CtaBanner from '@/components/CtaBanner'
 import BlogSection from '@/components/BlogSection'
 import Footer from '@/components/Footer'
 
+export const revalidate = 300 // refresh blog posts every 5 min; publish triggers on-demand revalidation via /api/revalidate
+
 export const metadata: Metadata = {
   title: 'ARPI — Advanced Retirement Planning Institute',
   description: 'Earn the NSSA®, IRMAACP™, or CELP® designation. Three rigorous credentials for financial professionals who want to master Social Security, Medicare, and end-of-life planning — and serve every client, at every stage of life.',
