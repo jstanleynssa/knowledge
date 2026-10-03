@@ -79,6 +79,7 @@ const PARTNERS = [
     logo: '/logos/lpl.png',
     logoHeight: 52,
     href: '/partners/lpl',
+    pending: true,
   },
   {
     name: 'Osaic',

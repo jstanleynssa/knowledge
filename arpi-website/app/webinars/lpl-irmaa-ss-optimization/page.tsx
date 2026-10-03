@@ -187,7 +187,7 @@ export default function LplWebinarPage() {
           {/* ── Hero ── */}
           <section className="wb-hero">
             <div className="wb-hero-inner">
-              <span className="wb-eyebrow">For LPL Financial Advisors · ARPI Webinar</span>
+              <span className="wb-eyebrow">ARPI Webinar · For LPL Financial Advisors</span>
               <h1 className="wb-title">IRMAA Avoidance and<br />Social Security Optimization</h1>
               <p className="wb-subtitle">With Tom Hegna, Todd Valles, and Jim Blair</p>
             </div>
@@ -227,14 +227,15 @@ export default function LplWebinarPage() {
           {/* ── Enroll CTA ── */}
           <section className="wb-enroll">
             <div className="wb-section-inner">
-              <p className="wb-section-label">Exclusive LPL Advisor Benefit</p>
+              <p className="wb-section-label">Special Offer for LPL Advisors</p>
               <h2 className="wb-enroll-headline">Enroll Now. Train on Your Schedule.</h2>
               <p className="wb-enroll-sub">
-                As an LPL Financial advisor, you have access to preferred pricing on ARPI credentials
-                — the NSSA®, IRMAACP®, and bundle. Discount applied automatically at checkout.
+                We&#39;re extending special pricing to LPL advisors. Earn the NSSA®, IRMAACP®, or
+                both — and stand out as a retirement income specialist in one of the nation&#39;s
+                largest advisor networks. Discount applied automatically at checkout.
               </p>
-              <a href={ENROLL_URL} className="wb-enroll-btn">Enroll as an LPL Advisor →</a>
-              <p className="wb-enroll-note">Use code <strong style={{ color: 'rgba(255,255,255,0.75)' }}>LPL25</strong> at checkout for your member discount.</p>
+              <a href={ENROLL_URL} className="wb-enroll-btn">View Enrollment Options →</a>
+              <p className="wb-enroll-note">Use code <strong style={{ color: 'rgba(255,255,255,0.75)' }}>LPL25</strong> at checkout for your discount.</p>
             </div>
           </section>
 
