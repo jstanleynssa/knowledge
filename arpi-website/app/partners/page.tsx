@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
+  title: 'ARPI Partner Network — Financial Professionals',
   description:
     'ARPI partners with leading financial advisor networks, broker-dealers, IMOs, and professional associations to offer their members preferred access to Social Security, Medicare, and retirement planning credentials.',
   keywords: [
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Advanced Retirement Planning Institute',
-    title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
+    title: 'ARPI Partner Network — Financial Professionals',
     description: 'ARPI partners with leading financial advisor networks, broker-dealers, IMOs, and associations to offer preferred access to Social Security, Medicare, and retirement planning credentials.',
     url: 'https://arpinstitute.com/partners',
     images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-new.png', width: 1200, height: 630, alt: 'ARPI Institutional Partners' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Institutional Partners — Financial Advisor Networks & Broker-Dealers',
+    title: 'ARPI Partner Network — Financial Professionals',
     description: 'ARPI partners with financial advisor networks, broker-dealers, and IMOs to provide Social Security and Medicare credentials.',
     images: ['https://arpinstitute.com/assets/arpi-logo-new.png'],
   },
@@ -79,7 +79,6 @@ const PARTNERS = [
     logo: '/logos/lpl.png',
     logoHeight: 52,
     href: '/partners/lpl',
-    pending: true,
   },
   {
     name: 'Osaic',
