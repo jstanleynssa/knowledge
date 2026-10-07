@@ -386,20 +386,6 @@ export default function PartnerApplyPage() {
   return (
     <>
       <Nav />
-      {/* Static server-visible content for crawlers */}
-      <section style={{ padding: '48px 0 0', background: '#fff' }}>
-        <div className="container">
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111827', marginBottom: 16 }}>
-            Join the CELP® Partner Network
-          </h1>
-          <p style={{ fontSize: '1.0625rem', color: '#4b5563', lineHeight: 1.7, maxWidth: 680, margin: '0 0 32px' }}>
-            The CELP® (Certified End-of-Life Planner) designation connects financial professionals
-            with a curated network of attorneys, CPAs, healthcare providers, and other specialists
-            who serve families navigating end-of-life planning. Apply below to join the partner
-            network and receive qualified referrals from CELP®-credentialed advisors in your market.
-          </p>
-        </div>
-      </section>
       <Suspense fallback={null}>
         <PartnerApplyPageInner />
       </Suspense>
