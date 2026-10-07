@@ -10,7 +10,7 @@ import type { ReferenceComponent } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const NSSA_DARK = '#13405E';
 
 function fmtDate(d: string | null | undefined): string {

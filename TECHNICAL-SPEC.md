@@ -415,7 +415,7 @@ Queued by `/api/admin/generate` for custom topic requests. The local `generation
 
 **Current reviewers:** Jason Stanley (admin), Cindi Hill (SS), Todd Valles (IRMAA), Jim Blair (both), Travis Stanley (both).
 
-Admin email `jstanley@nssapros.com` bypasses the `kb_reviewers` check in all admin actions.
+Admin email `jstanley@arpinstitute.com` bypasses the `kb_reviewers` check in all admin actions.
 
 ### `unanswered_questions` — Gap capture
 
@@ -1042,7 +1042,7 @@ Used for white-label demos — no Supabase subscription required.
 
 ### KB Admin Access (for staff reviewers)
 
-The KB admin at `/admin/kb-review` uses Supabase magic link auth. Email must be in `kb_reviewers` table or equal `ADMIN_EMAIL` (`jstanley@nssapros.com`).
+The KB admin at `/admin/kb-review` uses Supabase magic link auth. Email must be in `kb_reviewers` table or equal `ADMIN_EMAIL` (`jstanley@arpinstitute.com`).
 
 ---
 
@@ -1164,7 +1164,7 @@ Fidelity uses green (`#006044`) instead of NSSA blue (`#1C80BC`).
 
 ## 10. Admin Tools
 
-All admin pages require Supabase session auth. Email must match `kb_reviewers` or be `jstanley@nssapros.com`.
+All admin pages require Supabase session auth. Email must match `kb_reviewers` or be `jstanley@arpinstitute.com`.
 
 ### `/admin/kb-review` — Main KB review queue
 
@@ -1308,7 +1308,7 @@ Root requests to `axiom.nssapros.com/` redirect to `/codex/axiom`. Join and logi
 |---|---|
 | Project ID | `eqipvrcmugnvkextqmym` |
 | Region | US East |
-| Admin email | `jstanley@nssapros.com` |
+| Admin email | `jstanley@arpinstitute.com` |
 | `authenticator` role timeout | 30s (raised from 8s in migration 004) |
 | `authenticated` role timeout | 30s |
 

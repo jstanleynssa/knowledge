@@ -12,7 +12,7 @@ import { redirect } from 'next/navigation';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import { IngestProgress } from './IngestProgress';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const NSSA_DARK   = '#13405E';
 const NSSA_MED    = '#1C80BC';
 const NSSA_LIGHT  = '#8ECAEE';

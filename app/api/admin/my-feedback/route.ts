@@ -8,7 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 async function getReviewerName(userEmail: string): Promise<string | null> {
   if (userEmail === ADMIN_EMAIL) return 'Jason Stanley';

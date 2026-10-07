@@ -9,7 +9,7 @@ import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const NSSA_DARK   = '#13405E';
 const G           = { bg: '#f3f4f6', border: '#e5e7eb', text: '#6b7280' };
 

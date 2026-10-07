@@ -13,7 +13,7 @@ import roadmapData from './roadmap-data.json';
 
 export const dynamic = 'force-dynamic';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const NSSA = { light: '#8ECAEE', medium: '#1C80BC', dark: '#13405E' };
 const G    = { text: '#6b7280', bg: '#f3f4f6', border: '#e5e7eb' };
 

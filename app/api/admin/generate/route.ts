@@ -14,7 +14,7 @@ import { runDraft } from '@/scripts/draft/draft_page_v2';
 
 export const maxDuration = 300; // 5 minutes — allow full draft pipeline to complete
 
-const ADMIN_EMAIL    = 'jstanley@nssapros.com';
+const ADMIN_EMAIL    = 'jstanley@arpinstitute.com';
 const DEFAULT_COUNT  = 5;
 const MAX_COUNT      = 10; // hard ceiling — tranche discipline
 

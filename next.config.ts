@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   // Without this, Next.js CSRF protection rejects actions where Origin != Host
   experimental: {
     serverActions: {
-      allowedOrigins: ['www.nssapros.com', 'knowledge.nssapros.com', 'axiom.nssapros.com'],
+      allowedOrigins: ['www.nssapros.com', 'knowledge.nssapros.com'],
     },
   },
 

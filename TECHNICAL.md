@@ -173,7 +173,7 @@ Controls access to the review UI and tracks which categories each reviewer can a
 
 **RLS:** Enabled. No public policy — service role only.
 
-**Admin bypass:** `jstanley@nssapros.com` is hardcoded as admin in the proxy and action logic. Admin bypasses the `kb_reviewers` table entirely and sees all categories.
+**Admin bypass:** `jstanley@arpinstitute.com` is hardcoded as admin in the proxy and action logic. Admin bypasses the `kb_reviewers` table entirely and sees all categories.
 
 ---
 
@@ -336,7 +336,7 @@ The `kb_reviewers` table is the permission layer. Any user whose email is in tha
 
 | User | Can access | Sees |
 |---|---|---|
-| `jstanley@nssapros.com` | All `/admin/*` | All `in_review` pages |
+| `jstanley@arpinstitute.com` | All `/admin/*` | All `in_review` pages |
 | `chill@nssapros.com` | All `/admin/*` | Social Security pages only |
 | `tvalles@nssapros.com` | All `/admin/*` | IRMAA pages only |
 | `jblair@mypremierplan.com` | All `/admin/*` | Social Security + IRMAA |

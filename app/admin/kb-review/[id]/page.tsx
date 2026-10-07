@@ -10,7 +10,7 @@ import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import type { Category, KbReviewer, ReferencePage, ReferenceComponent } from '@/lib/types';
 import { ReviewEditor } from './ReviewEditor';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 export const dynamic = 'force-dynamic';
 

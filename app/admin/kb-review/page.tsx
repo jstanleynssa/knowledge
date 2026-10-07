@@ -15,7 +15,7 @@ import { GenerateButton } from './GenerateButton';
 import { getCoverageStats } from '@/lib/coverage-stats';
 import { ExternalLink } from './ExternalLink';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 const NSSA  = { light: '#8ECAEE', medium: '#1C80BC', dark: '#13405E' };
 const IRMAA = { dark: '#AF2A35' };

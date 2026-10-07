@@ -15,7 +15,7 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Corpus Health — Admin' };
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const TIER1_PREFIXES = ['RS ', 'GN ', 'HI '];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

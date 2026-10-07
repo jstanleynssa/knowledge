@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 export async function POST(req: NextRequest) {
   const session = await createSessionClient();

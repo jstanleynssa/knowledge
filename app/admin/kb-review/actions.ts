@@ -8,7 +8,7 @@ import { pingIndexNow } from '@/lib/indexnow';
 
 
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 export type SectionFeedbackMap = Record<number, { type: 'verified' | 'flag'; note?: string }>;
 

@@ -2,9 +2,7 @@
  * proxy.ts — Next.js 16 route protection + host-based routing
  *
  * 1. 301 redirects knowledge.nssapros.com → www.nssapros.com/codex (SEO consolidation)
- * 2. Rewrites axiom.nssapros.com → /axiom
- * 3. Protects /axiom routes — checks Supabase session + axiom_subscribers table
- * 4. Protects /admin routes — unauthenticated users redirected to /admin/login
+ * 2. Protects /admin routes — unauthenticated users redirected to /admin/login
  *
  * NOTE: With basePath '/codex', req.nextUrl.pathname includes the /codex prefix.
  * Strip it before doing path comparisons.
@@ -13,7 +11,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createProxyClient, createServiceClient } from '@/lib/supabase';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 const BASEPATH    = '/codex';
 
 /** Strip basePath prefix so internal checks work normally */
@@ -37,16 +35,8 @@ export default async function proxy(req: NextRequest) {
     );
   }
 
-  // ── 2. Subdomain routing ──────────────────────────────────────────────────
-  // axiom.nssapros.com path mapping is handled by the Cloudflare Worker.
-  // Requests arrive here already mapped to /codex/axiom/* — no rewrite needed.
-
-  // ── 3. Always allow: AXIOM routes + login pages + public APIs + auth callback ──
-  // AXIOM auth is now handled by standalone cookie (axiom_session JWT).
-  // The middleware no longer gates /axiom — axiom/page.tsx does its own check.
+  // ── 2. Always allow: login pages + public APIs + auth callback ──
   if (
-    path.startsWith('/axiom') ||
-    path.startsWith('/api/axiom') ||
     path.startsWith('/admin/login') ||
     path.startsWith('/auth/callback')
   ) {

@@ -7,7 +7,7 @@ import { redirect } from 'next/navigation';
 import { createSessionClient, createServiceClient } from '@/lib/supabase';
 import type { ReferencePage, Category, PageStatus } from '@/lib/types';
 
-const ADMIN_EMAIL = 'jstanley@nssapros.com';
+const ADMIN_EMAIL = 'jstanley@arpinstitute.com';
 
 export const dynamic = 'force-dynamic';
 
