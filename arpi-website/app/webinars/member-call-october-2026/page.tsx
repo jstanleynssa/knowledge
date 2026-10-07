@@ -4,7 +4,7 @@ import Footer from '@/components/Footer'
 const SUPABASE  = 'https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources'
 const PDF_URL   = `${SUPABASE}/webinars/arpi-member-call-october-2026.pdf`
 const PPTX_URL   = `${SUPABASE}/webinars/arpi-member-call-october-2026.pptx`
-const YOUTUBE_ID = '9SAiv0ks-FQ'
+const YOUTUBE_ID = 'yyIuw5O3W54'
 
 export const metadata = {
   title: 'ARPI Monthly Member Call — October 2026',
