@@ -231,12 +231,12 @@ const modules: Module[] = [
   {
     title: 'Industry-Specific Applications',
     items: [
-      'Building referral relationships across professional sectors',
-      'Financial planner, CPA, attorney, and healthcare partnerships',
-      'Senior living, insurance, banking, and trust partnerships',
-      'Community, veterans, faith, and specialty sector partnerships',
-      'Real estate, HR, and family law partnership frameworks',
-      'Industry-specific intake and engagement strategies',
+      'Scope of practice and referral etiquette across 16 partner sectors',
+      'Financial planner, CPA, estate attorney, and healthcare provider models',
+      'Funeral home, cemetery, senior living, hospice, and insurance frameworks',
+      'Bank trust, veterans service organizations, and aging life care channels',
+      'Faith communities, employer HR programs, real estate, and family law',
+      'Regulatory and ethical boundaries governing each sector partnership',
     ],
   },
   {
