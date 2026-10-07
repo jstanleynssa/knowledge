@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import './contact.css'
 
 export const metadata: Metadata = {
   title: 'Contact ARPI',

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { fmt, TUITION_1, CERT_1, TUITION_CELP, CE_NSSA, CE_IRMAACP } from '@/lib/pricing'
+import './CredentialsSection.css'
 
 const ShieldIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

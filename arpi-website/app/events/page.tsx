@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import './events.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 

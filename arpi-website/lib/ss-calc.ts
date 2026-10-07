@@ -6,6 +6,7 @@ export interface Person {
   pia: number          // Primary Insurance Amount (monthly at FRA)
   birthYear: number
   birthMonth: number   // 1–12
+  birthDay: number     // 1–31 (SSA rule: 1 or 2 → eligible in birth month; 3+ → eligible month after)
   filingAge: number    // decimal years, e.g. 62.0, 67.0
 }
 
@@ -54,12 +55,31 @@ export function getFRAYears(birthYear: number): number {
   return getFRAMonths(birthYear) / 12
 }
 
+/** Returns a human-readable FRA string, e.g. "67" or "66 + 10 months" */
+export function formatFRA(birthYear: number): string {
+  const totalMonths = getFRAMonths(birthYear)
+  const years = Math.floor(totalMonths / 12)
+  const months = totalMonths % 12
+  return months === 0 ? `${years}` : `${years} + ${months} months`
+}
+
 // ─── Own benefit calculation ─────────────────────────────────────────────────
-export function calcOwnBenefit(pia: number, birthYear: number, filingAge: number): number {
-  const fraMonths = getFRAMonths(birthYear)
+// SSA attained-age / day-of-birth rules:
+//   Day 1   → deemed to attain each age on last day of prior month.
+//             Effective FRA/70 is 1 month EARLIER than nominal → can file at (FRA-1) for full PIA,
+//             gets 1 month of delayed credit when filing at nominal FRA.
+//             At age 62: first eligible = birth month → 59 months before effective FRA → 70.417%.
+//   Day 2   → first eligible = birth month → 60 months before nominal FRA → 70.000%.
+//   Day 3–31 → first eligible = month AFTER birth → 59 months before nominal FRA → 70.417%.
+// birthDay defaults to 2 for backwards compatibility.
+export function calcOwnBenefit(pia: number, birthYear: number, filingAge: number, birthDay = 2): number {
+  const fraMonths    = getFRAMonths(birthYear)
+  // Day 1: effective FRA is 1 month earlier (SSA deems birthday falls in prior month)
+  const effFraMonths = birthDay === 1 ? fraMonths - 1 : fraMonths
   const filingMonths = Math.round(filingAge * 12)
-  const monthsEarly = fraMonths - filingMonths
-  const monthsLate = filingMonths - fraMonths
+  const dayAdj       = birthDay >= 3 ? 1 : 0   // days 3–31: one fewer month early
+  const monthsEarly  = effFraMonths - filingMonths - dayAdj
+  const monthsLate   = filingMonths - effFraMonths
 
   if (monthsEarly > 0) {
     // Reduction for early filing
@@ -85,14 +105,27 @@ export function calcSpousalAddon(
   spousePIA: number,
   claimantBirthYear: number,
   ageWhenSpouseFiles: number,  // claimant's age when higher earner files
+  claimantFilingAge?: number,  // claimant's own filing age (spousal can't be claimed before own filing)
+  claimantBirthDay = 2,        // day-of-birth for SSA reduction-factor adjustment
 ): number {
   const spousalBase = spousePIA * 0.5
   const excess = Math.max(0, spousalBase - claimantPIA)
   if (excess <= 0) return 0
 
+  // Spousal reduction is based on when the claimant actually starts receiving spousal —
+  // which is the LATER of: when they file their own benefit, or when the spouse files.
+  // A person filing at their FRA or later gets no spousal reduction regardless of
+  // when the spouse filed.
+  const spousalClaimAge = claimantFilingAge != null
+    ? Math.max(claimantFilingAge, ageWhenSpouseFiles)
+    : ageWhenSpouseFiles
+
   const fraMonths = getFRAMonths(claimantBirthYear)
-  const ageWhenSpouseFilesMonths = Math.round(ageWhenSpouseFiles * 12)
-  const monthsEarly = Math.max(0, fraMonths - ageWhenSpouseFilesMonths)
+  // Day 1: effective spousal FRA is 1 month earlier
+  const effFraMonths = claimantBirthDay === 1 ? fraMonths - 1 : fraMonths
+  const ageWhenSpouseFilesMonths = Math.round(spousalClaimAge * 12)
+  const dayAdj = claimantBirthDay >= 3 ? 1 : 0
+  const monthsEarly = Math.max(0, effFraMonths - ageWhenSpouseFilesMonths - dayAdj)
 
   if (monthsEarly === 0) return Math.round(excess)
 
@@ -160,7 +193,7 @@ function project(inputs: ProjectionInputs): MonthlyBucket[] {
   // Spousal add-on for A (lower earner scenario — A has smaller PIA)
   // Only applies if A's PIA < 50% of B's PIA
   const aSpousalAddon = marital && bPIA && bBirthYear && bFilingAge
-    ? calcSpousalAddon(aPIA, bPIA, aBirthYear, aAgeWhenBFiles)
+    ? calcSpousalAddon(aPIA, bPIA, aBirthYear, aAgeWhenBFiles, aFilingAge)
     : 0
 
   // B's spousal add-on (if B's PIA < 50% of A's PIA — less common but possible)
@@ -177,8 +210,7 @@ function project(inputs: ProjectionInputs): MonthlyBucket[] {
   // After B dies, A gets survivor benefit
   const aSurvivor = marital && bPIA && bBirthYear && bFilingAge
     ? calcSurvivorBenefit(
-        // A's own benefit at that point (already reduced/credited from filing)
-        aOwnBenefit + aSpousalAddon,
+        aOwnBenefit,
         bOwnBenefit,
         bPIA,
       )
@@ -278,13 +310,13 @@ export function calculate(
       ? strategy.bFilingAge - ageDiffAB
       : 0
     const aSpousalAddon = marital && personB && strategy.bFilingAge != null
-      ? calcSpousalAddon(personA.pia, personB.pia, personA.birthYear, aAgeWhenBFiles)
+      ? calcSpousalAddon(personA.pia, personB.pia, personA.birthYear, aAgeWhenBFiles, strategy.aFilingAge)
       : 0
     const bOwnBenefit = marital && personB && strategy.bFilingAge != null
       ? calcOwnBenefit(personB.pia, personB.birthYear, strategy.bFilingAge)
       : 0
     const survivor = marital && personB
-      ? calcSurvivorBenefit(aOwnBenefit + aSpousalAddon, bOwnBenefit, personB.pia)
+      ? calcSurvivorBenefit(aOwnBenefit, bOwnBenefit, personB.pia)
       : 0
 
     return {

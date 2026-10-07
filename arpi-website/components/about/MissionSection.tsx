@@ -1,3 +1,5 @@
+import '@/components/ValueSection.css'
+
 export default function MissionSection() {
   return (
     <section className="value-section" style={{ padding: '88px 0' }}>

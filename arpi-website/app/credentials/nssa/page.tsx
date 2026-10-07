@@ -10,7 +10,7 @@ import NssaWhoForInteractive from '@/components/credentials/NssaWhoForInteractiv
 import NYCEDisclosure from '@/components/credentials/NYCEDisclosure'
 
 export const metadata = {
-  title: 'NSSA® Certification — Social Security Training for Financial Professionals',
+  title: 'NSSA® — Social Security Advisor Certification',
   description:
     `Earn the NSSA® credential — the gold standard in Social Security planning. Trusted by 5,000+ advisors nationwide. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
   keywords: [
@@ -28,14 +28,14 @@ export const metadata = {
   openGraph: {
     type: 'website' as const,
     siteName: 'Advanced Retirement Planning Institute',
-    title: 'NSSA® Certification — Social Security Training for Financial Professionals',
+    title: 'NSSA® — Social Security Advisor Certification',
     description: `Earn the NSSA® credential — the gold standard in Social Security planning. Trusted by 5,000+ advisors nationwide. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
     url: 'https://arpinstitute.com/credentials/nssa',
     images: [{ url: 'https://arpinstitute.com/assets/course-hero-nssa.jpg', width: 1200, height: 630, alt: 'NSSA® Certification — Social Security Training' }],
   },
   twitter: {
     card: 'summary_large_image' as const,
-    title: 'NSSA® Certification — Social Security Training for Financial Professionals',
+    title: 'NSSA® — Social Security Advisor Certification',
     description: `The gold standard in Social Security planning for financial advisors. ${CE_NSSA} CE hours. Built by practitioners including a 35-year SSA veteran.`,
     images: ['https://arpinstitute.com/assets/course-hero-nssa.jpg'],
   },

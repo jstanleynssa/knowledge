@@ -1,3 +1,5 @@
+import '@/components/TrustBar.css'
+
 export default function AboutStats() {
   return (
     <div className="trust-bar">

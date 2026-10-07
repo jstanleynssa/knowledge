@@ -14,11 +14,11 @@ export async function generateMetadata({
   const { topic } = await searchParams;
   return topic
     ? {
-        title: `${topic} | Social Security | ARPI Knowledge Base`,
+        title: `Social Security — ${topic}`,
         alternates: { canonical: 'https://arpinstitute.com/codex/social-security' },
       }
     : {
-        title: 'Social Security Reference | ARPI Knowledge Base',
+        title: 'Social Security Rules & Benefits Reference',
         description:
           'Authoritative Social Security rules for financial advisors — claiming rules, spousal benefits, survivor benefits, WEP, GPO, and more. Verified against SSA POMS.',
         alternates: { canonical: 'https://arpinstitute.com/codex/social-security' },

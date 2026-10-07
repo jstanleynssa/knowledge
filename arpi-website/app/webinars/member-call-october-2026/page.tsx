@@ -33,7 +33,7 @@ const offers = [
     badge: '50% OFF — NSSA MEMBERS',
     name: 'IRMAACP® Certification',
     regularPrice: '$1,195',
-    salePrice: '$598',
+    salePrice: '$595',
     description: 'Earn the IRMAA Certified Planner designation. Master IRMAA diagnosis, income engineering, SSA-44 appeals, and become the go-to IRMAA expert in your market.',
     cta: 'Enroll at 50% Off',
     url: 'https://academy.arpinstitute.com/offers/mKoPXoDn/checkout',

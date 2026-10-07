@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import './MembershipSection.css'
 
 const CheckIcon = () => (
   <svg className="check-icon" viewBox="0 0 24 24" fill="none" stroke="var(--green-mid)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -13,7 +14,7 @@ export default function MembershipSection() {
         <div className="membership-inner">
           <div>
             <div className="section-eyebrow">ARPI Membership</div>
-            <h2 className="section-title">Your Credential is the Beginning,<br />Not the End</h2>
+            <h2 className="section-title">Your Credential is only the Beginning</h2>
             <p className="section-sub">
               ARPI&apos;s membership model means your professional development never stops. Every credential
               comes with access to an active, growing community of peers who share your commitment to

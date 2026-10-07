@@ -170,12 +170,9 @@ async function fetchApprovedPartners() {
 }
 
 export async function getStaticPaths() {
-  const partners = await fetchApprovedPartners()
-  const { byId } = buildPartnerSlugIndex(partners)
-
-  // Pre-build first 20 paths; fallback: 'blocking' handles the rest on demand.
-  const paths = [...byId.values()].slice(0, 20).map(slug => ({ params: { slug } }))
-  return { paths, fallback: 'blocking' }
+  // No pages pre-built at deploy — all slugs render on first request and are
+  // cached via ISR (revalidate: 86400 in getStaticProps). Keeps build fast.
+  return { paths: [], fallback: 'blocking' }
 }
 
 export async function getStaticProps({ params }) {

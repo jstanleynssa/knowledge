@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: { absolute: 'IRMAA, Social Security & Roth Conversion Planning Software for Financial Advisors | Retirement Advisor Pro' },
+  title: { absolute: 'Retirement Advisor Pro — Social Security & IRMAA Tools' },
   description:
     'Retirement Advisor Pro is ARPI’s recommended planning software for financial advisors — covering IRMAA modeling, Social Security optimization, and Roth conversion scheduling. NSSA® and IRMAACP™ holders receive 20% off.',
   keywords: [
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://arpinstitute.com/retirement-advisor-pro',
-    title: 'IRMAA, Social Security & Roth Conversion Planning Software | Retirement Advisor Pro',
+    title: 'Retirement Advisor Pro — Social Security & IRMAA Tools',
     description:
       'ARPI’s recommended planning software for financial advisors. IRMAA modeling, Social Security optimization, Roth conversion scheduling. Exclusive 20% discount for NSSA® and IRMAACP™ holders.',
     siteName: 'Advanced Retirement Planning Institute',
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'IRMAA, Social Security & Roth Conversion Planning Software | Retirement Advisor Pro',
+    title: 'Retirement Advisor Pro — Social Security & IRMAA Tools',
     description:
       'IRMAA modeling, Social Security optimization, and Roth conversion scheduling for financial advisors. Exclusive discount for NSSA® and IRMAACP™ holders.',
     images: ['https://arpinstitute.com/assets/retirement-advisor-pro-social.png'],

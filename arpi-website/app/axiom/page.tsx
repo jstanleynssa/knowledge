@@ -90,7 +90,7 @@ const PLANS = [
     id: 'public',
     label: 'AXIOM Access',
     monthly: 29,
-    annual: 295,
+    annual: 290,
     annualMonthly: 24,
     badge: null,
     features: [
@@ -176,7 +176,7 @@ const schemaFaq = {
       name: 'Is AXIOM free to try?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. AXIOM offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $29/month or $295/year. Cancel any time from your dashboard.',
+        text: 'Yes. AXIOM offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $29/month or $290/year. Cancel any time from your dashboard.',
       },
     },
     {
@@ -199,6 +199,9 @@ export default function AxiomPage() {
       <main id="ax">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaApp) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaFaq) }} />
+        <style>{`
+          #ax .ax-hero-inner { grid-template-columns: 1fr 500px; }
+        `}</style>
 
         {/* ── Hero ── */}
         <section className="ax-hero">
@@ -224,40 +227,15 @@ export default function AxiomPage() {
                 </div>
               </div>
               <div className="ax-hero-right">
-                <div style={{ marginBottom: 20 }}>
-                  <Image
-                    src="https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources/axiom-logo.png"
-                    alt="AXIOM®"
-                    width={957}
-                    height={383}
-                    style={{ width: '100%', height: 'auto' }}
-                    unoptimized
-                    priority
-                  />
-                </div>
-                <div className="ax-stat-card">
-                  <div className="ax-stat-grid">
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">40,882</span>
-                      <span className="ax-stat-d">Source Documents</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">1.1M+</span>
-                      <span className="ax-stat-d">Indexed Passages</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">4</span>
-                      <span className="ax-stat-d">Federal Corpora</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">Expert</span>
-                      <span className="ax-stat-d">Reviewed & Trained</span>
-                    </div>
-                  </div>
-                  <div className="ax-corpus-tags">
-                    <span>POMS</span><span>CFR</span><span>CMS</span><span>Medicare.gov</span>
-                  </div>
-                </div>
+                <Image
+                  src="/assets/axiom-large.png"
+                  alt="AXIOM"
+                  width={1080}
+                  height={1080}
+                  unoptimized
+                  priority
+                  style={{ display: 'block', width: '100%', height: 'auto', margin: '0 auto' }}
+                />
               </div>
             </div>
           </div>

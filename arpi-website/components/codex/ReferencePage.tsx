@@ -556,9 +556,9 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
           url: 'https://www.arpinstitute.com',
           foundingDate: '2013',
           sameAs: [
-            'https://www.linkedin.com/company/nssapros/',
-            'https://x.com/nssapros',
-            'https://www.youtube.com/@nssapros',
+            'https://www.linkedin.com/company/arpinstitute/',
+            'https://x.com/arpinstitute',
+            'https://www.youtube.com/@arp-institute',
             'https://www.credly.com/org/nssa',
             'https://arpinstitute.com/codex',
           ],
@@ -725,6 +725,40 @@ export function ReferencePageComponent({ page, components, previewMode, embedded
             </div>
           </div>
         </div>
+        {/* Article schema — always present on embedded (App Router) slug pages */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: page.h1 ?? page.seo_title,
+              description: page.meta_description ?? '',
+              datePublished: page.date_published ?? undefined,
+              dateModified: page.date_modified ?? page.date_published ?? undefined,
+              author: { '@type': 'Organization', name: 'Advanced Retirement Planning Institute', url: 'https://arpinstitute.com' },
+              publisher: { '@type': 'Organization', name: 'Advanced Retirement Planning Institute', url: 'https://arpinstitute.com', logo: { '@type': 'ImageObject', url: 'https://arpinstitute.com/assets/arpi-logo.png' } },
+              mainEntityOfPage: { '@type': 'WebPage', '@id': `https://arpinstitute.com/codex/${page.category}/${page.slug}` },
+            }),
+          }}
+        />
+        {/* FAQPage schema — only when the page has FAQ items */}
+        {Array.isArray(page.faq) && page.faq.length > 0 && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                '@context': 'https://schema.org',
+                '@type': 'FAQPage',
+                mainEntity: page.faq.map((item: { q: string; a: string }) => ({
+                  '@type': 'Question',
+                  name: item.q,
+                  acceptedAnswer: { '@type': 'Answer', text: item.a.replace(/<[^>]*>/g, '') },
+                })),
+              }),
+            }}
+          />
+        )}
       </div>
     );
   }

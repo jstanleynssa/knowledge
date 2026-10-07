@@ -14,11 +14,11 @@ export async function generateMetadata({
   const { topic } = await searchParams;
   return topic
     ? {
-        title: `${topic} | IRMAA & Medicare | ARPI Knowledge Base`,
+        title: `IRMAA & Medicare — ${topic}`,
         alternates: { canonical: 'https://arpinstitute.com/codex/irmaa' },
       }
     : {
-        title: 'IRMAA & Medicare Reference | ARPI Knowledge Base',
+        title: 'IRMAA & Medicare Rules Reference',
         description:
           'Authoritative IRMAA and Medicare rules for financial advisors — surcharges, the two-year look-back, life-changing event appeals, Part B and D enrollment. Verified against CMS and Medicare.gov.',
         alternates: { canonical: 'https://arpinstitute.com/codex/irmaa' },

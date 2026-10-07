@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import './credentials.css'
+import '@/components/TestimonialsSection.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import TrustBar from '@/components/TrustBar'
@@ -6,7 +8,7 @@ import CredentialsSection from '@/components/CredentialsSection'
 import BundleSection from '@/components/BundleSection'
 
 export const metadata: Metadata = {
-  title: 'Social Security, Medicare & Retirement Planning Certifications for Financial Professionals',
+  title: 'ARPI Credentials — NSSA®, IRMAACP™ & CELP®',
   description:
     'Earn the NSSA® (Social Security), IRMAACP™ (Medicare & IRMAA), or CELP® (End-of-Life Planning) designation. Rigorous credentials with CE credits for financial advisors at every stage of their clients’ retirement journey.',
   keywords: [
@@ -25,14 +27,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Advanced Retirement Planning Institute',
-    title: 'Social Security, Medicare & Retirement Planning Certifications for Financial Professionals',
+    title: 'ARPI Credentials — NSSA®, IRMAACP™ & CELP®',
     description: 'Earn the NSSA®, IRMAACP™, or CELP® designation. Rigorous credentials with CE credits for financial advisors specializing in Social Security, Medicare, and retirement planning.',
     url: 'https://arpinstitute.com/credentials',
     images: [{ url: 'https://arpinstitute.com/assets/arpi-logo-new.png', width: 1200, height: 630, alt: 'ARPI Credentials — Social Security, Medicare & Retirement Planning' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Social Security, Medicare & Retirement Planning Certifications for Financial Professionals',
+    title: 'ARPI Credentials — NSSA®, IRMAACP™ & CELP®',
     description: 'Earn the NSSA®, IRMAACP™, or CELP® designation. Rigorous credentials with CE credits for financial advisors.',
     images: ['https://arpinstitute.com/assets/arpi-logo-new.png'],
   },

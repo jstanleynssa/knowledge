@@ -13,6 +13,7 @@
 
 import { notFound, redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+import { seoTitle } from '@/lib/seo'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 import PartnerContactForm from '@/components/partners/PartnerContactForm'
@@ -143,7 +144,7 @@ export async function generateMetadata(
     `${name} is a ${partner.role_label} in the CELP® Partner Network, connecting with CELP®-certified end-of-life planning professionals.`
 
   return {
-    title:      `${name}${org} | CELP® Partner`,
+    title:      seoTitle(`${name}${org} | CELP® Partner`),
     description: desc,
     alternates: { canonical },
     openGraph: {

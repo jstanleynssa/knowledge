@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import './mission.css'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
@@ -6,6 +7,7 @@ export const metadata: Metadata = {
   title: 'Our Mission',
   description:
     'ARPI exists to multiply advisor expertise across the market — reducing retirement anxiety and financial mistakes for millions of Americans.',
+  alternates: { canonical: 'https://arpinstitute.com/mission' },
 }
 
 export default function MissionPage() {

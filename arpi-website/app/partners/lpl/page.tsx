@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'LPL Financial Advisor Benefits | ARPI',
+  title: 'LPL Financial Advisor Benefits',
   description:
     'ARPI partner page for LPL Financial advisors. Earn the NSSA®, IRMAACP™, or CELP® credential and stand out as a retirement income specialist in the LPL network.',
 }

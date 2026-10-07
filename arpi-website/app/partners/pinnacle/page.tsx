@@ -3,9 +3,10 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Pinnacle Financial Services Agent Benefits | ARPI',
+  title: 'Pinnacle Financial Services Agent Benefits',
   description:
     'ARPI partner landing page for Pinnacle Financial Services agents. Earn the IRMAACP™ or NSSA® credential to add Medicare cost planning and Social Security expertise to your Medicare practice.',
+  alternates: { canonical: 'https://arpinstitute.com/partners/pinnacle' },
 }
 
 const GREEN      = 'var(--green-dark)'

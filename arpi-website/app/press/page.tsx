@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Press & Media',
   description:
     'Press resources, media inquiries, and news about the Advanced Retirement Planning Institute (ARPI).',
+  alternates: { canonical: 'https://arpinstitute.com/press' },
 }
 
 export default function PressPage() {

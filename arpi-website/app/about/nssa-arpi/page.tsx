@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: 'NSSA® Is Now Part of ARPI',
   description:
     'The National Social Security Advisors program has a new home. Learn why we launched the Advanced Retirement Planning Institute and what it means for NSSA® members and credential holders.',
+  alternates: { canonical: 'https://arpinstitute.com/about/nssa-arpi' },
 }
 
 export default function NssaArpiPage() {
@@ -158,7 +159,7 @@ export default function NssaArpiPage() {
                 'Monthly member calls, CE credits, and the member portal continue as normal',
                 'The curriculum is updated annually, same as always',
                 'Same team. Same standards. Same commitment to keeping the credential rigorous.',
-                'Questions? Reach us at support@arpinstitute.com',
+                'Questions? Visit our contact page or reach out to support.',
               ].map((item, i) => (
                 <div key={i} style={{
                   display: 'flex',

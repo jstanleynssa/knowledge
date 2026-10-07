@@ -3,9 +3,10 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'WIN Group Member Benefits | ARPI',
+  title: 'WIN Group Member Benefits',
   description:
     'ARPI partner landing page for Wealth Integrity Network (WIN Group) members. Earn the NSSA® or IRMAACP™ credential to add Social Security and Medicare planning expertise to your annuity practice.',
+  alternates: { canonical: 'https://arpinstitute.com/partners/win-group' },
 }
 
 const GREEN      = 'var(--green-dark)'

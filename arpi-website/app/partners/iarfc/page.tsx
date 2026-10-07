@@ -3,9 +3,10 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'IARFC Member Benefits | ARPI',
+  title: 'IARFC Member Benefits',
   description:
     'ARPI partner landing page for IARFC members. Earn the NSSA®, IRMAACP™, or CELP® credential and deepen your expertise in Social Security, IRMAA, and end-of-life financial planning.',
+  alternates: { canonical: 'https://arpinstitute.com/partners/iarfc' },
 }
 
 const GREEN      = 'var(--green-dark)'

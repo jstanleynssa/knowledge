@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Fidelity Advisor Benefits | ARPI',
+  title: 'Fidelity Advisor Benefits',
   description:
     'ARPI partner landing page for Fidelity network advisors. Earn the NSSA®, IRMAACP™, or CELP® credential and deepen your expertise in Social Security optimization, Medicare cost planning, and end-of-life financial guidance.',
 }

@@ -78,7 +78,7 @@ export function clamp(text: string, maxLen: number): string {
 }
 
 export function seoTitle(post: BlogPost): string {
-  return clamp(post.meta_title ?? post.title, 60)
+  return clamp(post.meta_title ?? post.title, 53)
 }
 
 export function seoDescription(post: BlogPost): string {

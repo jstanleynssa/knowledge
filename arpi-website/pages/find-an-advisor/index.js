@@ -66,35 +66,14 @@ export default function DirectoryIndex({ advisors, stateList }) {
   const [origin, setOrigin] = useState(null) // {lat,lng} for proximity
   const [zipError, setZipError] = useState('')
   const [zipLoading, setZipLoading] = useState(false)
-  const [hovered, setHovered] = useState(null) // advisor under cursor (when map is zoomed)
-  const [popState, setPopState] = useState('in') // 'in' | 'out' | 'steady'
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 24
   const [zoomNudge, setZoomNudge] = useState(1) // user zoom-control multiplier on top of mapView.zoom
-  const dismissTimer = useRef(null)
   // The map is "zoomed/interactive" when a state is selected OR a ZIP origin is set.
   const mapZoomed = !!(stateFilter || origin)
 
   // Reset manual zoom whenever the fitted view changes (new state / ZIP / cleared).
   useEffect(() => { setZoomNudge(1) }, [stateFilter, origin])
-
-  // Show the hover badge, cancelling any pending fade-out.
-  const showPreview = useCallback((advisor, x, y) => {
-    if (dismissTimer.current) { clearTimeout(dismissTimer.current); dismissTimer.current = null }
-    setPopState('in')
-    setHovered({ advisor, x, y })
-  }, [])
-
-  // Begin fade-out, then clear after the animation completes.
-  const hidePreview = useCallback(() => {
-    setPopState('out')
-    if (dismissTimer.current) clearTimeout(dismissTimer.current)
-    dismissTimer.current = setTimeout(() => { setHovered(null); setPopState('in'); dismissTimer.current = null }, 300)
-  }, [])
-
-  // Mouse entered the popup card: freeze it in place without replaying the pop animation.
-  const stabilizePreview = useCallback(() => {
-    if (dismissTimer.current) { clearTimeout(dismissTimer.current); dismissTimer.current = null }
-    setPopState('steady')
-  }, [])
 
   // Resolve the visitor's zip via the lightweight API (keeps the big dataset server-side).
   const applyZip = useCallback(async () => {
@@ -142,6 +121,10 @@ export default function DirectoryIndex({ advisors, stateList }) {
     }
     return list
   }, [advisors, name, stateFilter, designation, origin, radius])
+
+  useEffect(() => { setPage(1) }, [name, stateFilter, designation, origin, radius])
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   // Markers shown on the map = filtered advisors that have coordinates.
   const markers = useMemo(
@@ -200,6 +183,10 @@ export default function DirectoryIndex({ advisors, stateList }) {
     if (designation === 'both')  return !!(a.nssa && a.irmaa)
     return true
   }, [designation])
+
+  const handleMarkerClick = useCallback((a) => {
+    if (a.slug) window.location.href = `/find-an-advisor/${a.slug}`
+  }, [])
 
   // Count actually visible on the map (passing designation), for the caption.
   const visibleMapCount = useMemo(
@@ -269,12 +256,14 @@ export default function DirectoryIndex({ advisors, stateList }) {
         {/* Hero */}
         <section className="hero" style={{ padding: '72px 0 64px' }}>
           <div className="container">
-            <div style={{ maxWidth: 720, position: 'relative', zIndex: 1 }}>
-              <div className="hero-eyebrow">Find an Advisor</div>
-              <h1 style={{ marginBottom: 20 }}>
-                Find an ARPI<br />Certified Advisor
-              </h1>
-              <p className="hero-sub" style={{ marginBottom: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '48px', flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
+                <div className="hero-eyebrow">Find an Advisor</div>
+                <h1 style={{ marginBottom: 0 }}>
+                  Find an ARPI<br />Certified Advisor
+                </h1>
+              </div>
+              <p className="hero-sub" style={{ marginBottom: 0, maxWidth: 400, flex: '1 1 280px', paddingTop: '46px' }}>
                 Search our national directory of NSSA® and IRMAACP™ certified professionals.
                 Filter by name, state, designation, or distance from a ZIP code or city.
               </p>
@@ -298,7 +287,7 @@ export default function DirectoryIndex({ advisors, stateList }) {
 
                 <div style={{ marginBottom: '1.25rem' }}>
                   <label className="filter-label">State or Territory</label>
-                  <select className="filter-input" value={stateFilter} onChange={e => { setStateFilter(e.target.value); setHovered(null) }}>
+                  <select className="filter-input" value={stateFilter} onChange={e => setStateFilter(e.target.value)}>
                     <option value="">All states &amp; territories</option>
                     <optgroup label="States">
                       {stateList.states.map(([code, label]) => (
@@ -379,10 +368,7 @@ export default function DirectoryIndex({ advisors, stateList }) {
                     stateFilter={stateFilter}
                     stateList={stateList.states}
                     setStateFilter={setStateFilter}
-                    setHovered={setHovered}
-                    showPreview={showPreview}
-                    hidePreview={hidePreview}
-                    onMarkerClick={(a) => { if (a.slug) window.location.href = `/find-an-advisor/${a.slug}` }}
+                    onMarkerClick={handleMarkerClick}
                   />
 
                   {/* Zoom controls */}
@@ -399,39 +385,7 @@ export default function DirectoryIndex({ advisors, stateList }) {
                     >−</button>
                   </div>
 
-                  {/* Hover preview (when zoomed: state or ZIP). The dot itself is
-                      clickable; this badge is informational and fades in/out. */}
-                  {hovered && hovered.advisor && (
-                    <a
-                      href={`/find-an-advisor/${hovered.advisor.slug}`}
-                      className={popState === 'out' ? 'advisor-pop-out' : popState === 'in' ? 'advisor-pop' : ''}
-                      onMouseEnter={stabilizePreview}
-                      onMouseLeave={hidePreview}
-                      style={{
-                        position: 'absolute', left: hovered.x + 14, top: hovered.y - 10,
-                        zIndex: 5, background: 'white', textDecoration: 'none', color: 'inherit',
-                        border: `1px solid ${GRAY.border}`, borderRadius: '10px',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.14)', padding: '10px 12px',
-                        width: '240px', maxWidth: 'calc(100% - 20px)',
-                        display: 'block', transformOrigin: 'top left', cursor: 'pointer',
-                        // 'steady' = card frozen in place, no animation
-                        ...(popState === 'steady' ? { opacity: 1, transform: 'scale(1) translateY(0)' } : null),
-                        ...(hovered.x > 700 ? { transform: (popState === 'steady' ? 'scale(1) translateY(0) ' : '') + 'translateX(calc(-100% - 28px))' } : null),
-                      }}
-                    >
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                        {hovered.advisor.photo
-                          ? <><img src={hovered.advisor.photo} alt="" width="44" height="44" style={{ width: '44px', height: '44px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} onError={(e) => { const fb = e.currentTarget.nextElementSibling; e.currentTarget.style.display = 'none'; if (fb) fb.style.display = 'flex' }} /><div style={{ display: 'none' }}><Silhouette size={44} /></div></>
-                          : <Silhouette size={44} />}
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontWeight: 700, fontSize: '14px', color: GRAY.dark, lineHeight: 1.2 }}>{hovered.advisor.name}</div>
-                          {hovered.advisor.title && <div style={{ fontSize: '12px', color: GRAY.text, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hovered.advisor.title}</div>}
-                          {(hovered.advisor.city || hovered.advisor.stateCode) && <div style={{ fontSize: '12px', color: GRAY.text }}>{[hovered.advisor.city, hovered.advisor.stateCode].filter(Boolean).join(', ')}</div>}
-                          <div style={{ fontSize: '11px', color: NSSA.medium, marginTop: '6px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>View profile <span style={{ fontSize: '13px' }}>→</span></div>
-                        </div>
-                      </div>
-                    </a>
-                  )}
+
                 </div>
 
                 {/* Map legend */}
@@ -471,7 +425,7 @@ export default function DirectoryIndex({ advisors, stateList }) {
                 </div>
               ) : (
                 <div className="cards">
-                  {filtered.map(a => (
+                  {paginated.map(a => (
                     <a key={a.slug} href={`/find-an-advisor/${a.slug}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', background: 'white', border: `1px solid ${GRAY.border}`, borderRadius: '12px', padding: '1.25rem', transition: 'box-shadow 0.15s, transform 0.15s' }}
                        onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
                        onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none' }}>
@@ -493,6 +447,34 @@ export default function DirectoryIndex({ advisors, stateList }) {
                   ))}
                 </div>
               )}
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', marginTop: '32px' }}>
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+                    style={{ padding: '8px 18px', borderRadius: '8px', border: `1px solid ${GRAY.border}`, background: page === 1 ? '#f3f4f6' : '#fff', color: page === 1 ? '#9ca3af' : GRAY.dark, cursor: page === 1 ? 'default' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
+                    ← Previous
+                  </button>
+                  <span style={{ fontSize: '0.875rem', color: GRAY.text }}>Page {page} of {totalPages}</span>
+                  <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+                    style={{ padding: '8px 18px', borderRadius: '8px', border: `1px solid ${GRAY.border}`, background: page === totalPages ? '#f3f4f6' : '#fff', color: page === totalPages ? '#9ca3af' : GRAY.dark, cursor: page === totalPages ? 'default' : 'pointer', fontWeight: 600, fontSize: '0.875rem' }}>
+                    Next →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section style={{ padding: '32px 0', borderTop: '1px solid #e5e7eb', background: '#f9fafb' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 600, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '0 0 12px' }}>
+              Browse All Advisors
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 20px' }}>
+              {advisors.map(({ slug, name }) => (
+                <a key={slug} href={`/find-an-advisor/${slug}`} style={{ fontSize: '0.8125rem', color: '#6b7280', textDecoration: 'none', lineHeight: 2 }}>
+                  {name}
+                </a>
+              ))}
             </div>
           </div>
         </section>

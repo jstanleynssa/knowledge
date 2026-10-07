@@ -6,34 +6,51 @@ import type { BlogPost } from '@/lib/blog-types'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://arpinstitute.com'
 
-export const metadata: Metadata = {
-  title: 'Social Security & Medicare Planning Insights for Financial Advisors',
-  description: 'Expert guidance on Social Security claiming strategies, Medicare enrollment, IRMAA planning, and retirement income — from ARPI-certified professionals.',
-  keywords: [
-    'social security planning blog',
-    'Medicare planning insights',
-    'IRMAA planning tips',
-    'social security claiming strategies',
-    'retirement income planning',
-    'Medicare enrollment guidance',
-    'social security advisor resources',
-  ],
-  alternates: { canonical: `${SITE_URL}/blog` },
-  openGraph: {
-    type: 'website',
-    siteName: 'Advanced Retirement Planning Institute',
-    title: 'Social Security & Medicare Planning Insights for Financial Advisors',
-    description: 'Expert guidance on Social Security claiming strategies, Medicare enrollment, IRMAA planning, and retirement income from ARPI-certified professionals.',
-    url: `${SITE_URL}/blog`,
-    images: [{ url: `${SITE_URL}/assets/arpi-logo-new.png`, width: 1200, height: 630, alt: 'ARPI Blog — Social Security & Medicare Insights' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Social Security & Medicare Planning Insights for Financial Advisors',
-    description: 'Expert guidance on Social Security, Medicare, and IRMAA planning from ARPI-certified professionals.',
-    images: [`${SITE_URL}/assets/arpi-logo-new.png`],
-  },
-  robots: { index: true, follow: true },
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>
+}): Promise<Metadata> {
+  const { page: pageParam } = await searchParams
+  const page = Math.max(1, parseInt(pageParam ?? '1', 10))
+
+  if (page > 1) {
+    return {
+      title: `Social Security Blog — Page ${page}`,
+      alternates: { canonical: `${SITE_URL}/blog` },
+      robots: { index: false, follow: true },
+    }
+  }
+
+  return {
+    title: 'Social Security & Medicare Insights for Advisors',
+    description: 'Expert guidance on Social Security claiming strategies, Medicare enrollment, IRMAA planning, and retirement income — from ARPI-certified professionals.',
+    keywords: [
+      'social security planning blog',
+      'Medicare planning insights',
+      'IRMAA planning tips',
+      'social security claiming strategies',
+      'retirement income planning',
+      'Medicare enrollment guidance',
+      'social security advisor resources',
+    ],
+    alternates: { canonical: `${SITE_URL}/blog` },
+    openGraph: {
+      type: 'website',
+      siteName: 'Advanced Retirement Planning Institute',
+      title: 'Social Security & Medicare Insights for Advisors',
+      description: 'Expert guidance on Social Security claiming strategies, Medicare enrollment, IRMAA planning, and retirement income from ARPI-certified professionals.',
+      url: `${SITE_URL}/blog`,
+      images: [{ url: `${SITE_URL}/assets/arpi-logo-new.png`, width: 1200, height: 630, alt: 'ARPI Blog — Social Security & Medicare Insights' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Social Security & Medicare Insights for Advisors',
+      description: 'Expert guidance on Social Security, Medicare, and IRMAA planning from ARPI-certified professionals.',
+      images: [`${SITE_URL}/assets/arpi-logo-new.png`],
+    },
+    robots: { index: true, follow: true },
+  }
 }
 
 // Revalidate at most once per hour

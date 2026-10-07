@@ -5,7 +5,36 @@ const SUPABASE   = 'https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/p
 const PDF_URL    = `${SUPABASE}/webinars/irmaa-avoidance-ss-optimization.pdf`
 const PPTX_URL   = `${SUPABASE}/webinars/irmaa-avoidance-ss-optimization.pptx`
 const YOUTUBE_ID = 'QgdpgDC8XVU'
-const ENROLL_URL = 'https://arpinstitute.com/enroll?partner=lpl'
+const courses = [
+  {
+    name: 'NSSA® Certification',
+    regularPrice: '$1,195',
+    salePrice: '$896',
+    badge: '25% off',
+    examFee: '$195',
+    total: '$1,091',
+    url: 'https://arpinstitute.com/enroll?course=nssa&partner=lpl',
+  },
+  {
+    name: 'IRMAACP® Certification',
+    regularPrice: '$1,195',
+    salePrice: '$896',
+    badge: '25% off',
+    examFee: '$195',
+    total: '$1,091',
+    url: 'https://arpinstitute.com/enroll?course=irmaacp&partner=lpl',
+  },
+  {
+    name: 'NSSA® + IRMAACP® Bundle',
+    regularPrice: '$1,700',
+    salePrice: '$1,275',
+    badge: '25% off',
+    featured: true,
+    examFee: '$295',
+    total: '$1,570',
+    url: 'https://arpinstitute.com/enroll?course=nssa-irmaacp&partner=lpl',
+  },
+]
 
 const tools = [
   {
@@ -119,25 +148,54 @@ export default function LplWebinarPage() {
           }
           #wb .wb-yt-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
-          /* ── Enroll CTA ── */
-          #wb .wb-enroll { background: var(--green-dark); padding: 64px 24px; }
-          #wb .wb-enroll .wb-section-label { color: rgba(255,255,255,0.55); }
-          #wb .wb-enroll-headline {
+          /* ── Course Offers ── */
+          #wb .wb-offers { background: var(--green-dark); padding: 64px 24px; }
+          #wb .wb-offers .wb-section-label { color: rgba(255,255,255,0.55); }
+          #wb .wb-offers-headline {
             font-family: var(--font-merriweather), Georgia, serif;
             font-size: clamp(1.3rem, 3vw, 1.85rem); font-weight: 800;
-            color: #fff; margin: 0 0 12px; line-height: 1.25;
+            color: #fff; margin: 0 0 8px; line-height: 1.25;
           }
-          #wb .wb-enroll-sub { font-size: 15px; color: rgba(255,255,255,0.7); margin: 0 0 32px; line-height: 1.6; max-width: 560px; }
-          #wb .wb-enroll-btn {
-            display: inline-block; background: #10994c; color: #fff;
-            font-size: 16px; font-weight: 700; padding: 16px 36px;
-            border-radius: 10px; text-decoration: none;
+          #wb .wb-offers-sub { font-size: 14px; color: rgba(255,255,255,0.65); margin: 0 0 32px; }
+          #wb .wb-course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+          #wb .wb-course-card {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px; padding: 24px; display: flex; flex-direction: column;
+          }
+          #wb .wb-course-card--featured {
+            background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.28);
+          }
+          #wb .wb-course-badge {
+            display: inline-block; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            background: #10994c; color: #fff;
+            padding: 3px 9px; border-radius: 99px; margin-bottom: 14px; align-self: flex-start;
+          }
+          #wb .wb-course-name { font-size: 15px; font-weight: 700; color: #fff; margin: 0 0 14px; line-height: 1.35; }
+          #wb .wb-course-pricing { display: flex; align-items: baseline; gap: 10px; margin-bottom: 20px; }
+          #wb .wb-course-regular { font-size: 14px; color: rgba(255,255,255,0.4); text-decoration: line-through; }
+          #wb .wb-course-sale { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+          #wb .wb-course-breakdown {
+            font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 8px; line-height: 1.8;
+          }
+          #wb .wb-course-breakdown span { display: flex; justify-content: space-between; }
+          #wb .wb-course-total {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.9);
+            border-top: 1px solid rgba(255,255,255,0.15); padding-top: 8px; margin-bottom: 16px;
+          }
+          #wb .wb-course-cta {
+            display: block; text-align: center; background: #10994c; color: #fff;
+            font-size: 14px; font-weight: 700; padding: 12px 20px;
+            border-radius: 8px; text-decoration: none; margin-top: auto;
             transition: background 0.15s;
           }
-          #wb .wb-enroll-btn:hover { background: #0d7a3d; }
-          #wb .wb-enroll-note {
-            margin-top: 20px; font-size: 13px; color: rgba(255,255,255,0.45);
+          #wb .wb-course-cta:hover { background: #0d7a3d; }
+          #wb .wb-offers-note {
+            text-align: center; font-size: 13px; color: rgba(255,255,255,0.55);
+            border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 4px;
           }
+          #wb .wb-offers-note strong { color: rgba(255,255,255,0.85); }
 
           /* ── Tools ── */
           #wb .wb-tools { background: #f8fafc; padding: 64px 24px; border-bottom: 1px solid var(--border); }
@@ -177,7 +235,7 @@ export default function LplWebinarPage() {
 
           @media (max-width: 640px) {
             #wb .wb-hero { padding: 40px 0 0; }
-            #wb .wb-downloads, #wb .wb-recording, #wb .wb-enroll,
+            #wb .wb-downloads, #wb .wb-recording, #wb .wb-offers,
             #wb .wb-tools, #wb .wb-speakers { padding: 40px 20px; }
           }
         `}</style>
@@ -224,18 +282,34 @@ export default function LplWebinarPage() {
             </div>
           </section>
 
-          {/* ── Enroll CTA ── */}
-          <section className="wb-enroll">
+          {/* ── Course Offers ── */}
+          <section className="wb-offers">
             <div className="wb-section-inner">
               <p className="wb-section-label">Special Offer for LPL Advisors</p>
-              <h2 className="wb-enroll-headline">Enroll Now. Train on Your Schedule.</h2>
-              <p className="wb-enroll-sub">
-                We&#39;re extending special pricing to LPL advisors. Earn the NSSA®, IRMAACP®, or
-                both — and stand out as a retirement income specialist in one of the nation&#39;s
-                largest advisor networks. Discount applied automatically at checkout.
-              </p>
-              <a href={ENROLL_URL} className="wb-enroll-btn">View Enrollment Options →</a>
-              <p className="wb-enroll-note">Use code <strong style={{ color: 'rgba(255,255,255,0.75)' }}>LPL25</strong> at checkout for your discount.</p>
+              <h2 className="wb-offers-headline">Enroll Now. Train on Your Schedule.</h2>
+              <p className="wb-offers-sub">Exclusive pricing for LPL Financial advisors. Discount applied automatically at checkout.</p>
+              <div className="wb-course-grid">
+                {courses.map(c => (
+                  <div key={c.name} className={`wb-course-card${c.featured ? ' wb-course-card--featured' : ''}`}>
+                    <span className="wb-course-badge">{c.badge}</span>
+                    <p className="wb-course-name">{c.name}</p>
+                    <div className="wb-course-pricing">
+                      <span className="wb-course-regular">{c.regularPrice}</span>
+                      <span className="wb-course-sale">{c.salePrice}</span>
+                    </div>
+                    <div className="wb-course-breakdown">
+                      <span><span>Course tuition</span><span>{c.salePrice}</span></span>
+                      <span><span>Exam, cert &amp; membership</span><span>{c.examFee}</span></span>
+                    </div>
+                    <div className="wb-course-total">
+                      <span>Total</span>
+                      <span>{c.total}</span>
+                    </div>
+                    <a href={c.url} className="wb-course-cta" target="_blank" rel="noopener noreferrer">Enroll Now →</a>
+                  </div>
+                ))}
+              </div>
+              <p className="wb-offers-note">Each designation requires a separate exam, certification &amp; annual membership fee.</p>
             </div>
           </section>
 

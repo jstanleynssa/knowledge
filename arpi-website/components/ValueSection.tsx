@@ -1,3 +1,5 @@
+import './ValueSection.css'
+
 export default function ValueSection() {
   return (
     <section className="value-section">

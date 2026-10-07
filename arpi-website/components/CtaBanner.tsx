@@ -1,3 +1,5 @@
+import './CtaBanner.css'
+
 export default function CtaBanner() {
   return (
     <section className="cta-banner">

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
+import '../axiom/axiom.css'
 
 const OG_IMAGE = 'https://arpinstitute.com/assets/calculus-offer.png'
 
 export const metadata: Metadata = {
-  title: { absolute: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS' },
+  title: { absolute: 'CALCULUS — Social Security Breakeven Calculator' },
   description:
     'Calculate the exact Social Security breakeven age for any client. Two filing strategies compared side-by-side with SSA Period Life Tables and correct spousal benefit math. Try free for 7 days.',
   keywords: [
@@ -20,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://arpinstitute.com/calculus',
-    title: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS',
+    title: 'CALCULUS — Social Security Breakeven Calculator',
     description:
       'Calculate the exact Social Security breakeven age for any client. Two strategies side-by-side. SSA Period Life Tables. Correct spousal math. Try free for 7 days.',
     siteName: 'Advanced Retirement Planning Institute',
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Social Security Breakeven Calculator for Financial Advisors | CALCULUS',
+    title: 'CALCULUS — Social Security Breakeven Calculator',
     description:
       'Calculate the exact Social Security breakeven age for any client. Two filing strategies compared side-by-side. Try free for 7 days.',
     images: [OG_IMAGE],

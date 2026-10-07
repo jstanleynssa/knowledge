@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Osaic Advisor Benefits | ARPI',
+  title: 'Osaic Advisor Benefits',
   description:
     'ARPI partner landing page for Osaic financial professionals. Earn the NSSA®, IRMAACP™, or CELP® credential and build deeper expertise in Social Security, Medicare cost planning, and end-of-life financial guidance.',
 }

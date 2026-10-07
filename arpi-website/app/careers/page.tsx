@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'Careers',
   description: 'Explore career opportunities at the Advanced Retirement Planning Institute (ARPI).',
+  alternates: { canonical: 'https://arpinstitute.com/careers' },
 }
 
 export default function CareersPage() {

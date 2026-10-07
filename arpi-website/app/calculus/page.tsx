@@ -9,12 +9,9 @@ import Image from 'next/image'
 import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
-const MONTHLY        = 39
-const ANNUAL         = 349
-const ANNUAL_MONTHLY = 29   // $349 / 12, rounded down
-
-const MEMBER_MONTHLY = 29   // NSSA/IRMAACP credential holders
-const MEMBER_ANNUAL  = 299
+const MONTHLY        = 29
+const ANNUAL         = 290
+const ANNUAL_MONTHLY = 24   // $290 / 12, rounded down
 
 const TOOL_URL = 'https://calculus.arpinstitute.com'
 
@@ -108,7 +105,7 @@ const schemaApp = {
   url: 'https://calculus.arpinstitute.com',
   offers: {
     '@type': 'Offer',
-    price: '39.00',
+    price: '29.00',
     priceCurrency: 'USD',
     availability: 'https://schema.org/InStock',
     seller: {
@@ -166,7 +163,7 @@ const schemaFaq = {
       name: 'Is CALCULUS free to try?',
       acceptedAnswer: {
         '@type': 'Answer',
-        text: 'Yes. CALCULUS offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $39/month or $349/year ($29/month). Active NSSA® and IRMAACP® credential holders receive a discounted rate of $29/month or $299/year. Cancel any time from your dashboard.',
+        text: 'Yes. CALCULUS offers a 7-day free trial with full access. No charge until day 8. After the trial, pricing is $29/month or $290/year ($24/month). Cancel any time from your dashboard.',
       },
     },
     {
@@ -217,6 +214,7 @@ export default function CalculusPage() {
           /* Blue → green overrides for all inherited ax-* elements */
           #calc .ax-step-icon { background: var(--calc-xlight); color: var(--calc-green); }
           #calc .ax-corpus-icon { background: var(--calc-xlight); color: var(--calc-green); }
+          #calc .ax-hero-inner { grid-template-columns: 1fr 500px; }
           #calc .ax-corpus-stat { color: var(--calc-green); }
           #calc .ax-plan-cta--primary { background: var(--calc-green); border-color: var(--calc-green); }
           #calc .ax-plan-cta--primary:hover { background: var(--calc-dark); border-color: var(--calc-dark); }
@@ -358,7 +356,7 @@ export default function CalculusPage() {
                 </p>
                 <div className="ax-hero-actions">
                   <a href="#how-it-works" className="btn-primary">See How It Works</a>
-                  <span className="btn-outline-dark" style={{ cursor: 'default', opacity: 0.85 }}>Launching Q4 2026</span>
+                  <a href="https://academy.arpinstitute.com/offers/FCb2gsUD" className="btn-outline-dark">Start 7-Day Free Trial</a>
                 </div>
                 <div className="ax-trust-row">
                   <span className="ax-trust-pill"><IconShield size={13} /> SSA Period Life Tables</span>
@@ -368,40 +366,15 @@ export default function CalculusPage() {
               </div>
 
               <div className="ax-hero-right">
-                <div style={{ marginBottom: 20 }}>
-                  <Image
-                    src="/assets/calculus-full-badge.png"
-                    alt="CALCULUS"
-                    width={957}
-                    height={300}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    style={{ width: '100%', height: 'auto' }}
-                    priority
-                  />
-                </div>
-                <div className="ax-stat-card">
-                  <div className="ax-stat-grid">
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">2</span>
-                      <span className="ax-stat-d">Strategies Compared</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">SSA</span>
-                      <span className="ax-stat-d">Period Life Tables</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">100%</span>
-                      <span className="ax-stat-d">Spousal Math Coverage</span>
-                    </div>
-                    <div className="ax-stat">
-                      <span className="ax-stat-n">∞</span>
-                      <span className="ax-stat-d">Saved Scenarios</span>
-                    </div>
-                  </div>
-                  <div className="ax-corpus-tags" style={{ marginTop: 20 }}>
-                    <span>File at 62</span><span>File at FRA</span><span>File at 70</span><span>Any Age</span>
-                  </div>
-                </div>
+                <Image
+                  src="/assets/calculus-large.png"
+                  alt="CALCULUS"
+                  width={1080}
+                  height={1080}
+                  unoptimized
+                  priority
+                  style={{ display: 'block', width: '100%', height: 'auto', margin: '0 auto' }}
+                />
               </div>
             </div>
           </div>
@@ -717,7 +690,7 @@ export default function CalculusPage() {
                       className={`ax-toggle-btn${annual ? ' ax-toggle-btn--on' : ''}`}
                       onClick={() => setAnnual(true)}
                     >
-                      Annual <span className="ax-save-chip">Save 3 months</span>
+                      Annual <span className="ax-save-chip">Save 2 months</span>
                     </button>
                   </div>
 
@@ -730,19 +703,10 @@ export default function CalculusPage() {
                     <p className="ax-plan-annual-note">Billed ${ANNUAL}/year</p>
                   )}
 
-                  <div className="ax-plan-cta ax-plan-cta--primary" style={{ textAlign: 'center', cursor: 'default', opacity: 0.85 }}>
-                    Launching Q4 2026
-                  </div>
-                  <p className="ax-plan-fine">Early access opens Q4 2026. <a href="/contact" style={{ color: 'inherit', textDecoration: 'underline' }}>Get notified →</a></p>
-
-                  <div style={{ marginTop: 16, padding: '12px 16px', background: 'rgba(255,255,255,0.08)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)' }}>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                      NSSA® &amp; IRMAACP® credential holders
-                    </p>
-                    <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'rgba(255,255,255,0.72)' }}>
-                      ${MEMBER_MONTHLY}/mo or ${MEMBER_ANNUAL}/yr — verify at checkout
-                    </p>
-                  </div>
+                  <a href="https://academy.arpinstitute.com/offers/FCb2gsUD" className="ax-plan-cta ax-plan-cta--primary" style={{ textAlign: 'center', display: 'block' }}>
+                    Start 7-Day Free Trial
+                  </a>
+                  <p className="ax-plan-fine">No charge until day 8. Cancel any time.</p>
 
                   <div className="ax-pricing-guarantee">
                     <IconShield size={15} />
@@ -771,12 +735,12 @@ export default function CalculusPage() {
         <section className="ax-cta-band">
           <div className="container ax-cta-inner">
             <div>
-              <h2 className="ax-cta-h">CALCULUS launches Q4 2026.</h2>
+              <h2 className="ax-cta-h">Try CALCULUS free for 7 days.</h2>
               <p className="ax-cta-sub">
-                Early access for ARPI credential holders. Get notified when it’s live.
+                Full access from day one. No charge until day 8. Cancel any time.
               </p>
             </div>
-            <a href="/contact" className="btn-primary ax-cta-btn">Get Notified</a>
+            <a href="https://academy.arpinstitute.com/offers/FCb2gsUD" className="btn-primary ax-cta-btn">Start 7-Day Free Trial</a>
           </div>
         </section>
 

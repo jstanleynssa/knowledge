@@ -10,7 +10,7 @@ import IrmaacpWhoForInteractive from '@/components/credentials/IrmaacpWhoForInte
 import NYCEDisclosure from '@/components/credentials/NYCEDisclosure'
 
 export const metadata = {
-  title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
+  title: 'IRMAACP™ — Medicare & IRMAA Certification',
   description:
     'Earn the IRMAACP™ credential — the definitive Medicare planning certification. Learn to project IRMAA surcharges, build appeals, and implement income strategies that save high-value clients thousands every year.',
   keywords: [
@@ -28,14 +28,14 @@ export const metadata = {
   openGraph: {
     type: 'website' as const,
     siteName: 'Advanced Retirement Planning Institute',
-    title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
+    title: 'IRMAACP™ — Medicare & IRMAA Certification',
     description: 'The definitive IRMAA planning credential. Project surcharges, build successful appeals, and implement income strategies that save high-value clients thousands every year.',
     url: 'https://arpinstitute.com/credentials/irmaacp',
     images: [{ url: 'https://arpinstitute.com/assets/course-hero-irmaacp.jpg', width: 1200, height: 630, alt: 'IRMAACP™ Certification — Medicare & IRMAA Planning' }],
   },
   twitter: {
     card: 'summary_large_image' as const,
-    title: 'IRMAACP™ Certification — Medicare & IRMAA Planning for Financial Professionals',
+    title: 'IRMAACP™ — Medicare & IRMAA Certification',
     description: 'The definitive IRMAA planning credential. Project surcharges, build successful appeals, and save high-value clients thousands every year.',
     images: ['https://arpinstitute.com/assets/course-hero-irmaacp.jpg'],
   },

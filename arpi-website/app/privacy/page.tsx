@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description:
     'Privacy Policy for the Advanced Retirement Planning Institute (ARPI) — how we collect, use, and protect your information.',
+  alternates: { canonical: 'https://arpinstitute.com/privacy' },
 }
 
 export default function PrivacyPage() {

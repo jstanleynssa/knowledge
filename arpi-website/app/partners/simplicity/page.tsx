@@ -3,7 +3,7 @@ import Nav from '@/components/Nav'
 import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Simplicity Group Advisor Benefits | ARPI',
+  title: 'Simplicity Group Advisor Benefits',
   description:
     'ARPI partner landing page for Simplicity Group advisors. Earn the IRMAACP™, NSSA®, or CELP® credential and deepen your expertise in Medicare cost planning, Social Security optimization, and end-of-life financial guidance.',
 }

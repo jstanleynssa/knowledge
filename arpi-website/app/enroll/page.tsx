@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Enroll — Choose Your ARPI Credentials',
   description:
     `Build your ARPI credential package. Select NSSA®, IRMAACP™, and/or CELP® — bundle pricing applies automatically and saves you up to ${fmt(SAVINGS_3)} vs. individual enrollment.`,
+  alternates: {
+    canonical: 'https://arpinstitute.com/enroll',
+  },
 }
 
 type Props = {

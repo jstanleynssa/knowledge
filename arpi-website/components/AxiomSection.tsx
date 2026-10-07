@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import './AxiomSection.css'
 
 export default function AxiomSection() {
   return (

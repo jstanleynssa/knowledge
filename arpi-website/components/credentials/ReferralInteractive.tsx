@@ -14,9 +14,10 @@ export default function ReferralInteractive() {
         <p className="section-eyebrow">Referral Network</p>
         <h2 className="section-h2">A Built-In Referral Ecosystem</h2>
         <p className="section-intro">
-          CELP® professionals sit at the center of a network of professionals who all serve
-          the same families — but none of them coordinate across disciplines. You become
-          the connector every family needs.
+          Every CELP® professional works alongside families navigating the hardest financial
+          transitions of their lives. That means regular, structured referrals for the
+          professionals who serve those same families — estate attorneys, CPAs, hospice
+          organizations, and more. Join the network and be the professional they call.
         </p>
 
         {/* ── Pill row ── */}
@@ -43,13 +44,13 @@ export default function ReferralInteractive() {
           className="ri-panel"
         >
           <div className="ri-panel-left">
-            <p className="ri-partner-label">For {selected.label}</p>
+            <p className="ri-partner-label">Why {selected.label} join</p>
             <h3 className="ri-headline">{selected.headline}</h3>
             <p className="ri-body">{selected.body}</p>
           </div>
           <div className="ri-panel-right">
             <a href={`/partners/apply?role=${selected.id}`} className="ri-connect-btn">
-              Connect with a CELP® Professional →
+              Join the CELP® Referral Network →
             </a>
           </div>
         </div>

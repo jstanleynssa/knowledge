@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 export const metadata: Metadata = {
   title: 'Accessibility',
   description: 'ARPI is committed to making our website accessible to all users, including those with disabilities. Learn about our accessibility support options.',
+  alternates: { canonical: 'https://arpinstitute.com/accessibility' },
 }
 
 export default function AccessibilityPage() {

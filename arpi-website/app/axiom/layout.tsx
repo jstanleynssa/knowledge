@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
+import './axiom.css'
 
 const OG_IMAGE = 'https://arpinstitute.com/assets/axiom-offer.png'
 
 export const metadata: Metadata = {
-  title: { absolute: 'Social Security & Medicare Regulatory Intelligence for Financial Advisors | AXIOM' },
+  title: { absolute: 'AXIOM — Social Security & Medicare Intelligence' },
   description:
     'Get instant, citation-backed answers to Social Security and Medicare regulatory questions — grounded in POMS, CFR, CMS, and Medicare.gov. Built for financial advisors. Try free for 7 days.',
   keywords: [
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: 'https://arpinstitute.com/axiom',
-    title: 'Social Security & Medicare Regulatory Intelligence for Financial Advisors | AXIOM',
+    title: 'AXIOM — Social Security & Medicare Intelligence',
     description:
       'Instant, citation-backed answers to Social Security and Medicare questions — grounded in POMS, CFR, CMS, and Medicare.gov. Try free for 7 days.',
     siteName: 'Advanced Retirement Planning Institute',
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Social Security & Medicare Regulatory Intelligence for Financial Advisors | AXIOM',
+    title: 'AXIOM — Social Security & Medicare Intelligence',
     description:
       'Instant, citation-backed answers to Social Security and Medicare regulatory questions. Every answer grounded in federal law. Try free for 7 days.',
     images: [OG_IMAGE],
