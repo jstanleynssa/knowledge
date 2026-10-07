@@ -468,20 +468,16 @@ export default function PartnersPage() {
             {/* Zero partners (network still building) */}
             {!loading && !loadError && partners.length === 0 && (
               <div style={{ background: GRAY.bg, borderRadius: 12, padding: '4rem 2rem', textAlign: 'center' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🤝</div>
                 <h2
                   style={{
                     fontFamily: 'var(--font-merriweather), Georgia, serif',
                     fontSize: '1.4rem',
                     color: GRAY.dark,
-                    margin: '0 0 12px',
+                    margin: '0 0 24px',
                   }}
                 >
                   The CELP® Partner Network is growing.
                 </h2>
-                <p style={{ color: GRAY.text, margin: '0 0 24px' }}>
-                  Check back soon — or apply to join.
-                </p>
                 <a href="/partners/apply" className="btn-primary">
                   Apply to Join →
                 </a>
