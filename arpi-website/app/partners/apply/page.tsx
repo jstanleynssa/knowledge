@@ -74,7 +74,7 @@ function PartnerApplyPageInner() {
   const roleParam = searchParams?.get('role') ?? ''
 
   const [form, setForm] = useState({
-    role_id: '',
+    role_ids: [] as string[],
     first_name: '',
     last_name: '',
     email: '',
@@ -97,9 +97,18 @@ function PartnerApplyPageInner() {
 
   useEffect(() => {
     if (roleParam) {
-      setForm(f => ({ ...f, role_id: roleParam }))
+      setForm(f => ({ ...f, role_ids: [roleParam] }))
     }
   }, [roleParam])
+
+  function toggleRole(id: string) {
+    setForm(f => ({
+      ...f,
+      role_ids: f.role_ids.includes(id)
+        ? f.role_ids.filter(r => r !== id)
+        : [...f.role_ids, id],
+    }))
+  }
 
   function set(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
     const { name, value, type } = e.target
@@ -115,10 +124,10 @@ function PartnerApplyPageInner() {
     e.preventDefault()
     setError(null)
 
-    if (!form.role_id || !form.first_name || !form.last_name || !form.email ||
+    if (!form.role_ids.length || !form.first_name || !form.last_name || !form.email ||
         !form.organization || !form.city || !form.state || !form.zip ||
         !form.clients_per_year || (!form.referral_send && !form.referral_receive) || !form.about) {
-      setError('Please fill in all required fields and select at least one referral direction.')
+      setError('Please fill in all required fields, select at least one role, and choose at least one referral direction.')
       return
     }
 
@@ -148,12 +157,11 @@ function PartnerApplyPageInner() {
     }
   }
 
-  const selectedRole = REFERRAL_PARTNERS.find(p => p.id === form.role_id)
+  const singleSelectedRole = form.role_ids.length === 1 ? REFERRAL_PARTNERS.find(p => p.id === form.role_ids[0]) : null
 
   if (done) {
     return (
       <>
-        <Nav />
         <main>
           <section style={{ background: '#fff', padding: '100px 0' }}>
             <div className="container" style={{ maxWidth: 600, textAlign: 'center' }}>
@@ -190,7 +198,6 @@ function PartnerApplyPageInner() {
 
   return (
     <>
-      <Nav />
       <main>
         {/* Hero */}
         <section className="hero" style={{ padding: '72px 0 64px' }}>
@@ -221,18 +228,45 @@ function PartnerApplyPageInner() {
                   Fill out the form below and we&rsquo;ll be in touch within 2–3 business days.
                 </p>
 
-                {/* Role */}
-                <Field label="Your professional role" id="role_id" required>
-                  <select id="role_id" name="role_id" value={form.role_id} onChange={set} required style={inputStyle}>
-                    <option value="">— Select your role —</option>
-                    {REFERRAL_PARTNERS.map(p => (
-                      <option key={p.id} value={p.id}>{p.label}</option>
+                {/* Role(s) */}
+                <Field label="Your professional role(s)" id="role_ids" required hint="Select all that apply">
+                  <div style={{ border: '1px solid var(--border)', borderRadius: 3, maxHeight: 240, overflowY: 'auto', background: '#fff' }}>
+                    {REFERRAL_PARTNERS.map((p, i) => (
+                      <label key={p.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 14px', cursor: 'pointer',
+                        fontSize: '0.9rem', color: 'var(--ink-mid)',
+                        borderBottom: i < REFERRAL_PARTNERS.length - 1 ? '1px solid var(--border)' : 'none',
+                        userSelect: 'none',
+                        background: form.role_ids.includes(p.id) ? GREEN_LIGHT : undefined,
+                      }}>
+                        <input
+                          type="checkbox"
+                          value={p.id}
+                          checked={form.role_ids.includes(p.id)}
+                          onChange={() => toggleRole(p.id)}
+                          style={{ accentColor: GREEN, width: 15, height: 15, flexShrink: 0 }}
+                        />
+                        {p.label}
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </Field>
-                {selectedRole && (
-                  <div style={{ background: GREEN_LIGHT, borderRadius: 4, padding: '10px 14px', fontSize: '0.82rem', color: GREEN, marginTop: -10, marginBottom: 18, lineHeight: 1.5 }}>
-                    {selectedRole.headline}
+                {singleSelectedRole && (
+                  <div style={{ background: GREEN_LIGHT, borderRadius: 4, padding: '14px 16px', marginTop: -10, marginBottom: 18, lineHeight: 1.6 }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: GREEN, margin: '0 0 6px' }}>
+                      {singleSelectedRole.headline}
+                    </p>
+                    <p style={{ fontSize: '0.82rem', color: '#2d5c47', margin: 0 }}>
+                      {singleSelectedRole.body}
+                    </p>
+                  </div>
+                )}
+                {form.role_ids.length > 1 && (
+                  <div style={{ background: GREEN_LIGHT, borderRadius: 4, padding: '10px 16px', marginTop: -10, marginBottom: 18 }}>
+                    <p style={{ fontSize: '0.85rem', color: GREEN, margin: 0 }}>
+                      <strong>{form.role_ids.length} roles selected</strong>
+                    </p>
                   </div>
                 )}
 
@@ -350,8 +384,25 @@ function PartnerApplyPageInner() {
 
 export default function PartnerApplyPage() {
   return (
-    <Suspense fallback={null}>
-      <PartnerApplyPageInner />
-    </Suspense>
+    <>
+      <Nav />
+      {/* Static server-visible content for crawlers */}
+      <section style={{ padding: '48px 0 0', background: '#fff' }}>
+        <div className="container">
+          <h1 style={{ fontSize: '2rem', fontWeight: 700, color: '#111827', marginBottom: 16 }}>
+            Join the CELP® Partner Network
+          </h1>
+          <p style={{ fontSize: '1.0625rem', color: '#4b5563', lineHeight: 1.7, maxWidth: 680, margin: '0 0 32px' }}>
+            The CELP® (Certified End-of-Life Planner) designation connects financial professionals
+            with a curated network of attorneys, CPAs, healthcare providers, and other specialists
+            who serve families navigating end-of-life planning. Apply below to join the partner
+            network and receive qualified referrals from CELP®-credentialed advisors in your market.
+          </p>
+        </div>
+      </section>
+      <Suspense fallback={null}>
+        <PartnerApplyPageInner />
+      </Suspense>
+    </>
   )
 }

@@ -4,7 +4,7 @@ import { Resend } from 'resend'
 import { getZipCoords } from '@/lib/zipcodes'
 import { REFERRAL_PARTNERS } from '@/lib/celp-referral-partners'
 
-const REQUIRED = ['role_id', 'first_name', 'last_name', 'email', 'organization', 'city', 'state', 'zip', 'clients_per_year', 'referral_direction', 'about']
+const REQUIRED = ['first_name', 'last_name', 'email', 'organization', 'city', 'state', 'zip', 'clients_per_year', 'referral_direction', 'about']
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,13 +16,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Missing required fields: ${missing.join(', ')}` }, { status: 400 })
     }
 
+    // Validate roles
+    const roleIds: string[] = Array.isArray(body.role_ids) && body.role_ids.length > 0
+      ? body.role_ids
+      : body.role_id ? [body.role_id] : []
+    if (roleIds.length === 0) {
+      return NextResponse.json({ error: 'Please select at least one professional role.' }, { status: 400 })
+    }
+
     if (body.about && body.about.length > 500) {
       return NextResponse.json({ error: 'About section must be 500 characters or fewer.' }, { status: 400 })
     }
 
-    // Resolve role label
-    const role = REFERRAL_PARTNERS.find(p => p.id === body.role_id)
-    const role_label = role?.label ?? body.role_id
+    // Resolve role label(s)
+    const resolvedRoles = roleIds.map(id => REFERRAL_PARTNERS.find(p => p.id === id)).filter(Boolean)
+    const role_id = roleIds.join(',')
+    const role_label = resolvedRoles.length > 0
+      ? resolvedRoles.map(r => r!.label).join(', ')
+      : roleIds.join(', ')
 
     // Geocode zip
     const coords = getZipCoords(body.zip)
@@ -37,7 +48,7 @@ export async function POST(req: NextRequest) {
     const { data: partner, error: insertError } = await supabase
       .from('celp_partners')
       .insert({
-        role_id: body.role_id.trim(),
+        role_id,
         role_label,
         first_name: body.first_name.trim(),
         last_name: body.last_name.trim(),
@@ -109,7 +120,7 @@ export async function POST(req: NextRequest) {
         await resend.emails.send({
           from: 'CELP® Partner Network <engage@arpinstitute.com>',
           to: 'jstanley@arpinstitute.com',
-          subject: `New CELP Partner Application — ${role_label} in ${body.city}, ${body.state}`,
+          subject: `New CELP Partner Application — ${role_label} in ${body.city}, ${body.state.trim().toUpperCase()}`,
           html: `
 <div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:2rem;">
   <div style="background:#1a4a37;color:white;padding:1rem 1.5rem;border-radius:8px 8px 0 0;">
