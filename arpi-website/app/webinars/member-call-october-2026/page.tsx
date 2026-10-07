@@ -3,7 +3,8 @@ import Footer from '@/components/Footer'
 
 const SUPABASE  = 'https://eqipvrcmugnvkextqmym.supabase.co/storage/v1/object/public/site-resources'
 const PDF_URL   = `${SUPABASE}/webinars/arpi-member-call-october-2026.pdf`
-const PPTX_URL  = `${SUPABASE}/webinars/arpi-member-call-october-2026.pptx`
+const PPTX_URL   = `${SUPABASE}/webinars/arpi-member-call-october-2026.pptx`
+const YOUTUBE_ID = '9SAiv0ks-FQ'
 
 export const metadata = {
   title: 'ARPI Monthly Member Call — October 2026',
@@ -99,22 +100,14 @@ export default function MemberCallOctober2026() {
           }
           #wbmc .wb-label--light { color: rgba(255,255,255,0.55); }
 
-          /* ── Recording placeholder ── */
+          /* ── Recording ── */
           #wbmc .wb-recording { padding: 64px 24px; background: #fff; border-bottom: 1px solid var(--border); }
-          #wbmc .wb-coming-soon {
-            border: 2px dashed var(--border); border-radius: 12px;
-            padding: 56px 24px; text-align: center; background: #f8fafc;
+          #wbmc .wb-yt-embed {
+            position: relative; padding-bottom: 56.25%; height: 0;
+            border-radius: 12px; overflow: hidden; background: #111;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.12);
           }
-          #wbmc .wb-coming-soon-icon {
-            width: 52px; height: 52px; background: var(--green-light); color: var(--green);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 18px;
-          }
-          #wbmc .wb-coming-soon h3 {
-            font-family: var(--font-merriweather), Georgia, serif;
-            font-size: 1.125rem; font-weight: 700; color: var(--ink); margin: 0 0 8px;
-          }
-          #wbmc .wb-coming-soon p { font-size: 0.9rem; color: var(--ink-mid); margin: 0; line-height: 1.6; }
+          #wbmc .wb-yt-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
 
           /* ── Offers ── */
           #wbmc .wb-offers { background: var(--green-dark); padding: 64px 24px; }
@@ -259,15 +252,13 @@ export default function MemberCallOctober2026() {
           <section className="wb-recording">
             <div className="wb-inner">
               <p className="wb-label">Call Recording</p>
-              <div className="wb-coming-soon">
-                <div className="wb-coming-soon-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polygon points="10 8 16 12 10 16 10 8"/>
-                  </svg>
-                </div>
-                <h3>Recording Coming Soon</h3>
-                <p>The full recording will be posted here shortly.<br />Download the slides below to follow along in the meantime.</p>
+              <div className="wb-yt-embed">
+                <iframe
+                  src={`https://www.youtube.com/embed/${YOUTUBE_ID}`}
+                  title="ARPI Monthly Member Call — October 2026"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
               </div>
             </div>
           </section>
