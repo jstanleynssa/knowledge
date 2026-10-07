@@ -51,7 +51,7 @@ const ENHANCEMENT_BENEFITS = [
 const CAREER_BENEFITS = [
   "No products to sell. No firm to join. No investment license required.",
   "A universal market — every family with aging parents needs this service",
-  "Immediate referral relationships built in from day one",
+  "Access to a growing referral network across professional sectors",
   "Work that can't be automated — human coordination at life's hardest moments",
   "Massive unmet demand with no established profession filling the role",
 ]

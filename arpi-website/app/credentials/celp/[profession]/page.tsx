@@ -78,8 +78,8 @@ export default async function ProfessionPage({
             <h1 className="prof-h1">{p.headline}</h1>
             <p className="prof-sub">{p.body}</p>
             <div className="prof-hero-ctas">
-              <a href="/enroll?course=celp" className="btn-primary">
-                Enroll as a {p.label} →
+              <a href="/credentials/celp#apply" className="btn-primary">
+                Apply for Consideration →
               </a>
               <a href="/credentials/celp" className="btn-outline-light">
                 View Full Curriculum
@@ -141,8 +141,8 @@ export default async function ProfessionPage({
               families through the most complex financial transition of their lives.
             </p>
             <div className="prof-cta-buttons">
-              <a href="/enroll?course=celp" className="prof-cta-primary">
-                Enroll in CELP® Now
+              <a href="/credentials/celp#apply" className="prof-cta-primary">
+                Apply for Consideration
               </a>
               <a href="/credentials/celp#curriculum" className="prof-cta-secondary">
                 View the Full Curriculum

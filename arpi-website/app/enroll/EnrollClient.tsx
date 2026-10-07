@@ -53,7 +53,7 @@ const COURSES = [
     name: 'CELP®',
     tagline: 'End-of-Life Coordination',
     ce: 0, // hours TBD — pending state filing
-    modules: '10 Modules',
+    modules: '11 Modules',
     primary: 'var(--green-dark)',
     dark: 'var(--green-900)',
     light: 'var(--green-xlight)',

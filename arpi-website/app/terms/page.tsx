@@ -115,7 +115,7 @@ export default function TermsPage() {
             <Subsection title="4C. CELP® — Certified End-of-Life Planner">
               <p>
                 To earn the CELP® designation, participants must complete the CELP® self-paced course and pass
-                the certification exam with a score of 70% or higher. Certified individuals may use &ldquo;CELP®&rdquo; as a
+                the certification exam with a score of 75% or higher. Certified individuals may use &ldquo;CELP®&rdquo; as a
                 professional credential (e.g., <em>Jane Smith, CELP®</em>), conditioned on maintaining active membership
                 in good standing. CELP® certificate holders gain access to ARPI membership benefits including
                 monthly group calls and ongoing course access.
@@ -209,9 +209,20 @@ export default function TermsPage() {
               development only.
             </p>
             <p style={{ marginTop: '16px' }}>
+              <strong>CELP® Professional Tools — Limited Client-Use License.</strong> Notwithstanding the general
+              non-commercial restriction above, active CELP® certificate holders are granted a limited,
+              non-exclusive, non-transferable license to use approved CELP® professional tools — including the
+              Survivors Guide framework, client-facing checklists, and beneficiary review worksheets — in direct
+              service of paying clients as part of a licensed CELP® practice. This license does not permit
+              redistribution of materials to other professionals, resale of materials as standalone products,
+              sublicensing, or use after certification lapses. All other course content, videos, and curricula
+              remain subject to the non-commercial restriction above.
+            </p>
+            <p style={{ marginTop: '16px' }}>
               You may not reproduce, distribute, resell, share, screenshot, scrape, reverse-engineer, or create
-              derivative works from any Site content or course materials. Unauthorized use is a violation of
-              these Terms and applicable law.
+              derivative works from any Site content or course materials except as expressly permitted in the
+              CELP® Professional Tools license above. Unauthorized use is a violation of these Terms and
+              applicable law.
             </p>
             <p style={{ marginTop: '16px' }}>
               NSSA®, IRMAACP™, CELP®, and ARPI are trademarks of Social Security Professionals, LLC. Nothing

@@ -142,7 +142,7 @@ export default function CECreditsPage() {
               {[
                 { name: 'NSSA®', full: 'National Social Security Advisor', cfp: '5.5 hrs', cpe: '6 hrs', insNote: 'Up to 6 hrs — varies by state', color: '#0c334c' },
                 { name: 'IRMAACP™', full: 'IRMAA Certified Planner', cfp: '4 hrs', cpe: '4 hrs', insNote: '4 hrs — varies by state', color: '#7f1424' },
-                { name: 'CELP®', full: 'Certified End-of-Life Planner', cfp: '4 hrs', cpe: '4 hrs', insNote: '6 hrs — most states', color: 'var(--green-dark)' },
+                { name: 'CELP®', full: 'Certified End-of-Life Planner', cfp: '4 hrs', cpe: '4 hrs', insNote: '6 hrs filed — state approvals pending', color: 'var(--green-dark)' },
               ].map(c => (
                 <div key={c.name} style={{ border: '1px solid #e5e7eb', borderTop: `4px solid ${c.color}`, borderRadius: 8, padding: '28px 24px' }}>
                   <div style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', color: c.color, marginBottom: 6 }}>{c.name}</div>

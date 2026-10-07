@@ -31,7 +31,7 @@ export const metadata = {
     type: 'website' as const,
     siteName: 'Advanced Retirement Planning Institute',
     title: 'CELP® Certification — Certified End-of-Life Planner for Financial Professionals',
-    description: 'The definitive end-of-life planning certification. 10 modules, CE credits filed for you, and a built-in referral ecosystem across estate law, hospice, and senior living.',
+    description: 'The definitive end-of-life planning certification. 11 modules, CE credits filed for you, and a built-in referral ecosystem across estate law, hospice, and senior living.',
     url: 'https://arpinstitute.com/credentials/celp',
     images: [{ url: 'https://arpinstitute.com/assets/course-hero-celp.jpg', width: 1200, height: 630, alt: 'CELP® Certification — Certified End-of-Life Planner' }],
   },
@@ -229,6 +229,17 @@ const modules: Module[] = [
     ],
   },
   {
+    title: 'Industry-Specific Applications',
+    items: [
+      'Building referral relationships across professional sectors',
+      'Financial planner, CPA, attorney, and healthcare partnerships',
+      'Senior living, insurance, banking, and trust partnerships',
+      'Community, veterans, faith, and specialty sector partnerships',
+      'Real estate, HR, and family law partnership frameworks',
+      'Industry-specific intake and engagement strategies',
+    ],
+  },
+  {
     title: 'Final Exam',
     isFinal: true,
     items: [
@@ -244,7 +255,7 @@ const whyCards = [
   {
     icon: <IconBriefcase />,
     heading: 'A Career That Stands Alone',
-    body: 'CELP graduates can build independent consulting practices without managing investments or selling products. Many build six-figure practices helping families organize their financial lives — the market is universal and untapped.',
+    body: 'CELP® gives you the credential and framework to build an independent consulting practice without managing investments or selling products. The market is universal, untapped, and growing — the demand for professional end-of-life coordination is real and largely unmet.',
   },
   {
     icon: <IconUsers />,
@@ -253,13 +264,13 @@ const whyCards = [
   },
   {
     icon: <IconNetwork />,
-    heading: 'The Largest Referral Network in Planning',
-    body: 'CELP professionals become natural referral partners for estate attorneys, elder law attorneys, CPAs, hospice organizations, senior living communities, and funeral homes. Each profession solves one piece — you coordinate the whole.',
+    heading: 'A Natural Referral Ecosystem',
+    body: 'CELP® professionals sit at the center of a growing referral ecosystem — estate attorneys, elder law attorneys, CPAs, hospice organizations, senior living communities, and funeral homes. Each profession solves one piece; you coordinate the whole.',
   },
 ]
 
 const included = [
-  { icon: <IconBook />, heading: 'Course Companion', desc: 'A comprehensive written guide covering all 10 modules — a permanent reference for client conversations, family meetings, and complex case work.' },
+  { icon: <IconBook />, heading: 'Course Companion', desc: 'A comprehensive written guide covering all 11 modules — a permanent reference for client conversations, family meetings, and complex case work.' },
   { icon: <IconPlay />, heading: 'Expert Video Lessons', desc: 'Practitioner-led video modules walking through legal reviews, family dynamics, digital estates, and the complete Survivors Guide framework.' },
   { icon: <IconCheckCircle />, heading: 'Interactive Quizzes', desc: 'Module-by-module knowledge checks designed to reinforce concepts and build the confidence you need to lead complex family conversations.' },
   { icon: <IconFolder />, heading: 'Member Resource Library', desc: 'Client-facing checklists, Survivors Guide templates, beneficiary review worksheets, and referral partner materials.' },
@@ -278,7 +289,7 @@ const stats = [
 const faqs: FaqItem[] = [
   {
     q: 'Is this course suitable for professionals new to end-of-life planning?',
-    a: 'Yes. CELP® is designed to be accessible across disciplines — financial, legal, medical, and care. Whether you are building an entirely new practice or adding a service line, the 10-module curriculum builds from fundamentals to advanced family coordination work.',
+    a: 'Yes. CELP® is designed to be accessible across disciplines — financial, legal, medical, and care. Whether you are building an entirely new practice or adding a service line, the 11-module curriculum builds from fundamentals to advanced family coordination and industry-specific partnership work.',
   },
   {
     q: 'Does the course include CE credits?',
@@ -286,7 +297,7 @@ const faqs: FaqItem[] = [
   },
   {
     q: 'How long does it take to complete the course?',
-    a: 'Most students complete the 10-module course in 12–16 hours. With 24/7 on-demand access, you set your own schedule.',
+    a: 'Most students complete the 11-module course in 14–20 hours. With 24/7 on-demand access, you set your own schedule.',
   },
   {
     q: 'Can I build a standalone practice with the CELP® credential?',
@@ -298,7 +309,7 @@ const faqs: FaqItem[] = [
   },
   {
     q: 'How does the certification and membership fee work?',
-    a: `CELP® tuition is ${fmt(TUITION_CELP)} upon acceptance. An application fee is required at submission and is fully credited toward tuition if you are accepted. Annual membership covers certification maintenance, resource access, and curriculum updates.`,
+    a: `CELP® tuition is ${fmt(TUITION_CELP)} upon acceptance. An application fee is required at submission and is fully credited toward tuition if you are accepted. Annual membership is $195 per year (parity with NSSA® membership) and covers certification maintenance, ongoing resource access, and curriculum updates. First-year membership inclusion details are confirmed upon acceptance.`,
   },
   {
     q: 'What do I have to do to maintain my certification?',
@@ -430,7 +441,7 @@ export default function CELPPage() {
           <div className="container">
             <p className="section-eyebrow">Everything You Need</p>
             <h2 className="section-h2">What&apos;s Included</h2>
-            <p className="section-intro">Ten comprehensive modules, a client-ready Survivors Guide framework, ongoing resource access, CE filing, and full certification. One enrollment, complete preparation.</p>
+            <p className="section-intro">Eleven comprehensive modules, a client-ready Survivors Guide framework, ongoing resource access, CE filing, and full certification. One enrollment, complete preparation.</p>
             <div className="included-grid">
               {included.map((item, i) => (
                 <div key={i} className="included-item">
@@ -469,7 +480,7 @@ export default function CELPPage() {
             <p className="section-eyebrow">The Curriculum</p>
             <h2 className="section-h2">What You&apos;ll Learn</h2>
             <p className="section-intro">
-              Ten deep-dive modules covering every dimension of end-of-life financial coordination — legal documents, family dynamics, digital estates, tax strategies, and the complete Survivors Guide deliverable. Plus a proctored final exam.
+              Eleven deep-dive modules covering every dimension of end-of-life financial coordination — legal documents, family dynamics, digital estates, tax strategies, industry-specific partnership applications, and the complete Survivors Guide deliverable. Plus a proctored final exam.
             </p>
             <CurriculumAccordion modules={modules} primaryColor={PRIMARY} lightColor={LIGHT} />
           </div>
@@ -500,12 +511,17 @@ export default function CELPPage() {
               process designed to ensure the credential means something — to you, to your clients,
               and to every professional in your referral network.
             </p>
+            <p className="section-intro" style={{ marginTop: -20, fontStyle: 'italic', color: '#6b7280', fontSize: '0.9rem' }}>
+              The interest form at the bottom of this page starts this process — no fee, no commitment.
+              Once we receive your submission, we&rsquo;ll reach out with formal application details.
+              The steps below describe what happens after that invitation.
+            </p>
             <div className="celp-steps">
               {[
                 {
                   n: '01',
-                  title: 'Submit Your Application',
-                  body: "Complete a short application outlining your professional background and why you're pursuing CELP®. An application fee is required at submission — it is fully credited toward your tuition if you are accepted.",
+                  title: 'Formal Application',
+                  body: "Once invited, complete the formal application outlining your professional background and your reason for pursuing CELP®. An application fee is required at this stage — it is fully credited toward your tuition if you are accepted.",
                 },
                 {
                   n: '02',
@@ -543,7 +559,7 @@ export default function CELPPage() {
                 <Image src="/assets/celp-logo.png" alt="CELP®" width={160} height={52} style={{ objectFit: 'contain', maxWidth: '100%' }} />
                 <p className="pricing-includes-label">What&apos;s Included</p>
                 <ul className="pricing-checklist">
-                  <li>Complete 10-module online course</li>
+                  <li>Complete 11-module online course</li>
                   <li>Course Companion reference guide</li>
                   <li>Expert video lessons — watch anytime</li>
                   <li>CE credits filed upon state approval</li>
@@ -578,12 +594,13 @@ export default function CELPPage() {
         {/* ── Apply for Consideration ── */}
         <section id="apply" className="section" style={{ background: '#f8fafc' }}>
           <div className="container" style={{ maxWidth: 720 }}>
-            <p className="section-eyebrow">Apply</p>
-            <h2 className="section-h2">Apply for Consideration</h2>
+            <p className="section-eyebrow">Get Started</p>
+            <h2 className="section-h2">Express Your Interest in CELP®</h2>
             <p className="section-intro" style={{ marginBottom: 40 }}>
-              CELP® launches Q4 2026. Submit your expression of interest below and we&rsquo;ll
-              be in touch with application details, timeline, and next steps as soon as
-              they&rsquo;re available.
+              CELP® launches Q4 2026. This form is your first step — not the formal application.
+              Tell us about yourself and why you&rsquo;re pursuing CELP®, and we&rsquo;ll be in touch
+              with formal application details, timeline, and next steps before anything is required
+              of you.
             </p>
             <CelpApplyForm />
           </div>
