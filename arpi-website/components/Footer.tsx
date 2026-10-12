@@ -98,6 +98,7 @@ export default function Footer() {
               <li><a href="/mission">Our Mission</a></li>
               <li><a href="/contact">Contact Us</a></li>
               <li><a href="/press">Press &amp; Media</a></li>
+              <li><a href="/speaking">Speaking Engagements</a></li>
               <li><a href="/careers">Careers</a></li>
             </ul>
           </div>

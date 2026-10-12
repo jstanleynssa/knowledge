@@ -46,6 +46,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url('/find-an-advisor', 0.8, 'weekly'),
     url('/contact',       0.6, 'monthly'),
     url('/press',         0.5, 'monthly'),
+    url('/speaking',           0.7, 'monthly'),
     url('/careers',            0.5, 'monthly'),
     url('/find-a-partner',  0.8, 'weekly'),
     url('/privacy',       0.3, 'yearly'),
